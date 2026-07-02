@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "book_cover_meeting_1.pdf",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
