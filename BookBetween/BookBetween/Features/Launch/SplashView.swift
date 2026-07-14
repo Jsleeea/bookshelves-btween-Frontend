@@ -11,12 +11,23 @@ import SwiftUI
 
 struct SplashView: View {
   var body: some View {
-    ZStack {
-      SplashBackgroundView()
+    GeometryReader { geometry in
 
-      SplashLogoGlowView()
-
-      SplashLogoView()
+      ZStack {
+        SplashBackgroundView()
+            
+        SplashLogoGlowView()
+          .position(
+            x: geometry.size.width / 2,
+            y: geometry.size.height / 2
+            )
+              
+        SplashLogoView()
+          .position(
+            x: geometry.size.width / 2,
+            y: geometry.size.height / 2
+            )
+      }
     }
   }
 }
@@ -27,14 +38,8 @@ private struct SplashBackgroundView: View {
   var body: some View {
     LinearGradient(
       stops: [
-        Gradient.Stop(
-          color: Color(red: 0.80, green: 0.88, blue: 0.82),
-          location: 0.06
-        ),
-        Gradient.Stop(
-          color: Color(red: 0.72, green: 0.85, blue: 1.00),
-          location: 1.00
-        )
+        Gradient.Stop(color: Color.green50, location: 0.06),
+        Gradient.Stop(color: Color.blue100, location: 1.00)
       ],
       startPoint: UnitPoint(x: 0.5, y: 0),
       endPoint: UnitPoint(x: 0.5, y: 1)
@@ -55,7 +60,6 @@ private struct SplashLogoGlowView: View {
       center: UnitPoint(x: 0.52, y: 0.5)
     )
     .frame(width: 631, height: 631)
-    .offset(y: -42)
   }
 }
 
@@ -67,7 +71,6 @@ private struct SplashLogoView: View {
       .resizable()
       .scaledToFit()
       .frame(width: 384, height: 384)
-      .offset(y: -42)
   }
 }
 
