@@ -19,26 +19,29 @@ struct OnboardingView: View {
         VStack(spacing: 0) {
           OnboardingTopBar(
             backButtonAction: {
+              self.viewModel.backButtonDidTap()
             },
             skipButtonAction: {
               self.viewModel.skipButtonDidTap()
             }
           )
-          .padding(.horizontal, 20)
+          .padding(.horizontal, 21)
+          .padding(.top, 16)
 
           Spacer()
+
+          OnboardingPageIndicator(
+            currentPage: self.viewModel.currentPageIndex,
+            totalPage: self.viewModel.pages.count
+          )
+          .padding(.bottom, 32.9)
+
+          OnboardingBottomButton(title: self.viewModel.bottomButtonTitle) {
+            self.viewModel.nextButtonDidTap()
+          }
+          .padding(.horizontal, 29)
         }
         .frame(width: geometry.size.width, height: geometry.size.height)
-        .padding(.top, geometry.safeAreaInsets.top + 18)
-        .padding(.horizontal, 24)
-
-        VStack(spacing: 0) {
-          Spacer()
-
-          self.bottomControls
-        }
-        .frame(width: geometry.size.width, height: geometry.size.height)
-        .padding(.horizontal, 28)
         .padding(.bottom, 32)
       }
       .frame(width: geometry.size.width, height: geometry.size.height)
@@ -58,22 +61,6 @@ struct OnboardingView: View {
     default:
       OnboardingThirdPageView(page: self.viewModel.currentPage)
     }
-  }
-
-  private var bottomControls: some View {
-    VStack(spacing: 0) {
-      OnboardingPageIndicator(
-        currentPage: self.viewModel.currentPageIndex,
-        totalPage: self.viewModel.pages.count
-      )
-      .padding(.bottom, 32)
-
-      OnboardingBottomButton(title: self.viewModel.bottomButtonTitle) {
-        self.viewModel.nextButtonDidTap()
-      }
-      .padding(.horizontal, 28)
-    }
-    .frame(maxWidth: .infinity)
   }
 
 }

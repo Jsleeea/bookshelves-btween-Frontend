@@ -51,6 +51,14 @@ final class OnboardingViewModel: ObservableObject {
     self.isLastPage ? "시작하기" : "다음"
   }
 
+  func backButtonDidTap() {
+    guard self.currentPageIndex > 0 else {
+      return
+    }
+
+    self.currentPageIndex -= 1
+  }
+
   func nextButtonDidTap() {
     guard !self.isLastPage else {
       return
