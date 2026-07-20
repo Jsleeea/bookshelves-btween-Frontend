@@ -7,42 +7,78 @@
 
 import SwiftUI
 
+@MainActor
 struct HomeView: View {
-    @State private var viewModel = HomeViewModel()
+    @State private var viewModel: HomeViewModel
+
+    init() {
+        _viewModel = State(initialValue: HomeViewModel())
+    }
+
+    init(viewModel: HomeViewModel) {
+        _viewModel = State(initialValue: viewModel)
+    }
     
     var body: some View {
         ScrollView(showsIndicators: false){
             VStack{
                 UserTitleView
                 RecommendationSection
-                if !viewModel.home.recentBooks.isEmpty {
-                    RecentBookSection
+                if let recentBook = viewModel.home.recentBook {
+                    RecentBookSection(record: recentBook.record)
                 }
                 RecruitingMeetingSection
             }
             .padding(.horizontal, 19)
         }
+        .overlay {
+            if viewModel.isLoading {
+                ProgressView()
+            }
+        }
+        .task {
+            await viewModel.fetchHome()
+        }
+        .alert(
+            "홈 화면을 불러오지 못했습니다.",
+            isPresented: Binding(
+                get: { viewModel.errorMessage != nil },
+                set: { isPresented in
+                    if !isPresented {
+                        viewModel.errorMessage = nil
+                    }
+                }
+            )
+        ) {
+            Button("확인", role: .cancel) {
+                viewModel.errorMessage = nil
+            }
+        } message: {
+            Text(viewModel.errorMessage ?? "")
+        }
     }
     
     private var UserTitleView: some View {
         HStack{
-            Text("\(viewModel.home.user.nickname)의 책장")
+            Text("\(viewModel.nickname)의 책장")
                 .pointText1Style
             Spacer()
-            Button {
-                //go to alert view
-            } label: {
+            NavigationLink(value: HomeRoute.notificationInbox) {
                 Image("icon_bell")
                     .resizable()
                     .frame(width: 24, height: 26)
             }
+            .buttonStyle(.plain)
         }
         .padding(.leading, 10)
     }
 
     // MARK: - 오늘의 AI 추천도서
     private var RecommendationSection: some View {
-        let recommendation = viewModel.home.dailyRecommendation
+        let recommendation = viewModel.home.recommendedBook.book
+        let authorAndCategory = recommendation.kdcName.flatMap { kdcName in
+            kdcName.isEmpty ? nil : "\(recommendation.author) | \(kdcName)"
+        } ?? recommendation.author
 
         return ZStack{
             RoundedRectangle(cornerRadius: 12)
@@ -66,27 +102,22 @@ struct HomeView: View {
                             .body1SemiBoldStyle
                             .foregroundStyle(.green900)
                     }
-                    Text(recommendation.description)
+                    Text(recommendation.publisher ?? "")
                         .caption1RegularStyle
                         .foregroundStyle(.gray600)
                     Spacer()
-                    Text(recommendation.book.title)
+                    Text(recommendation.title)
                         .pointText4Style
                         .foregroundStyle(.gray800)
-                    Text(recommendation.book.author)
+                    Text(authorAndCategory)
                         .caption2RegularStyle
                         .foregroundStyle(.gray600)
 
                     Spacer()
                     NavigationLink {
                         BookRecordDetailView(
-                            record: UserBookRecord(
-                                id: 1,
-                                book: recommendation.book,
-                                progress: 0,
-                                rating: nil,
-                                memo: nil
-                            )
+                            book: recommendation,
+                            isSaveable: recommendation.isbn != nil
                         )
                     } label: {
                         HStack{
@@ -106,7 +137,7 @@ struct HomeView: View {
                 .padding(.leading, 19)
                 Spacer()
                 
-                BookCoverImage(book: recommendation.book, placeholderImageName: "book_cover_recommend")
+                BookCoverImage(book: recommendation, placeholderImageName: "book_cover_recommend")
                     .frame(width:86, height: 146)
                     .padding(.trailing, 26.5)
             }
@@ -115,21 +146,19 @@ struct HomeView: View {
         .padding(.top, 12)
     }
 
-    private var RecentBookSection: some View {
+    private func RecentBookSection(record: UserBookRecord) -> some View {
         VStack{
             HStack{
                 Text("최근 본 책")
                     .body1SemiBoldStyle
                 Spacer()
             }
-            ForEach(viewModel.home.recentBooks, id: \.id) { record in
-                NavigationLink {
-                    BookRecordDetailView(record: record)
-                } label: {
-                    RecentBookCardView(record: record)
-                }
-                .buttonStyle(.plain)
+            NavigationLink {
+                BookRecordDetailView(record: record)
+            } label: {
+                RecentBookCardView(record: record)
             }
+            .buttonStyle(.plain)
         }
         .padding(.top, 20)
 
@@ -140,15 +169,8 @@ struct HomeView: View {
                 Text("모집 중인 모임")
                     .body1SemiBoldStyle
                 VStack{
-                ForEach(viewModel.home.recruitingMeetings, id: \.id) { meeting in
+                ForEach(viewModel.home.meetings, id: \.id) { meeting in
                     MeetingCardView(meeting: meeting)
-                        .onAppear {
-                            viewModel.loadMoreMeetingsIfNeeded(currentItem: meeting)
-                        }
-                }
-                if viewModel.isLoadingMoreMeetings {
-                    ProgressView()
-                        .padding(.top, 8)
                 }
             }
         }

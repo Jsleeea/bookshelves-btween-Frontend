@@ -4,10 +4,7 @@
 //
 //  Created by 이준성 on 7/13/26.
 //
-//
-//  BookProgressView.swift
-//  BookBetween
-//
+
 
 import SwiftUI
 

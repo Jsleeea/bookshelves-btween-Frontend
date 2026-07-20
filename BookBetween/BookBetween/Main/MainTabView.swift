@@ -9,12 +9,19 @@ import SwiftUI
 
 struct MainTabView: View {
     @State private var selectedTab: TabCase = .home
+    @State private var homeNavigationPath = NavigationPath()
 
     var body: some View {
         ZStack(alignment: .bottom) {
             TabView(selection: $selectedTab) {
-                NavigationStack {
+                NavigationStack(path: $homeNavigationPath) {
                     HomeView()
+                        .navigationDestination(for: HomeRoute.self) { route in
+                            switch route {
+                            case .notificationInbox:
+                                NotificationInboxView()
+                            }
+                        }
                 }
                 .tag(TabCase.home)
 
@@ -41,10 +48,16 @@ struct MainTabView: View {
             .toolbar(.hidden, for: .tabBar)
             .ignoresSafeArea(.keyboard, edges: .bottom)
 
-            CustomTabBar(selectedTab: $selectedTab)
-                .ignoresSafeArea(.keyboard, edges: .bottom)
+            if shouldShowTabBar {
+                CustomTabBar(selectedTab: $selectedTab)
+                    .ignoresSafeArea(.keyboard, edges: .bottom)
+            }
         }
         .ignoresSafeArea(.keyboard, edges: .bottom)
+    }
+
+    private var shouldShowTabBar: Bool {
+        selectedTab != .home || homeNavigationPath.isEmpty
     }
 }
 

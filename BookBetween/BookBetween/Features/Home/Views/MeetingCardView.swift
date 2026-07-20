@@ -9,12 +9,15 @@ import SwiftUI
 import Foundation
 
 struct MeetingCardView: View {
-    let meeting: BookMeeting
+    let meeting: HomeMeetingItem
     
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                BookCoverImage(book: meeting.book, placeholderImageName: "book_cover_meeting_1")
+                BookCoverImage(
+                    coverImageUrl: meeting.book.coverImageUrl,
+                    placeholderImageName: "book_cover_meeting_1"
+                )
                     .frame(width: 71, height: 108)
                     .shadow(color: .black.opacity(0.1), radius: 1.19453, x: -2.38905, y: 2.38905)
 
@@ -40,7 +43,7 @@ struct MeetingCardView: View {
                             .padding(3)
                             .background(.green50)
                             .clipShape(.circle)
-                        Text("\(meeting.currentParticipants)/\(meeting.maxParticipants)명 참여 중")
+                        Text("\(meeting.meeting.currentParticipants)/\(meeting.meeting.maxParticipants)명 참여 중")
                             .caption2RegularStyle
                     }
                     .foregroundStyle(.gray500)
@@ -92,31 +95,27 @@ struct MeetingCardView: View {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "ko_KR")
         formatter.dateFormat = "MM/dd (E) · HH:mm"
-        return formatter.string(from: meeting.meetingDate)
+        return formatter.string(from: meeting.meeting.startDate)
     }
 }
 
 #Preview {
     MeetingCardView(
-        meeting: BookMeeting(
-            id: "meeting-1",
-            book: Book(
+        meeting: HomeMeetingItem(
+            meeting: HomeMeetingSummary(
+                id: 21,
+                status: "RECRUITING",
+                startDate: Date(),
+                currentParticipants: 2,
+                maxParticipants: 6,
+                duration: 30
+            ),
+            book: HomeMeetingBook(
                 id: 1,
                 title: "빛은 얼마나 깊이 스미는가",
-                author: "",
-                description: nil
-            ),
-            title: nil,
-            description: "",
-            recruitmentStartDate: Date(),
-            recruitmentEndDate: Date(),
-            readingStartDate: Date(),
-            readingEndDate: Date(),
-            meetingDate: Date(),
-            timerMinutes: 60,
-            maxParticipants: 6,
-            currentParticipants: 2,
-            status: .recruiting
+                publisher: "창비",
+                coverImageUrl: nil
+            )
         )
     )
 }

@@ -9,106 +9,121 @@ import Foundation
 import Observation
 
 @Observable
+@MainActor
 final class HomeViewModel {
     var home: Home
+    let nickname = "책 먹는 여우"
+    var isLoading = false
+    var errorMessage: String?
 
-    private let meetingsPageSize = 3
-    private var currentMeetingsPage = 1
-    var isLoadingMoreMeetings = false
-    var hasMoreMeetings = true
+    private let service: (any HomeServiceProtocol)?
 
-    init() {
+    init(service: (any HomeServiceProtocol)? = nil) {
+        self.service = service
+
+        let dateFormatter = ISO8601DateFormatter()
+        let date: (String) -> Date = { value in
+            dateFormatter.date(from: value) ?? Date()
+        }
+
         self.home = Home(
-            user: User(id: "1", nickname: "책 먹는 여우", profileImageURL: nil),
-            dailyRecommendation: DailyBookRecommendation(
+            recommendedAt: "2026-07-14",
+            recommendedBook: HomeRecommendedBook(
                 book: Book(
                     id: 1,
+                    isbn: "9788936434595",
                     title: "랑과 나의 사막",
                     author: "천선란",
-                    description: nil
-                ),
-                description: "멸망한 세계의 어느날 나의 주인이 죽었다"
-            ),
-            recentBooks: [
-                UserBookRecord(
-                    id: 1,
-                    book: Book(
-                        id: 2,
-                        title: "아무 희미한 빛으로도",
-                        author: "최은영",
-                        description: nil
-                    ),
-                    progress: 75,
-                    rating: 4.5,
-                    memo: nil
+                    publisher: "창비",
+                    coverImageUrl: "https://image.example.com/book.jpg",
+                    kdcCode: "813",
+                    kdcName: "현대문학"
                 )
-            ],
-            recruitingMeetings: [
-                BookMeeting(
-                    id: "meeting-1",
-                    book: Book(
-                        id: 3,
-                        title: "빛은 얼마나 깊이 스미는가",
-                        author: "",
-                        description: nil
-                    ),
-                    title: nil,
-                    description: "",
-                    recruitmentStartDate: Date(),
-                    recruitmentEndDate: Date(),
-                    readingStartDate: Date(),
-                    readingEndDate: Date(),
-                    meetingDate: Date(),
-                    timerMinutes: 60,
-                    maxParticipants: 6,
-                    currentParticipants: 2,
-                    status: .recruiting
+            ),
+            recentBook: HomeRecentBook(
+                memberBook: HomeMemberBook(
+                    id: 10,
+                    progress: 70,
+                    status: "READING",
+                    rating: 4.5
                 ),
-                BookMeeting(
-                    id: "meeting-2",
-                    book: Book(
-                        id: 4,
-                        title: "프로젝트 헤일미리",
-                        author: "",
-                        description: nil
+                memberBookHistory: HomeMemberBookHistory(
+                    id: 25,
+                    createdAt: date("2026-07-14T04:30:00+09:00")
+                ),
+                book: Book(
+                    id: 1,
+                    isbn: "9788936434595",
+                    title: "아무 희미한 빛으로도",
+                    author: "최은영",
+                    publisher: "창비",
+                    coverImageUrl: "https://image.example.com/book.jpg"
+                )
+            ),
+            meetings: [
+                HomeMeetingItem(
+                    meeting: HomeMeetingSummary(
+                        id: 21,
+                        status: "RECRUITING",
+                        startDate: date("2026-07-20T19:00:00+09:00"),
+                        currentParticipants: 4,
+                        maxParticipants: 6,
+                        duration: 30
                     ),
-                    title: nil,
-                    description: "",
-                    recruitmentStartDate: Date(),
-                    recruitmentEndDate: Date(),
-                    readingStartDate: Date(),
-                    readingEndDate: Date(),
-                    meetingDate: Date(),
-                    timerMinutes: 60,
-                    maxParticipants: 6,
-                    currentParticipants: 2,
-                    status: .recruiting
+                    book: HomeMeetingBook(
+                        id: 1,
+                        title: "혼모노",
+                        publisher: "창비",
+                        coverImageUrl: "https://image.example.com/book1.jpg"
+                    )
+                ),
+                HomeMeetingItem(
+                    meeting: HomeMeetingSummary(
+                        id: 22,
+                        status: "RECRUITING",
+                        startDate: date("2026-07-21T18:00:00+09:00"),
+                        currentParticipants: 3,
+                        maxParticipants: 5,
+                        duration: 40
+                    ),
+                    book: HomeMeetingBook(
+                        id: 2,
+                        title: "프로젝트 헤일메리",
+                        publisher: "RHK(알에이치코리아)",
+                        coverImageUrl: "https://image.example.com/book2.jpg"
+                    )
+                ),
+                HomeMeetingItem(
+                    meeting: HomeMeetingSummary(
+                        id: 23,
+                        status: "RECRUITING",
+                        startDate: date("2026-07-22T20:00:00+09:00"),
+                        currentParticipants: 2,
+                        maxParticipants: 6,
+                        duration: 50
+                    ),
+                    book: HomeMeetingBook(
+                        id: 3,
+                        title: "데미안",
+                        publisher: "민음사",
+                        coverImageUrl: "https://image.example.com/book3.jpg"
+                    )
                 )
             ]
         )
     }
 
-    /// 무한 스크롤 트리거: 마지막에서 가까운 카드가 나타나면 다음 페이지를 불러옴.
-    func loadMoreMeetingsIfNeeded(currentItem: BookMeeting) {
-        guard !isLoadingMoreMeetings, hasMoreMeetings else { return }
-        let thresholdIndex = home.recruitingMeetings.index(
-            home.recruitingMeetings.endIndex, offsetBy: -1
-        )
-        guard let currentIndex = home.recruitingMeetings.firstIndex(where: { $0.id == currentItem.id }),
-              currentIndex == thresholdIndex else { return }
-        loadMoreMeetings()
-    }
+    func fetchHome() async {
+        guard let service, !isLoading else { return }
 
-    private func loadMoreMeetings() {
-        isLoadingMoreMeetings = true
-        Task {
-            // TODO: 추후 API 연동 시 아래를 실제 네트워크 호출로 교체 예정
-            // let page = try await meetingService.fetchRecruitingMeetings(page: currentMeetingsPage, size: meetingsPageSize)
-            // home.recruitingMeetings.append(contentsOf: page.items)
-            // hasMoreMeetings = page.hasNext
-            hasMoreMeetings = false // 목데이터 소진 - 실제 API 붙이면 서버 응답의 hasNext로 대체
-            currentMeetingsPage += 1
-            isLoadingMoreMeetings = false
+        isLoading = true
+        errorMessage = nil
+        defer { isLoading = false }
+
+        do {
+            home = try await service.fetchHome()
+        } catch {
+            errorMessage = error.localizedDescription
         }
     }
 }
