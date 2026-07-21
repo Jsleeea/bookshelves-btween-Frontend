@@ -7,7 +7,7 @@ import Foundation
 import Alamofire
 import Moya
 
-struct AuthTarget: TargetType {
+nonisolated struct AuthTarget: TargetType {
     enum Endpoint {
         case socialLogin(SocialLoginRequestDTO)
     }

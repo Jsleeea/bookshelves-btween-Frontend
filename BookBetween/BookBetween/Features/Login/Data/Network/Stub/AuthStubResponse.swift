@@ -5,12 +5,12 @@
 
 import Foundation
 
-struct AuthStubResponse {
+nonisolated struct AuthStubResponse {
     let statusCode: Int
     let data: Data
 }
 
-enum AuthStubScenario {
+nonisolated enum AuthStubScenario {
     case pendingOnboarding
     case active
     case withdrawn

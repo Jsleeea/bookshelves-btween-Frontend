@@ -5,11 +5,11 @@
 
 import Foundation
 
-enum SocialProvider: String, Encodable {
+nonisolated enum SocialProvider: String, Encodable {
     case kakao = "KAKAO"
 }
 
-enum MemberStatus: String, Decodable {
+nonisolated enum MemberStatus: String, Decodable {
     case pendingOnboarding = "PENDING_ONBOARDING"
     case active = "ACTIVE"
     case suspended = "SUSPENDED"
@@ -17,12 +17,12 @@ enum MemberStatus: String, Decodable {
     case anonymized = "ANONYMIZED"
 }
 
-struct SocialLoginRequestDTO: Encodable {
+nonisolated struct SocialLoginRequestDTO: Encodable {
     let provider: SocialProvider
     let providerToken: String
 }
 
-struct SocialLoginResultDTO: Decodable {
+nonisolated struct SocialLoginResultDTO: Decodable {
     let accessToken: String?
     let refreshToken: String?
     let accessTokenExpiresIn: Int?
