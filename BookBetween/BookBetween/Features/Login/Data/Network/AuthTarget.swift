@@ -44,6 +44,6 @@ struct AuthTarget: TargetType {
     }
 
     var sampleData: Data {
-        Data()
+        AuthStubScenario.pendingOnboarding.response.data
     }
 }
