@@ -7,9 +7,20 @@
 
 import SwiftUI
 
+@MainActor
 struct SearchView: View {
-    @State private var viewModel = SearchViewModel()
+    @State private var viewModel: SearchViewModel
     @FocusState private var isSearchFocused: Bool
+
+    init() {
+        _viewModel = State(
+            initialValue: SearchViewModel(service: BookService.stubbed())
+        )
+    }
+
+    init(viewModel: SearchViewModel) {
+        _viewModel = State(initialValue: viewModel)
+    }
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -29,6 +40,26 @@ struct SearchView: View {
         }
         .toolbar(.hidden, for: .navigationBar)
         .ignoresSafeArea(.keyboard, edges: .bottom)
+        .task {
+            await viewModel.loadRecentSearches()
+        }
+        .alert(
+            "도서 정보를 불러오지 못했습니다.",
+            isPresented: Binding(
+                get: { viewModel.errorMessage != nil },
+                set: { isPresented in
+                    if !isPresented {
+                        viewModel.errorMessage = nil
+                    }
+                }
+            )
+        ) {
+            Button("확인", role: .cancel) {
+                viewModel.errorMessage = nil
+            }
+        } message: {
+            Text(viewModel.errorMessage ?? "")
+        }
     }
     
     // MARK: 도서검색 TITLE
@@ -73,7 +104,10 @@ struct SearchView: View {
                 .foregroundStyle(Color.gray800)
                 .focused($isSearchFocused)
                 .onSubmit {
-                    viewModel.submitSearch()
+                    isSearchFocused = false
+                    Task {
+                        await viewModel.submitSearch()
+                    }
                 }
         }
         .frame(height: 46)
@@ -93,7 +127,10 @@ struct SearchView: View {
                         keyword: keyword,
                         onSelect: {
                             viewModel.selectRecentKeyword(keyword)
-                            isSearchFocused = true
+                            isSearchFocused = false
+                            Task {
+                                await viewModel.submitSearch()
+                            }
                         },
                         onDelete: {
                             viewModel.removeRecentKeyword(keyword)
@@ -108,8 +145,26 @@ struct SearchView: View {
     
     private var SearchResultSectionView: some View {
         VStack(spacing: 12) {
-            ForEach(viewModel.searchResults, id: \.listID) { item in
-                SearchBookResultCardView(item: item)
+            if viewModel.isSearching {
+                ProgressView()
+                    .padding(.top, 24)
+            } else if viewModel.hasSearched && viewModel.searchResults.isEmpty {
+                Text("검색 결과가 없어요")
+                    .body2RegularStyle
+                    .foregroundStyle(.gray500)
+                    .padding(.top, 24)
+            } else {
+                ForEach(viewModel.searchResults, id: \.listID) { item in
+                    SearchBookResultCardView(item: item)
+                        .task {
+                            await viewModel.loadNextPageIfNeeded(currentItem: item)
+                        }
+                }
+            }
+
+            if viewModel.isLoadingNextPage {
+                ProgressView()
+                    .padding(.vertical, 12)
             }
         }
     }

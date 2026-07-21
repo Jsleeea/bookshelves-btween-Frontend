@@ -60,7 +60,7 @@ struct HomeView: View {
     
     private var UserTitleView: some View {
         HStack{
-            Text("\(viewModel.nickname)의 책장")
+            Text("\(viewModel.home.member.nickname)의 책장")
                 .pointText1Style
             Spacer()
             NavigationLink(value: HomeRoute.notificationInbox) {
@@ -75,7 +75,8 @@ struct HomeView: View {
 
     // MARK: - 오늘의 AI 추천도서
     private var RecommendationSection: some View {
-        let recommendation = viewModel.home.recommendedBook.book
+        let recommendedBook = viewModel.home.recommendedBook
+        let recommendation = recommendedBook.book
         let authorAndCategory = recommendation.kdcName.flatMap { kdcName in
             kdcName.isEmpty ? nil : "\(recommendation.author) | \(kdcName)"
         } ?? recommendation.author
@@ -102,7 +103,7 @@ struct HomeView: View {
                             .body1SemiBoldStyle
                             .foregroundStyle(.green900)
                     }
-                    Text(recommendation.publisher ?? "")
+                    Text(recommendedBook.recommendationMessage)
                         .caption1RegularStyle
                         .foregroundStyle(.gray600)
                     Spacer()

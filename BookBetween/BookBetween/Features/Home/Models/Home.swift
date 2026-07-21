@@ -8,13 +8,19 @@
 import Foundation
 
 struct Home {
+    let member: HomeMember
     let recommendedAt: String
     let recommendedBook: HomeRecommendedBook
     let recentBook: HomeRecentBook?
     let meetings: [HomeMeetingItem]
 }
 
+struct HomeMember {
+    let nickname: String
+}
+
 struct HomeRecommendedBook {
+    let recommendationMessage: String
     let book: Book
 }
 

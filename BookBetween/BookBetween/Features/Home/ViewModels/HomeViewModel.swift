@@ -12,12 +12,12 @@ import Observation
 @MainActor
 final class HomeViewModel {
     var home: Home
-    let nickname = "책 먹는 여우"
     var isLoading = false
     var errorMessage: String?
 
     private let service: (any HomeServiceProtocol)?
 
+    //mock Data
     init(service: (any HomeServiceProtocol)? = nil) {
         self.service = service
 
@@ -27,8 +27,10 @@ final class HomeViewModel {
         }
 
         self.home = Home(
+            member: HomeMember(nickname: "책 먹는 여우"),
             recommendedAt: "2026-07-14",
             recommendedBook: HomeRecommendedBook(
+                recommendationMessage: "멸망한 세계의 어느날 나의 주인이 죽었다.",
                 book: Book(
                     id: 1,
                     isbn: "9788936434595",
@@ -114,6 +116,7 @@ final class HomeViewModel {
     }
 
     func fetchHome() async {
+        // service가 없거나 이미 통신 진행중이면 함수 즉시 종료
         guard let service, !isLoading else { return }
 
         isLoading = true
@@ -121,7 +124,8 @@ final class HomeViewModel {
         defer { isLoading = false }
 
         do {
-            home = try await service.fetchHome()
+            //네트워크 응답이 올떄까지 스레드 block 하지않고 비동기적으로 대기
+            home = try await service.fetchHome() // 성공시 home 갱신
         } catch {
             errorMessage = error.localizedDescription
         }

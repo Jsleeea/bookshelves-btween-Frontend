@@ -9,58 +9,97 @@ import Foundation
 import Observation
 
 @Observable
+@MainActor
 final class SearchViewModel {
     var searchText: String = ""
-    var recentKeywords: [String] = []
+    private(set) var recentKeywords: [String] = []
+    private(set) var searchResults: [BookSearchItem] = []
+    private(set) var isSearching = false
+    private(set) var isLoadingNextPage = false
+    private(set) var hasSearched = false
+    var errorMessage: String?
 
-    private let books: [BookSearchItem] = [
-        BookSearchItem(
-            book: Book(
-                isbn: "9788936434595",
-                title: "혼모노",
-                author: "성해나",
-                publisher: "창비",
-                description: "성해나 작가의 단편 소설집 『혼모노』는 진짜와 가짜, 믿음에 대한 날카로운 질문을 던지는 작품입니다. 표제작 「혼모노」는 신빨을 잃고 20대 애기 무당에게 자리를 빼앗긴 베테랑 무당이 진정한 자신의 정체성을 찾아가는 과정을 그립니다."
-            ),
-            isSaveable: true
-        ),
-        BookSearchItem(
-            book: Book(
-                title: "이끼숲",
-                author: "천선란"
-            ),
-            isSaveable: false
-        ),
-        BookSearchItem(
-            book: Book(
-                title: "오만과 편견",
-                author: "제인 오스틴"
-            ),
-            isSaveable: false
-        )
-    ]
+    private let service: any BookServiceProtocol
+    private let pageSize: Int
+    private var currentPage = 0
+    private var hasNext = false
+    private var submittedQuery = ""
 
-    var searchResults: [BookSearchItem] {
-        let keyword = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !keyword.isEmpty else { return [] }
+    init(
+        service: any BookServiceProtocol,
+        pageSize: Int = 15
+    ) {
+        self.service = service
+        self.pageSize = pageSize
+    }
 
-        return books.filter {
-            $0.book.title.localizedCaseInsensitiveContains(keyword)
-            || $0.book.author.localizedCaseInsensitiveContains(keyword)
+    func loadRecentSearches() async {
+        do {
+            recentKeywords = try await service.fetchRecentSearches().map(\.keyword)
+        } catch {
+            errorMessage = error.localizedDescription
         }
     }
 
-    func submitSearch() {
+    func submitSearch() async {
         let keyword = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !keyword.isEmpty else { return }
+        guard !keyword.isEmpty, !isSearching else { return }
 
-        recentKeywords.removeAll { $0 == keyword }
-        recentKeywords.insert(keyword, at: 0)
+        isSearching = true
+        errorMessage = nil
+        defer { isSearching = false }
+
+        do {
+            let result = try await service.searchBooks(
+                query: keyword,
+                page: 1,
+                size: pageSize
+            )
+
+            searchResults = result.books
+            currentPage = result.page
+            hasNext = result.hasNext
+            submittedQuery = keyword
+            hasSearched = true
+
+            recentKeywords.removeAll { $0 == keyword }
+            recentKeywords.insert(keyword, at: 0)
+            recentKeywords = Array(recentKeywords.prefix(5))
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    func loadNextPageIfNeeded(currentItem: BookSearchItem) async {
+        guard
+            currentItem.listID == searchResults.last?.listID,
+            hasNext,
+            !isSearching,
+            !isLoadingNextPage,
+            !submittedQuery.isEmpty
+        else { return }
+
+        isLoadingNextPage = true
+        errorMessage = nil
+        defer { isLoadingNextPage = false }
+
+        do {
+            let result = try await service.searchBooks(
+                query: submittedQuery,
+                page: currentPage + 1,
+                size: pageSize
+            )
+
+            searchResults.append(contentsOf: result.books)
+            currentPage = result.page
+            hasNext = result.hasNext
+        } catch {
+            errorMessage = error.localizedDescription
+        }
     }
 
     func selectRecentKeyword(_ keyword: String) {
         searchText = keyword
-        submitSearch()
     }
 
     func removeRecentKeyword(_ keyword: String) {

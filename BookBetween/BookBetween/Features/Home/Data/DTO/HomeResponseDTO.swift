@@ -6,13 +6,19 @@
 import Foundation
 
 struct HomeResultDTO: Decodable {
+    let member: HomeMemberDTO
     let recommendedAt: String
     let recommendedBook: HomeRecommendedBookDTO
     let recentBook: HomeRecentBookDTO?
     let meetings: [HomeMeetingItemDTO]
 }
 
+struct HomeMemberDTO: Decodable {
+    let nickname: String
+}
+
 struct HomeRecommendedBookDTO: Decodable {
+    let recommendationMessage: String
     let book: HomeBookDTO
 }
 
@@ -69,8 +75,10 @@ struct HomeMeetingBookDTO: Decodable {
 extension HomeResultDTO {
     func toDomain() throws -> Home {
         Home(
+            member: HomeMember(nickname: member.nickname),
             recommendedAt: recommendedAt,
             recommendedBook: HomeRecommendedBook(
+                recommendationMessage: recommendedBook.recommendationMessage,
                 book: recommendedBook.book.toDomain()
             ),
             recentBook: try recentBook.map { recentBook in
