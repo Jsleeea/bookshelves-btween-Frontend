@@ -11,121 +11,27 @@ import Observation
 @Observable
 @MainActor
 final class HomeViewModel {
-    var home: Home
-    var isLoading = false
+    private(set) var home: Home?
+    private(set) var isLoading = false
     var errorMessage: String?
 
-    private let service: (any HomeServiceProtocol)?
+    private let service: any HomeServiceProtocol
 
-    //mock Data
-    init(service: (any HomeServiceProtocol)? = nil) {
+    init(service: any HomeServiceProtocol) {
         self.service = service
-
-        let dateFormatter = ISO8601DateFormatter()
-        let date: (String) -> Date = { value in
-            dateFormatter.date(from: value) ?? Date()
-        }
-
-        self.home = Home(
-            member: HomeMember(nickname: "책 먹는 여우"),
-            recommendedAt: "2026-07-14",
-            recommendedBook: HomeRecommendedBook(
-                recommendationMessage: "멸망한 세계의 어느날 나의 주인이 죽었다.",
-                book: Book(
-                    id: 1,
-                    isbn: "9788936434595",
-                    title: "랑과 나의 사막",
-                    author: "천선란",
-                    publisher: "창비",
-                    coverImageUrl: "https://image.example.com/book.jpg",
-                    kdcCode: "813",
-                    kdcName: "현대문학"
-                )
-            ),
-            recentBook: HomeRecentBook(
-                memberBook: HomeMemberBook(
-                    id: 10,
-                    progress: 70,
-                    status: "READING",
-                    rating: 4.5
-                ),
-                memberBookHistory: HomeMemberBookHistory(
-                    id: 25,
-                    createdAt: date("2026-07-14T04:30:00+09:00")
-                ),
-                book: Book(
-                    id: 1,
-                    isbn: "9788936434595",
-                    title: "아무 희미한 빛으로도",
-                    author: "최은영",
-                    publisher: "창비",
-                    coverImageUrl: "https://image.example.com/book.jpg"
-                )
-            ),
-            meetings: [
-                HomeMeetingItem(
-                    meeting: HomeMeetingSummary(
-                        id: 21,
-                        status: "RECRUITING",
-                        startDate: date("2026-07-20T19:00:00+09:00"),
-                        currentParticipants: 4,
-                        maxParticipants: 6,
-                        duration: 30
-                    ),
-                    book: HomeMeetingBook(
-                        id: 1,
-                        title: "혼모노",
-                        publisher: "창비",
-                        coverImageUrl: "https://image.example.com/book1.jpg"
-                    )
-                ),
-                HomeMeetingItem(
-                    meeting: HomeMeetingSummary(
-                        id: 22,
-                        status: "RECRUITING",
-                        startDate: date("2026-07-21T18:00:00+09:00"),
-                        currentParticipants: 3,
-                        maxParticipants: 5,
-                        duration: 40
-                    ),
-                    book: HomeMeetingBook(
-                        id: 2,
-                        title: "프로젝트 헤일메리",
-                        publisher: "RHK(알에이치코리아)",
-                        coverImageUrl: "https://image.example.com/book2.jpg"
-                    )
-                ),
-                HomeMeetingItem(
-                    meeting: HomeMeetingSummary(
-                        id: 23,
-                        status: "RECRUITING",
-                        startDate: date("2026-07-22T20:00:00+09:00"),
-                        currentParticipants: 2,
-                        maxParticipants: 6,
-                        duration: 50
-                    ),
-                    book: HomeMeetingBook(
-                        id: 3,
-                        title: "데미안",
-                        publisher: "민음사",
-                        coverImageUrl: "https://image.example.com/book3.jpg"
-                    )
-                )
-            ]
-        )
     }
 
     func fetchHome() async {
-        // service가 없거나 이미 통신 진행중이면 함수 즉시 종료
-        guard let service, !isLoading else { return }
+        // 이미 통신 중이면 중복 요청하지 않습니다.
+        guard !isLoading else { return }
 
         isLoading = true
         errorMessage = nil
         defer { isLoading = false }
 
         do {
-            //네트워크 응답이 올떄까지 스레드 block 하지않고 비동기적으로 대기
-            home = try await service.fetchHome() // 성공시 home 갱신
+            // 응답을 비동기로 기다린 뒤 성공 결과로 화면 상태를 갱신합니다.
+            home = try await service.fetchHome()
         } catch {
             errorMessage = error.localizedDescription
         }

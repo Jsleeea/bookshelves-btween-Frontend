@@ -12,24 +12,28 @@ struct HomeView: View {
     @State private var viewModel: HomeViewModel
 
     init() {
-        _viewModel = State(initialValue: HomeViewModel())
+        _viewModel = State(
+            initialValue: HomeViewModel(service: HomeService.stubbed())
+        )
     }
-
+    
     init(viewModel: HomeViewModel) {
         _viewModel = State(initialValue: viewModel)
     }
     
     var body: some View {
         ScrollView(showsIndicators: false){
-            VStack{
-                UserTitleView
-                RecommendationSection
-                if let recentBook = viewModel.home.recentBook {
-                    RecentBookSection(record: recentBook.record)
+            if let home = viewModel.home {
+                VStack{
+                    UserTitleView(home: home)
+                    RecommendationSection(home: home)
+                    if let recentBook = home.recentBook {
+                        RecentBookSection(record: recentBook.record)
+                    }
+                    RecruitingMeetingSection(home: home)
                 }
-                RecruitingMeetingSection
+                .padding(.horizontal, 19)
             }
-            .padding(.horizontal, 19)
         }
         .overlay {
             if viewModel.isLoading {
@@ -58,9 +62,9 @@ struct HomeView: View {
         }
     }
     
-    private var UserTitleView: some View {
+    private func UserTitleView(home: Home) -> some View {
         HStack{
-            Text("\(viewModel.home.member.nickname)의 책장")
+            Text("\(home.member.nickname)의 책장")
                 .pointText1Style
             Spacer()
             NavigationLink(value: HomeRoute.notificationInbox) {
@@ -72,10 +76,10 @@ struct HomeView: View {
         }
         .padding(.leading, 10)
     }
-
+    
     // MARK: - 오늘의 AI 추천도서
-    private var RecommendationSection: some View {
-        let recommendedBook = viewModel.home.recommendedBook
+    private func RecommendationSection(home: Home) -> some View {
+        let recommendedBook = home.recommendedBook
         let recommendation = recommendedBook.book
         let authorAndCategory = recommendation.kdcName.flatMap { kdcName in
             kdcName.isEmpty ? nil : "\(recommendation.author) | \(kdcName)"
@@ -83,20 +87,25 @@ struct HomeView: View {
 
         return ZStack{
             RoundedRectangle(cornerRadius: 12)
+                .fill(.white)
+                .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 4)
+
+            RoundedRectangle(cornerRadius: 12)
                 .fill(
                     LinearGradient(
                         stops: [
-                            Gradient.Stop(color: Color(hex: "FEE7C4"), location: 0.0),
+                            Gradient.Stop(color: Color(hex: "DCEBE1"), location: 0.0),
                             Gradient.Stop(color: Color(hex: "EEF8F0"), location: 0.45),
-                            Gradient.Stop(color: Color(hex: "DDEFFF"), location: 1.0)
+                            Gradient.Stop(color: .white, location: 1.0)
                         ],
-                        startPoint: .bottomLeading,
-                        endPoint: .topTrailing
+                        startPoint: UnitPoint(x: 0.68, y: 0.0),
+                        endPoint: UnitPoint(x: 0.26, y: 1.0)
                     )
                 )
-                .shadow(color: .black.opacity(0.1), radius: 2, x: -4, y: 4)
+                .opacity(0.7)
+
             HStack{
-                VStack(alignment: .leading){
+                VStack(alignment: .leading, spacing: 0){
                     HStack{
                         Image("icon_sparkles")
                         Text("오늘의 AI 추천도서")
@@ -106,6 +115,8 @@ struct HomeView: View {
                     Text(recommendedBook.recommendationMessage)
                         .caption1RegularStyle
                         .foregroundStyle(.gray600)
+                        .lineLimit(1)
+                        .padding(.top, 3)
                     Spacer()
                     Text(recommendation.title)
                         .pointText4Style
@@ -113,6 +124,7 @@ struct HomeView: View {
                     Text(authorAndCategory)
                         .caption2RegularStyle
                         .foregroundStyle(.gray600)
+                        .padding(.top, 4)
 
                     Spacer()
                     NavigationLink {
@@ -138,12 +150,16 @@ struct HomeView: View {
                 .padding(.leading, 19)
                 Spacer()
                 
-                BookCoverImage(book: recommendation, placeholderImageName: "book_cover_recommend")
-                    .frame(width:86, height: 146)
-                    .padding(.trailing, 26.5)
+                BookCoverImage(book: recommendation,
+                               placeholderImageName: "book_cover_recommend"
+                )
+                .frame(width:87, height: 132)
+                .frame(maxHeight: .infinity, alignment: .bottom)
+                .padding(.trailing, 27)
+                .padding(.bottom, 14)
             }
         }
-        .frame(height: 155)
+        .frame(height: 160)
         .padding(.top, 12)
     }
 
@@ -162,25 +178,21 @@ struct HomeView: View {
             .buttonStyle(.plain)
         }
         .padding(.top, 20)
-
     }
 
-    private var RecruitingMeetingSection: some View {
+    private func RecruitingMeetingSection(home: Home) -> some View {
         VStack(alignment: .leading){
                 Text("모집 중인 모임")
                     .body1SemiBoldStyle
                 VStack{
-                ForEach(viewModel.home.meetings, id: \.id) { meeting in
+                ForEach(home.meetings, id: \.id) { meeting in
                     MeetingCardView(meeting: meeting)
                 }
             }
         }
         .padding(.horizontal, 9)
         .padding(.top, 20)
-
     }
-
-    
 }
 
 #Preview {

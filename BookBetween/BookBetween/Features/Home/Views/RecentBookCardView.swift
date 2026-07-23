@@ -67,7 +67,6 @@ struct RecentBookCardView: View {
             RoundedRectangle(cornerRadius: 12)
                 .stroke(.gray300, lineWidth: 0.5)
         }
-        .shadow(color: .black.opacity(0.1), radius: 1, x: 2, y: 2)
     }
 
     private var ratingText: String {

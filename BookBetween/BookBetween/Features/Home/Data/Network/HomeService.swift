@@ -28,6 +28,14 @@ final class HomeService: HomeServiceProtocol {
         self.provider = provider
     }
 
+    static func stubbed() -> HomeService {
+        let baseURL = URL(string: "https://stub.bookbetween.local")!
+        let provider = MoyaProvider<HomeTarget>(
+            stubClosure: { _ in .immediate }
+        )
+        return HomeService(baseURL: baseURL, provider: provider)
+    }
+
     func fetchHome() async throws -> Home {
         do {
             let response = try await provider.requestAsync(

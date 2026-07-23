@@ -44,6 +44,6 @@ struct HomeTarget: TargetType {
     }
 
     var sampleData: Data {
-        Data()
+        HomeStubData.data(for: endpoint)
     }
 }

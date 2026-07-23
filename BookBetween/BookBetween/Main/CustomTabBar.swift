@@ -48,9 +48,9 @@ struct CustomTabBar: View {
         .padding(.top, 5)
         .background {
             UnevenRoundedRectangle(topLeadingRadius: 12, topTrailingRadius: 12)
+                .stroke(Color.gray200, lineWidth: 1)
                 .fill(Color.white)
                 .ignoresSafeArea(edges: .bottom)
-                .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: -6)
         }
     }
 }

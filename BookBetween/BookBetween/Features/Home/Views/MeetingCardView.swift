@@ -19,7 +19,6 @@ struct MeetingCardView: View {
                     placeholderImageName: "book_cover_meeting_1"
                 )
                     .frame(width: 71, height: 108)
-                    .shadow(color: .black.opacity(0.1), radius: 1.19453, x: -2.38905, y: 2.38905)
 
                 VStack(alignment: .leading, spacing: 0) {
                     Text(meeting.book.title)
@@ -88,7 +87,6 @@ struct MeetingCardView: View {
             RoundedRectangle(cornerRadius: 12)
                 .stroke(.gray300, lineWidth: 0.5)
         }
-        .shadow(color: .black.opacity(0.12), radius: 5, x: 0, y: 3)
     }
 
     private var meetingDateText: String {
