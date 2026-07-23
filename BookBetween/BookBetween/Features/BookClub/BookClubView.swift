@@ -10,28 +10,37 @@ struct BookClubView: View {
 			HStack {
 				Text("모임 관리")
 					.head2Style
+                    .foregroundStyle(Color.gray900)
 				Spacer()
 			}
 			.padding(.horizontal, 30)
-			.padding(.top, 17)
-			.padding(.bottom, 12)
+            .padding(.bottom, 11)
 
 			tabSelector
-				.padding(.horizontal, 30)
 
 			if viewModel.selectedTab == .search {
 				searchContent
+                    .padding(.top, 8)
 			} else {
+				HStack {
+					Spacer()
+					MonthYearPickerView(
+						selectedYear: Bindable(viewModel).selectedYear,
+						selectedMonth: Bindable(viewModel).selectedMonth
+					)
+				}
+				.padding(.horizontal, 19)
+                .padding(.bottom, 15)
+
 				ScrollView(showsIndicators: false) {
 					VStack(spacing: 12) {
 						if viewModel.selectedTab == .myMeetings {
-							meetingList(viewModel.participatingMeetings)
+							meetingList(viewModel.filteredParticipatingMeetings)
 						} else {
-							meetingList(viewModel.createdMeetings)
+							meetingList(viewModel.filteredCreatedMeetings)
 						}
 					}
-                    .padding(.horizontal, 19)
-                    .padding(.top, 32)
+                    .padding(.top, 1)
 				}
 				.scrollBounceBehavior(.basedOnSize)
 			}
@@ -49,6 +58,10 @@ struct BookClubView: View {
 					tabPill(for: tab)
 				}
 			}
+            
+                .padding(.top, 1)
+                .padding(.bottom, 8)
+			.padding(.horizontal, 30)
 		}
 	}
 
@@ -58,12 +71,12 @@ struct BookClubView: View {
 		} label: {
 			Text(tab.title)
 				.caption1SemiBoldStyle
-				.foregroundStyle(viewModel.selectedTab == tab ? Color.beige100 : Color.gray300)
+				.foregroundStyle(viewModel.selectedTab == tab ? Color.gray50 : Color.gray200)
 				.padding(.horizontal, tab.horizontalPadding)
-				.padding(.vertical, 5)
-				.background(viewModel.selectedTab == tab ? Color.green600 : Color.beige100)
+				.padding(.vertical, tab.verticalPadding)
+				.background(viewModel.selectedTab == tab ? Color.green600 : Color.gray50)
 				.clipShape(Capsule())
-				.overlay(Capsule().stroke(Color.gray300, lineWidth: viewModel.selectedTab == tab ? 0 : 1))
+				.overlay(Capsule().stroke(Color.gray200, lineWidth: viewModel.selectedTab == tab ? 0 : 1))
 		}
 	}
 
@@ -79,24 +92,19 @@ struct BookClubView: View {
 	// MARK: - Search
 
 	private var searchContent: some View {
-		VStack(spacing: 16) {
+		VStack(spacing: 0) {
 			searchBar
-                .padding(.horizontal, 19)
-                .padding(.top, 16)
 
 			ScrollView(showsIndicators: false) {
-				VStack(alignment: .leading, spacing: 12) {
+				VStack(alignment: .leading, spacing: 0) {
+					if viewModel.meetingSearchResults.isEmpty {
+						emptyMeetingStateView
+					} else {
+						meetingResultsSection
+					}
+
 					if !viewModel.searchText.isEmpty {
-						if !viewModel.meetingSearchResults.isEmpty || !viewModel.bookSearchResults.isEmpty {
-							meetingResultsSection
-							bookResultsSection
-						} else {
-							Text("검색결과가 없습니다")
-								.body2RegularStyle
-								.foregroundStyle(Color.gray400)
-								.frame(maxWidth: .infinity)
-								.padding(.top, 48)
-						}
+						bookResultsSection
 					}
 				}
 				.padding(.top, 16)
@@ -107,6 +115,37 @@ struct BookClubView: View {
 			currentMeetingPage = 0
 		}
 	}
+
+    //수정필요
+	private var emptyMeetingStateView: some View {
+        ZStack {
+            leafDecoration
+            VStack(spacing: 12) {
+                Image(.launchLogo)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 152, height: 131)
+
+                Text("검색된 모임이 없습니다")
+                    .pointText5Style
+                    .foregroundStyle(Color.green900)
+            }
+        }
+		.frame(maxWidth: .infinity)
+	}
+    
+    // MARK: - Decoration
+
+    private var leafDecoration: some View {
+        Image(.leaf1)
+            .resizable()
+            .scaledToFit()
+            .frame(width: 123)
+            .opacity(0.55)
+            .rotationEffect(.degrees(-5))
+            .offset(x: 137, y: -300)
+            .allowsHitTesting(false)
+    }
 
     // MARK: - searchBar
     
@@ -132,7 +171,7 @@ struct BookClubView: View {
 			RoundedRectangle(cornerRadius: 12)
                 .stroke(Color.gray200, lineWidth: 0.5)
 		}
-        .shadow3()
+        .padding(.horizontal, 19)
 	}
 
 	// MARK: - Meeting Results
@@ -147,15 +186,21 @@ struct BookClubView: View {
 	@ViewBuilder
 	private var meetingResultsSection: some View {
 		if !viewModel.meetingSearchResults.isEmpty {
-			VStack(alignment: .leading, spacing: 12) {
-                ForEach(meetingPages[currentMeetingPage], id: \.id) { meeting in
-                    BookMeetingCardView(meeting: meeting)
+			VStack(alignment: .leading, spacing: 0) {
+                ZStack(alignment: .top) {
+                    VStack(spacing: 12) {
+                        ForEach(meetingPages[currentMeetingPage], id: \.id) { meeting in
+                            BookMeetingCardView(meeting: meeting)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                 }
-                
+                .frame(height: 336)
+
 				pageIndicator
+                    .padding(.top, 92)
                     .padding(.bottom, 42)
 			}
-            .padding(.horizontal, 19)
 		}
 	}
 
@@ -197,7 +242,6 @@ struct BookClubView: View {
 			}
 		}
 		.frame(maxWidth: .infinity)
-		.padding(.top, 92)
 	}
 
 	// MARK: - Book Results (가로 스크롤)
@@ -214,12 +258,13 @@ struct BookClubView: View {
 				HStack(spacing: 0) {
                     Rectangle()
                         .frame(width: 110, height: 1)
-                        .foregroundStyle(Color.gray400)
+                        .foregroundStyle(Color.gray900)
+                        .opacity(0.35)
                     Spacer()
                     Rectangle()
                         .frame(width: 110, height: 1)
-                        .foregroundStyle(Color.gray400)
-
+                        .foregroundStyle(Color.gray900)
+                        .opacity(0.35)
 				}
                 .padding(.bottom, 6.86)
                 .padding(.horizontal, 7)
@@ -228,6 +273,7 @@ struct BookClubView: View {
 					.caption1RegularStyle
 					.foregroundStyle(Color.gray400)
 					.frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.bottom, 24.14)
 
 				ScrollView(.horizontal, showsIndicators: false) {
 					HStack(spacing: 20) {
@@ -239,9 +285,7 @@ struct BookClubView: View {
 							}
 						}
 					}
-                    .padding(.top, 24.14)
-					.padding(.horizontal, 27)
-					.padding(.bottom, 54)
+					.padding(.bottom, 72)
 				}
 			}
 		}

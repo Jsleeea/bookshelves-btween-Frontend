@@ -5,32 +5,38 @@ struct BookSearchCardView: View {
 
 	var body: some View {
 		ZStack(alignment: .center) {
-			Color.white
+			Color.gray50
 
 			VStack(alignment: .leading, spacing: 0) {
-				BookCoverImage(book: book, placeholderImageName: "book_cover_01")
-					.frame(width: 90, height: 145) //수정필요
-					.clipped()
-                    .padding(.top, 4)
-                    .padding(.bottom, 13.69)
-                    .shadow3()
+				BookCoverImage(book: book, placeholderImageName: "book_cover_02")
+					.aspectRatio(29.0/44.0, contentMode: .fit)
+					.frame(height: 145)
+                    .clipShape(RoundedRectangle(cornerRadius: 9.14))
+                    .padding(.top, 5)
+                    .padding(.bottom, 12)
 
                 Text(book.title)
-                    .body2SemiBoldStyle //수정필요
+                    .head3Style
                     .lineLimit(1)
                     .foregroundStyle(Color.gray800)
+                    .padding(.bottom, 5.7)
 
-                Text(book.publisher.map { "\(book.author) (\($0))" } ?? book.author)
-                    .caption1RegularStyle //수정필요
+                Text(book.publisher.map { "\(book.author) | \($0)" } ?? book.author)
+                    .body1RegularStyle
                     .lineLimit(1)
                     .foregroundStyle(Color.gray500)
+                    .padding(.bottom, 6.3)
                 
 			}
-            .padding(.horizontal, 12)
 		}
+        .padding(.horizontal, 8)
         .frame(width: 116, height: 222)
 		.clipShape(RoundedRectangle(cornerRadius: 8))
-		.shadow3()
+        .overlay {
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(Color.gray200, lineWidth: 0.5)
+        }
+        .padding(.leading, 27)
 	}
 }
 
@@ -59,6 +65,5 @@ struct BookSearchCardView: View {
 				kdcName: "SF소설"
 			))
 		}
-		.padding()
 	}
 }

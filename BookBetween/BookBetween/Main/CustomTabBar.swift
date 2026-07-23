@@ -7,6 +7,19 @@
 
 import SwiftUI
 
+struct HideTabBarPreferenceKey: PreferenceKey {
+    static var defaultValue: Bool = false
+    static func reduce(value: inout Bool, nextValue: () -> Bool) {
+        value = value || nextValue()
+    }
+}
+
+extension View {
+    func hideTabBar() -> some View {
+        preference(key: HideTabBarPreferenceKey.self, value: true)
+    }
+}
+
 struct CustomTabBar: View {
     @Binding var selectedTab: TabCase
 

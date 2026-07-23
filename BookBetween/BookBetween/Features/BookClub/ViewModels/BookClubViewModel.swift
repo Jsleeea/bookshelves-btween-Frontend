@@ -13,7 +13,7 @@ enum BookClubTab: CaseIterable {
 
 	var title: String {
 		switch self {
-		case .myMeetings: return "참여 모임 관리"
+		case .myMeetings: return "참여 모임"
 		case .createdMeetings: return "내가 만든 모임"
 		case .search: return "모임 검색"
 		}
@@ -24,6 +24,14 @@ enum BookClubTab: CaseIterable {
         case .myMeetings: return 10
 		case .createdMeetings: return 10
 		case .search: return 10
+		}
+	}
+
+	var verticalPadding: CGFloat {
+		switch self {
+		case .myMeetings: return 5
+		case .createdMeetings: return 5
+		case .search: return 5
 		}
 	}
 }
@@ -37,6 +45,27 @@ final class BookClubViewModel {
 	var searchText: String = ""
 	var participatingMeetings: [BookMeeting] = []
 	var createdMeetings: [BookMeeting] = []
+
+	var selectedYear: Int = 0
+	var selectedMonth: Int = 0
+
+	var filteredParticipatingMeetings: [BookMeeting] {
+		participatingMeetings.filter { meeting in
+			let components = Calendar.current.dateComponents([.year, .month], from: meeting.meetingDate)
+			let yearMatch = selectedYear == 0 || components.year == selectedYear
+			let monthMatch = selectedMonth == 0 || components.month == selectedMonth
+			return yearMatch && monthMatch
+		}
+	}
+
+	var filteredCreatedMeetings: [BookMeeting] {
+		createdMeetings.filter { meeting in
+			let components = Calendar.current.dateComponents([.year, .month], from: meeting.meetingDate)
+			let yearMatch = selectedYear == 0 || components.year == selectedYear
+			let monthMatch = selectedMonth == 0 || components.month == selectedMonth
+			return yearMatch && monthMatch
+		}
+	}
 
 	var allBooks: [Book] = [
 		Book(id: 101, title: "혼모노", author: "성해나", publisher: "창비", kdcName: "한국소설"),
@@ -69,31 +98,22 @@ final class BookClubViewModel {
 
 		self.recruitingMeetings = [
 			BookMeeting(
-				id: "recruiting-1",
+				id: 1,
 				book: Book(id: 201, title: "혼모노", author: "성해나", description: "성해나 작가의 단편 소설집 『혼모노』는 진짜와 가짜, 믿음에 대한 날카로운 질문을 던지는 작품입니다.", kdcName: "한국소설"),
-				title: nil, description: "",
-				recruitmentStartDate: date3, recruitmentEndDate: date3,
-				readingStartDate: date3, readingEndDate: date3,
 				meetingDate: date3, timerMinutes: 30,
 				maxParticipants: 6, currentParticipants: 4,
 				status: .recruiting
 			),
 			BookMeeting(
-				id: "recruiting-2",
+				id: 2,
 				book: Book(id: 202, title: "빛은 얼마나 깊이 스미는가", author: "김초엽", description: "우주의 끝에서 혼자 깨어난 과학자가 인류를 구하기 위해 사투를 벌이는 이야기.", kdcName: "SF소설"),
-				title: nil, description: "",
-				recruitmentStartDate: date4, recruitmentEndDate: date4,
-				readingStartDate: date4, readingEndDate: date4,
 				meetingDate: date4, timerMinutes: 45,
 				maxParticipants: 5, currentParticipants: 2,
 				status: .recruiting
 			),
 			BookMeeting(
-				id: "recruiting-3",
-				book: Book(id: 203, title: "혼모노", author: "성해나", description: nil, kdcName: "한국소설"),
-				title: nil, description: "",
-				recruitmentStartDate: date3, recruitmentEndDate: date3,
-				readingStartDate: date3, readingEndDate: date3,
+				id: 3,
+				book: Book(id: 203, title: "혼모노", author: "성해나", kdcName: "한국소설"),
 				meetingDate: date3, timerMinutes: 60,
 				maxParticipants: 4, currentParticipants: 1,
 				status: .recruiting
@@ -102,17 +122,13 @@ final class BookClubViewModel {
 
 		self.participatingMeetings = [
 			BookMeeting(
-				id: "meeting-p-1",
+				id: 4,
 				book: Book(
 					id: 301,
 					title: "빛은 얼마나 깊이 스미는가",
 					author: "김초엽",
 					description: "우주의 끝에서 혼자 깨어난 과학자가 인류를 구하기 위해 사투를 벌이는 이야기. 인간과 외계 생명체의 우정을 따뜻하게 그려낸 SF 소설."
 				),
-				title: nil,
-				description: "",
-				recruitmentStartDate: date1,
-				recruitmentEndDate: date1,
 				readingStartDate: date1,
 				readingEndDate: date1,
 				meetingDate: date1,
@@ -122,17 +138,8 @@ final class BookClubViewModel {
 				status: .completed
 			),
 			BookMeeting(
-				id: "meeting-p-2",
-				book: Book(
-					id: 302,
-					title: "혼모노",
-					author: "성해나",
-					description: nil
-				),
-				title: nil,
-				description: "",
-				recruitmentStartDate: date2,
-				recruitmentEndDate: date2,
+				id: 5,
+				book: Book(id: 302, title: "혼모노", author: "성해나"),
 				readingStartDate: date2,
 				readingEndDate: date2,
 				meetingDate: date2,
@@ -142,17 +149,8 @@ final class BookClubViewModel {
 				status: .upcoming
 			),
 			BookMeeting(
-				id: "meeting-p-3",
-				book: Book(
-					id: 303,
-					title: "혼모노",
-					author: "성해나",
-					description: nil
-				),
-				title: nil,
-				description: "",
-				recruitmentStartDate: date2,
-				recruitmentEndDate: date2,
+				id: 6,
+				book: Book(id: 303, title: "혼모노", author: "성해나"),
 				readingStartDate: date2,
 				readingEndDate: date2,
 				meetingDate: date2,
@@ -165,17 +163,8 @@ final class BookClubViewModel {
 
 		self.createdMeetings = [
 			BookMeeting(
-				id: "meeting-c-1",
-				book: Book(
-					id: 401,
-					title: "빛은 얼마나 깊이 스미는가",
-					author: "김초엽",
-					description: nil
-				),
-				title: nil,
-				description: "",
-				recruitmentStartDate: date2,
-				recruitmentEndDate: date2,
+				id: 7,
+				book: Book(id: 401, title: "빛은 얼마나 깊이 스미는가", author: "김초엽"),
 				readingStartDate: date2,
 				readingEndDate: date2,
 				meetingDate: date2,
@@ -185,17 +174,8 @@ final class BookClubViewModel {
 				status: .upcoming
 			),
 			BookMeeting(
-				id: "meeting-c-2",
-				book: Book(
-					id: 402,
-					title: "혼모노",
-					author: "성해나",
-					description: nil
-				),
-				title: nil,
-				description: "",
-				recruitmentStartDate: date2,
-				recruitmentEndDate: date2,
+				id: 8,
+				book: Book(id: 402, title: "혼모노", author: "성해나"),
 				readingStartDate: date2,
 				readingEndDate: date2,
 				meetingDate: date2,

@@ -1,8 +1,3 @@
-//
-//  MyLibraryView.swift
-//  BookBetween
-//
-
 import SwiftUI
 
 struct MyLibraryView: View {
@@ -10,25 +5,24 @@ struct MyLibraryView: View {
 
 	var body: some View {
 		VStack(spacing: 0) {
-			HStack {
-				Text("내서재")
-					.head1Style
-				Spacer()
-			}
-			.padding(.horizontal, 20)
-			.padding(.top, 12)
-			.padding(.bottom, 4)
+            HStack {
+                Text("내 서재")
+                    .head2Style
+                    .foregroundStyle(Color.gray900)
+                Spacer()
+            }
+            .padding(.horizontal, 30)
+            .padding(.bottom, 11)
 
 			tabSelector
+                .padding(.bottom, 28)
 
 			ScrollView(showsIndicators: false) {
-				VStack(spacing: 12) {
+				VStack(spacing: 16) {
 					ForEach(viewModel.filteredRecords, id: \.id) { record in
 						MyLibraryBookCardView(record: record)
 					}
 				}
-				.padding(.horizontal, 20)
-				.padding(.top, 16)
 				.padding(.bottom, 24)
 			}
 			.scrollBounceBehavior(.basedOnSize)
@@ -45,8 +39,8 @@ struct MyLibraryView: View {
 					tabPill(for: tab)
 				}
 			}
-			.padding(.horizontal, 20)
-			.padding(.vertical, 12)
+            .padding(.top, 1)
+            .padding(.horizontal, 30)
 		}
 	}
 
@@ -56,10 +50,10 @@ struct MyLibraryView: View {
 		} label: {
 			Text(tab.title)
 				.caption1SemiBoldStyle
-				.foregroundStyle(viewModel.selectedTab == tab ? Color.white : Color.gray500)
-				.padding(.horizontal, 12)
-				.padding(.vertical, 6)
-				.background(viewModel.selectedTab == tab ? Color.green800 : Color.clear)
+				.foregroundStyle(viewModel.selectedTab == tab ? Color.green600 : Color.green600)
+                .padding(.horizontal, tab.horizontalPadding)
+                .padding(.vertical, tab.verticalPadding)
+				.background(viewModel.selectedTab == tab ? Color.green50 : Color.white)
 				.clipShape(Capsule())
 				.overlay {
 					if viewModel.selectedTab != tab {

@@ -101,6 +101,7 @@ struct MeetingCardView: View {
 
 #Preview {
     MeetingCardView(
+<<<<<<< Updated upstream
         meeting: HomeMeetingItem(
             meeting: HomeMeetingSummary(
                 id: 21,
@@ -116,6 +117,20 @@ struct MeetingCardView: View {
                 publisher: "창비",
                 coverImageUrl: nil
             )
+=======
+        meeting: BookMeeting(
+            id: 1,
+            book: Book(
+                id: 1,
+                title: "빛은 얼마나 깊이 스미는가",
+                author: ""
+            ),
+            meetingDate: Date(),
+            timerMinutes: 60,
+            maxParticipants: 6,
+            currentParticipants: 2,
+            status: .recruiting
+>>>>>>> Stashed changes
         )
     )
 }

@@ -7,35 +7,36 @@ struct BookMeetingDetailView: View {
 
 	var body: some View {
 		ZStack {
+            Color.beige100.ignoresSafeArea()
 			leafDecoration
 			VStack(spacing: 0) {
 				navigationHeader
 				subtitleHeader
 
 				ScrollView(showsIndicators: false) {
-					VStack(alignment: .leading, spacing: 0) {
+					VStack(alignment: .center, spacing: 0) {
 						bookHeaderSection
+							.padding(.bottom, 24)
 						descriptionText
+							.padding(.bottom, 52)
 						meetingInfoSection
-						if meeting.status == .upcoming {
-							noticeSection
-								.padding(.horizontal, 29)
-								.padding(.top, 32)
-								.padding(.bottom, 20)
-						}
+                            .padding(.bottom, 32)
+                        noticeSection
+                            .padding(.horizontal, 29)
+                            .padding(.bottom, 12)
 					}
-					.padding(.bottom, 20)
 				}
 				.scrollBounceBehavior(.basedOnSize)
-
-				if meeting.status == .recruiting {
-					bottomButton("모임 참여하기") {}
-				}
+                .safeAreaInset(edge: .bottom) {
+                    if meeting.status == .recruiting {
+                        bottomButton("모임 참여하기") {}
+                            .padding(.horizontal, 29)
+                    }
+                }
 			}
 		}
-        .background(Color.beige100)
 		.toolbar(.hidden, for: .navigationBar)
-		.ignoresSafeArea(edges: .bottom)
+		.hideTabBar()
 	}
 
 	// MARK: - Decoration
@@ -101,7 +102,8 @@ struct BookMeetingDetailView: View {
 	private var bookHeaderSection: some View {
 		HStack(alignment: .center, spacing: 16) {
 			BookCoverImage(book: meeting.book, placeholderImageName: "book_cover_01")
-				.frame(width: 110, height: 160) //수정필요
+				.aspectRatio(29.0/44.0, contentMode: .fit)
+				.frame(height: 160)
 				.clipped()
 				.shadow(color: .black.opacity(0.1), radius: 4, x: -4, y: 4)
 
@@ -111,7 +113,7 @@ struct BookMeetingDetailView: View {
 					.foregroundStyle(Color.gray800)
 					.padding(.bottom, 8)
 
-				Text(meeting.book.author)
+				Text(meeting.book.publisher.map { "\(meeting.book.author) | \($0)" } ?? meeting.book.author)
 					.caption1RegularStyle
 					.foregroundStyle(Color.gray500)
 					.padding(.bottom, 4)
@@ -126,9 +128,10 @@ struct BookMeetingDetailView: View {
 						.clipShape(Capsule())
 				}
 			}
+
+			Spacer()
 		}
 		.padding(.horizontal, 29.5)
-		.padding(.bottom, 24)
 	}
 
 	@ViewBuilder
@@ -138,7 +141,7 @@ struct BookMeetingDetailView: View {
 				.caption1RegularStyle
 				.foregroundStyle(Color.gray600)
 				.padding(.horizontal, 29.5)
-				.padding(.bottom, 52)
+                .lineLimit(4)
 		}
 	}
 
@@ -146,7 +149,7 @@ struct BookMeetingDetailView: View {
 
 	private var meetingInfoSection: some View {
 		VStack(alignment: .leading, spacing: 20) {
-			HStack(spacing: 6) {
+			HStack(spacing: 4.5) {
 				Image("icon_calendar")
 					.resizable()
 					.scaledToFill()
@@ -162,53 +165,47 @@ struct BookMeetingDetailView: View {
 			meetingInfoCard
 				.padding(.horizontal, 4)
 		}
-		.padding(.horizontal, 20)
+		.padding(.horizontal, 19)
 	}
 
 	private var meetingInfoCard: some View {
 		VStack(spacing: 0) {
 			infoRow(icon: { Image("icon_calendar") }, label: "모임 날짜", value: meetingDateText)
-                .padding(.top, 22.5)
-                .padding(.bottom, 5.5)
-            
-			Rectangle()
-				.frame(width: 311, height: 0.5)
-				.foregroundStyle(Color.gray300)
-            
+				.padding(.top, 9)
+				.padding(.bottom, 6)
+
+			Divider()
+				.overlay(Color.gray300)
+
 			infoRow(icon: { Image("icon_calendar") }, label: "모임 시간", value: meetingTimeText)
-                .padding(.top, 22.5)
-                .padding(.bottom, 5.5)
-            
-			Rectangle()
-				.frame(width: 311, height: 0.5)
-				.foregroundStyle(Color.gray300)
-            
+				.padding(.top, 24)
+				.padding(.bottom, 6)
+
+			Divider()
+				.overlay(Color.gray300)
+
 			infoRow(icon: { Image("icon_clock").resizable().scaledToFill().frame(width: 14, height: 14).clipped() }, label: "타이머 시간", value: "\(meeting.timerMinutes)분")
-                .padding(.top, 22.5)
-                .padding(.bottom, 5.5)
-            
-			Rectangle()
-				.frame(width: 311, height: 0.5)
-				.foregroundStyle(Color.gray300)
-            
+				.padding(.top, 24)
+				.padding(.bottom, 6)
+
+			Divider()
+				.overlay(Color.gray300)
+
 			infoRow(icon: { Image("icon_group") }, label: "참여자 수", value: "\(meeting.maxParticipants)/6")
-                .padding(.top, 22.5)
-                .padding(.bottom, 5.5)
-            
-            Rectangle()
-                .frame(width: 311, height: 0.5)
-                .foregroundStyle(Color.gray300)
-                .padding(.bottom, 22)
-            
+				.padding(.top, 24)
+				.padding(.bottom, 6)
+
+			Divider()
+				.overlay(Color.gray300)
 		}
+		.padding(.vertical, 20)
+		.padding(.horizontal, 20)
 		.background(.white)
 		.clipShape(RoundedRectangle(cornerRadius: 12))
 		.overlay {
 			RoundedRectangle(cornerRadius: 12)
 				.stroke(Color.gray300, lineWidth: 0.5)
-		}
-		.shadow1()
-	}
+		}	}
 
 	private func infoRow<Icon: View>(
 		@ViewBuilder icon: () -> Icon,
@@ -219,13 +216,13 @@ struct BookMeetingDetailView: View {
 			icon()
 			Text(label)
 				.body2RegularStyle
-				.foregroundStyle(Color.gray700)
+				.foregroundStyle(Color.gray600)
 			Spacer()
 			Text(value)
 				.body2RegularStyle
-				.foregroundStyle(Color.gray700)
-        }
-        .padding(.horizontal, 32.5)
+				.foregroundStyle(Color.gray600)
+		}
+		.padding(.horizontal, 8)
 	}
 
     // MARK: - Notice
@@ -247,10 +244,10 @@ struct BookMeetingDetailView: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(.horizontal, 27)
+        .padding(.horizontal, 29)
         .padding(.top, 12)
         .padding(.bottom, 9)
-        .background(Color.green50)
+        .background(Color.green50.opacity(0.5))
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
@@ -287,20 +284,18 @@ func bottomButton(_ title: String, action: @escaping () -> Void) -> some View {
 			.frame(maxWidth: .infinity)
 			.padding(.vertical, 14)
 			.background(Color.green600)
-            .clipShape(RoundedRectangle(cornerRadius: 10.3))
+			.clipShape(RoundedRectangle(cornerRadius: 10.3))
 	}
-	.padding(.horizontal, 29)
-	.padding(.top, 21)
-	.padding(.bottom, 34)
-	.background(.white)
-	.ignoresSafeArea(edges: .bottom)
+	.background {
+		Color.white.ignoresSafeArea(edges: .bottom)
+	}
 }
 
 #Preview {
 	NavigationStack {
 		BookMeetingDetailView(
 			meeting: BookMeeting(
-				id: "preview-detail",
+				id: 1,
 				book: Book(
 					id: 1,
 					title: "프로젝트 헤일메리",
@@ -308,12 +303,6 @@ func bottomButton(_ title: String, action: @escaping () -> Void) -> some View {
 					description: "중학교 과학 교사이자 전직 분자생물학자인 라이랜드 그레이스가 기억을 잃은 채 우주선에서 깨어나, 태양을 갉아 먹는 미생물 '아스트로파지'로 인해 멸종 위기에 처한 지구를 구하기 위해 외계인 과학자 '로키'와 함께 11.9광년 떨어진 타우 세티 행성계로 모험을 떠나는 이야기입니다",
 					kdcName: "외국소설"
 				),
-				title: nil,
-				description: "",
-				recruitmentStartDate: Calendar.current.date(from: DateComponents(year: 2026, month: 11, day: 18)) ?? Date(),
-				recruitmentEndDate: Calendar.current.date(from: DateComponents(year: 2026, month: 11, day: 24)) ?? Date(),
-				readingStartDate: Calendar.current.date(from: DateComponents(year: 2026, month: 11, day: 25)) ?? Date(),
-				readingEndDate: Calendar.current.date(from: DateComponents(year: 2026, month: 11, day: 28)) ?? Date(),
 				meetingDate: Calendar.current.date(from: DateComponents(year: 2026, month: 11, day: 30, hour: 19)) ?? Date(),
 				timerMinutes: 30,
 				maxParticipants: 6,

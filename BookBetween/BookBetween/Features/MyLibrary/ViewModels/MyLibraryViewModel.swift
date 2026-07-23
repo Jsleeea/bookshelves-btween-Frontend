@@ -20,6 +20,24 @@ enum MyLibraryTab: CaseIterable {
 		case .toRead: return "읽기 전"
 		}
 	}
+
+	var horizontalPadding: CGFloat {
+		switch self {
+		case .all: return 10
+		case .read: return 10
+		case .reading: return 10
+		case .toRead: return 10
+		}
+	}
+
+	var verticalPadding: CGFloat {
+		switch self {
+		case .all: return 5
+		case .read: return 5
+		case .reading: return 5
+		case .toRead: return 5
+		}
+	}
 }
 
 @Observable

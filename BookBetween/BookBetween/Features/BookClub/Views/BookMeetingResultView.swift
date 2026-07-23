@@ -17,7 +17,7 @@ struct BookMeetingResultView: View {
 				DiscussionTopic(
 					id: 2,
 					question: "가장 인상 깊었던 시기",
-					content: "참여자들은 의외로 싯다르타가 성공과 쾌락을 경험하던 시기를 많이 언급했다. 완벽한 실패와 방황과 실패의 시간이 있었기에 마지막 깨달음이 의미 있게 다가왔다는 의견이 많았다.",
+					content: "참여자들은 의외로 싯다르타가 성공과 쾌락을 경험하던 시기를 많이 언급했다. 완벽한 실패와 방황과 실패의 시간이 있었기에 마지막 깨달음이 의미 있게 다가왔다는 의견이 많았다.실패와 방황과 실패의 시간이 있었기에 마지막 깨달음이 의미 있게 다가왔다는 의견이 많았다실패와 방황과 실패의 시간이 있었기에 마지막 깨달음이 의미 있게 다가왔다는 의견이 많았다",
 					quote: nil
 				),
 				DiscussionTopic(
@@ -37,14 +37,18 @@ struct BookMeetingResultView: View {
 			leafDecoration
 			VStack(spacing: 0) {
 				navigationHeader
+                    .padding(.bottom, 16)
 
 				ScrollView(showsIndicators: false) {
-					VStack(alignment: .leading, spacing: 12) {
+					VStack(alignment: .leading, spacing: 0) {
 						bookHeaderSection
+                            .padding(.bottom, 16)
 						aiSummarySection
+                            .padding(.bottom, 8)
 						discussionSection
+                            
 					}
-					.padding(.bottom, 40)
+					.padding(.bottom, 60)
 				}
 				.scrollBounceBehavior(.basedOnSize)
 			}
@@ -55,12 +59,22 @@ struct BookMeetingResultView: View {
     // MARK: - Background
 
     private var gradientBackground: some View {
-        LinearGradient(
-            colors: [Color(hex: "DCEBE1").opacity(0.40), Color.white],
-            startPoint: .top,
-            endPoint: .bottom
-        )
-        .ignoresSafeArea()
+        Color(hex: "FAF9F6")
+            .ignoresSafeArea()
+            .overlay(alignment: .topLeading) {
+                Ellipse()
+                    .fill(
+                        RadialGradient(
+                            colors: [Color(hex: "DCEBE1"), Color(hex: "FAF9F6")],
+                            center: .center,
+                            startRadius: 0,
+                            endRadius: 281
+                        )
+                    )
+                    .frame(width: 562, height: 454)
+                    .opacity(0.40)
+                    .offset(x: -223, y: -210)
+            }
     }
 
     private var leafDecoration: some View {
@@ -84,46 +98,57 @@ struct BookMeetingResultView: View {
 					.frame(width: 20, height: 20)
 					.clipped()
 			}
-			Text("모임 관리")
+			Text("독서 모임")
 				.head2Style
-                .foregroundStyle(.gray600)
+                .foregroundStyle(.gray900)
 			Spacer()
 		}
 		.padding(.horizontal, 30)
-		.padding(.top, 17)
-		.padding(.bottom, 15)
 	}
 
 	// MARK: - Book Header
 
 	private var bookHeaderSection: some View {
-        HStack(alignment: .center, spacing: 16.4) {
+        HStack(spacing: 24) {
 			BookCoverImage(book: meeting.book, placeholderImageName: "book_cover_01")
-				.frame(width: 110, height: 170)
+				.aspectRatio(29.0/44.0, contentMode: .fit)
+				.frame(height: 170)
 				.clipped()
-				.shadow2()
+                .overlay {
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.gray200, lineWidth: 0.5)
+                }
 
-			VStack(alignment: .leading, spacing: 8) {
+			VStack(alignment: .leading, spacing: 0) {
 				Text(meeting.book.title)
 					.head3Style
                     .foregroundStyle(Color.gray800)
+                    .padding(.top, 2.6)
+                    .padding(.bottom, 8)
 
-				Text(meeting.book.author)
-					.caption1RegularStyle
+				Text(meeting.book.publisher.map { "\(meeting.book.author) | \($0)" } ?? meeting.book.author)
+					.body2RegularStyle
 					.foregroundStyle(Color.gray500)
-                    .padding(.bottom, 4)
-
+                
+                Spacer()
+                
 				compactInfoRows
                     .foregroundStyle(Color.gray800)
+                    .padding(.bottom, 2.6)
 			}
 		}
-		.padding(.horizontal, 30)
+		.padding(.horizontal, 20)
+	}
+
+	private var readingPeriodText: String {
+		guard let start = meeting.readingStartDate, let end = meeting.readingEndDate else { return "-" }
+		return "\(Self.dateFormatter.string(from: start)) - \(Self.dateFormatter.string(from: end))"
 	}
 
 	private var compactInfoRows: some View {
 		VStack(alignment: .leading, spacing: 8) {
 			compactInfoRow(icon: { Image("icon_calendar").resizable().scaledToFill().frame(width: 12, height: 12).clipped()  },
-						   text: "독서 기간: \(Self.dateFormatter.string(from: meeting.readingStartDate)) - \(Self.dateFormatter.string(from: meeting.readingEndDate))")
+						   text: "독서 기간: \(readingPeriodText)")
 			compactInfoRow(icon: { Image("icon_calendar").resizable().scaledToFill().frame(width: 12, height: 12).clipped()  },
 						   text: "모임 날짜: \(Self.dateTimeFormatter.string(from: meeting.meetingDate))")
 			compactInfoRow(icon: { Image("icon_clock").resizable().scaledToFill().frame(width: 12, height: 12).clipped() },
@@ -152,8 +177,8 @@ struct BookMeetingResultView: View {
             Image(.star)
 				.resizable()
 				.scaledToFit()
-                .frame(width: 26.81, height: 26.81)
-                .padding(6.59)
+                .frame(width: 26.8, height: 26.8)
+                .padding(6.5)
 				.background(
                     LinearGradient(
                         stops: [
@@ -165,12 +190,11 @@ struct BookMeetingResultView: View {
                     ),
                     in: Circle()
                 )
-                .shadow2()
 
 			VStack(alignment: .leading, spacing: 0) {
 				Text("AI 요약")
 					.caption1SemiBoldStyle
-					.foregroundStyle(Color.green700)
+					.foregroundStyle(Color.green900)
 
 				Text("AI가 오늘 모임의 대화를 분석하여\n핵심 내용을 3가지 주제로 정리했어요.")
 					.caption2RegularStyle
@@ -204,45 +228,43 @@ struct BookMeetingResultView: View {
 					lineWidth: 1
 				)
 		}
-		.shadow2()
         .frame(maxWidth: .infinity)
-		.padding(.horizontal, 29)
+		.padding(.horizontal, 20)
 	}
 
 	// MARK: - Discussion
 
 	private var discussionSection: some View {
-		ZStack {
-			RoundedRectangle(cornerRadius: 8)
-				.fill(
-					LinearGradient(
-						stops: [
-							.init(color: .white, location: 0.8367),
-							.init(color: .white.opacity(0.20), location: 1.5517)
-						],
-						startPoint: .bottom,
-						endPoint: .top
-					)
-				)
-
-			VStack(spacing: 0) {
-				ForEach(Array(discussion.topics.enumerated()), id: \.element.id) { index, topic in
-					topicRow(topic)
-					if index < discussion.topics.count - 1 {
-						dashedDivider
-					}
+		VStack(spacing: 0) {
+			ForEach(Array(discussion.topics.enumerated()), id: \.element.id) { index, topic in
+				topicRow(topic)
+					.fixedSize(horizontal: false, vertical: true)
+				if index < discussion.topics.count - 1 {
+					dashedDivider
 				}
 			}
 		}
+        .padding(.vertical, 12)
+        .padding(.horizontal, 12)
+		.background(
+			LinearGradient(
+				stops: [
+					.init(color: .white, location: 0.8367),
+					.init(color: .white.opacity(0.20), location: 1.5517)
+				],
+				startPoint: .bottom,
+				endPoint: .top
+			),
+			in: RoundedRectangle(cornerRadius: 8)
+		)
 		.padding(.horizontal, 19)
-		.padding(.bottom, 20)
 	}
 
 	private var dashedDivider: some View {
 		HorizontalLine()
 			.stroke(Color.gray300, style: StrokeStyle(lineWidth: 1, dash: [5, 5]))
 			.frame(height: 1)
-            .padding(.horizontal, 10)
+            .padding(.vertical, 12)
 	}
 
 	private struct HorizontalLine: Shape {
@@ -265,24 +287,24 @@ struct BookMeetingResultView: View {
 					.frame(width: 24, height: 1)
 					.foregroundStyle(Color.green700)
 			}
-			.padding(.trailing, 10)
-
+            
 			Rectangle()
 				.frame(width: 1)
 				.foregroundStyle(Color.gray300)
+                .padding(.horizontal, 10)
 
-			VStack(alignment: .leading, spacing: 8) {
+			VStack(alignment: .leading, spacing: 0) {
 				Text(topic.question)
 					.body2SemiBoldStyle
 					.foregroundStyle(Color.gray800)
+                    .padding(.bottom, 8)
 				Text(topic.content)
 					.caption1RegularStyle
 					.foregroundStyle(Color.gray500)
+                    .padding(.bottom, 11)
 			}
-			.padding(.leading, 10)
+            .padding(.trailing, 7)
 		}
-		.padding(.horizontal, 12)
-		.padding(.vertical, 12)
 	}
 
 	// MARK: - Helpers
@@ -304,16 +326,12 @@ struct BookMeetingResultView: View {
 	NavigationStack {
 		BookMeetingResultView(
 			meeting: BookMeeting(
-				id: "preview-result",
+				id: 1,
 				book: Book(
 					id: 1,
 					title: "빛은 얼마나 깊이 스미는가",
 					author: "사브리나 임볼리"
 				),
-				title: nil,
-				description: "",
-				recruitmentStartDate: Calendar.current.date(from: DateComponents(year: 2026, month: 11, day: 18)) ?? Date(),
-				recruitmentEndDate: Calendar.current.date(from: DateComponents(year: 2026, month: 11, day: 24)) ?? Date(),
 				readingStartDate: Calendar.current.date(from: DateComponents(year: 2026, month: 11, day: 25)) ?? Date(),
 				readingEndDate: Calendar.current.date(from: DateComponents(year: 2026, month: 11, day: 28)) ?? Date(),
 				meetingDate: Calendar.current.date(from: DateComponents(year: 2026, month: 11, day: 30, hour: 19)) ?? Date(),

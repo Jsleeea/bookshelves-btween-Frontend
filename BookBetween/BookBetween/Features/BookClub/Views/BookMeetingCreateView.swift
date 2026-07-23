@@ -26,29 +26,37 @@ struct BookMeetingCreateView: View {
 
 	var body: some View {
         ZStack {
+            Color.beige100.ignoresSafeArea()
             leafDecoration
             VStack(spacing: 0) {
                 navigationHeader
+                    .padding(.top, 1)
+                    .padding(.bottom, 7)
                 subtitleHeader
+                    .padding(.bottom, 12)
 
                 ScrollView(showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: 0) {
+                    VStack(alignment: .center, spacing: 0) {
                         bookHeaderSection
+                            .padding(.bottom, 24)
                         descriptionText
+                            .padding(.bottom, 52)
                         meetingInfoSection
+                            .padding(.bottom, 32)
+                        noticeSection
+                            .padding(.horizontal, 29)
+                            .padding(.bottom, 12)
                     }
                 }
                 .scrollBounceBehavior(.basedOnSize)
-                
-                noticeSection
-                    .padding(.top, 32)
-
-                bottomButton("+ 모임 생성하기") {}
+                .safeAreaInset(edge: .bottom) {
+                    bottomButton("+ 모임 생성하기") {}
+                        .padding(.horizontal, 29)
+                }
             }
         }
-        .background(Color.beige100)
 		.toolbar(.hidden, for: .navigationBar)
-		.ignoresSafeArea(edges: .bottom)
+		.hideTabBar()
 	}
 
     // MARK: - Decoration
@@ -82,8 +90,6 @@ struct BookMeetingCreateView: View {
 			Spacer()
 		}
 		.padding(.horizontal, 30)
-		.padding(.top, 1)
-		.padding(.bottom, 7)
 	}
 
 	private var subtitleHeader: some View {
@@ -94,7 +100,6 @@ struct BookMeetingCreateView: View {
 			Spacer()
 		}
 		.padding(.horizontal, 62)
-		.padding(.bottom, 12)
 	}
     
 	// MARK: - Book Header
@@ -102,7 +107,8 @@ struct BookMeetingCreateView: View {
 	private var bookHeaderSection: some View {
 		HStack(alignment: .center, spacing: 16) {
 			BookCoverImage(book: book, placeholderImageName: "book_cover_01")
-				.frame(width: 110, height: 160) //수정필요
+				.aspectRatio(29.0/44.0, contentMode: .fit)
+				.frame(height: 160)
 				.clipped()
 				.shadow(color: .black.opacity(0.1), radius: 4, x: -4, y: 4)
 
@@ -112,7 +118,7 @@ struct BookMeetingCreateView: View {
                     .foregroundStyle(Color.gray800)
                     .padding(.bottom, 8)
 
-				Text(book.author)
+				Text(book.publisher.map { "\(book.author) | \($0)" } ?? book.author)
 					.caption1RegularStyle
 					.foregroundStyle(Color.gray500)
                     .padding(.bottom, 4)
@@ -127,9 +133,10 @@ struct BookMeetingCreateView: View {
 						.clipShape(Capsule())
 				}
 			}
+            
+            Spacer()
 		}
         .padding(.horizontal, 29.5)
-		.padding(.bottom, 24)
 	}
 
 	@ViewBuilder
@@ -139,7 +146,7 @@ struct BookMeetingCreateView: View {
 				.caption1RegularStyle
 				.foregroundStyle(Color.gray600)
                 .padding(.horizontal, 29.5)
-                .padding(.bottom, 52)
+                .lineLimit(4)
 		}
 	}
 
@@ -147,7 +154,7 @@ struct BookMeetingCreateView: View {
 
 	private var meetingInfoSection: some View {
 		VStack(alignment: .leading, spacing: 20) {
-			HStack(spacing: 6) {
+            HStack(spacing: 4.5) {
 				Image("icon_calendar")
                     .resizable()
                     .scaledToFill()
@@ -161,9 +168,9 @@ struct BookMeetingCreateView: View {
 			.padding(.horizontal, 6)
 
 			meetingInfoCard
-				.padding(.horizontal, 4)
+                .padding(.horizontal, 4)
 		}
-        .padding(.horizontal, 20)
+        .padding(.horizontal, 19)
 	}
 
 	private var meetingInfoCard: some View {
@@ -203,12 +210,11 @@ struct BookMeetingCreateView: View {
 					.padding(.horizontal, 8)
 				}
 			)
-            .padding(.top, 22.5)
-            .padding(.bottom, 5.5)
+            .padding(.top, 9)
+            .padding(.bottom,6)
 
-            Rectangle()
-                .frame(width: 311, height: 0.5)
-                .foregroundStyle(Color.gray300)
+            Divider()
+                .overlay(Color.gray300)
 
 			infoRow(
 				icon: { Image("icon_calendar")},
@@ -233,12 +239,11 @@ struct BookMeetingCreateView: View {
 						.padding(.horizontal, 8)
 				}
 			)
-            .padding(.top, 24.5)
-            .padding(.bottom, 5.5)
+            .padding(.top, 24)
+            .padding(.bottom, 6)
 
-            Rectangle()
-                .frame(width: 311, height: 0.5)
-                .foregroundStyle(Color.gray300)
+            Divider()
+                .overlay(Color.gray300)
 
 			infoRow(
 				icon: { Image("icon_clock").resizable().scaledToFill().frame(width: 14, height: 14).clipped() },
@@ -264,12 +269,11 @@ struct BookMeetingCreateView: View {
 					.padding(.horizontal, 8)
 				}
 			)
-            .padding(.top, 24.5)
-            .padding(.bottom, 5.5)
+            .padding(.top, 24)
+            .padding(.bottom, 6)
 
-            Rectangle()
-                .frame(width: 311, height: 0.5)
-                .foregroundStyle(Color.gray300)
+            Divider()
+                .overlay(Color.gray300)
 
 			infoRow(
 				icon: { Image("icon_group") },
@@ -295,22 +299,21 @@ struct BookMeetingCreateView: View {
 					.padding(.horizontal, 8)
 				}
 			)
-            .padding(.top, 24.5)
-            .padding(.bottom, 5.5)
+            .padding(.top, 24)
+            .padding(.bottom, 6)
             
-            Rectangle()
-                .frame(width: 311, height: 0.5)
-                .foregroundStyle(Color.gray300)
-                .padding(.bottom, 22)
+            Divider()
+                .overlay(Color.gray300)
             
 		}
+        .padding(.vertical, 20)
+        .padding(.horizontal, 20)
         .background(.white)
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .overlay {
             RoundedRectangle(cornerRadius: 12)
                 .stroke(Color.gray300, lineWidth: 0.5)
         }
-        .shadow1()
 	}
 
 	private func infoRow<Icon: View, Picker: View>(
@@ -339,7 +342,7 @@ struct BookMeetingCreateView: View {
 						.clipped()
 						.foregroundStyle(Color.gray600)
 				}
-                .padding(.horizontal, 32.5)
+                .padding(.horizontal, 8)
 			}
 			.buttonStyle(.plain)
 
@@ -406,10 +409,10 @@ struct BookMeetingCreateView: View {
 					.foregroundStyle(Color.gray500)
 			}
 		}
-		.padding(.horizontal, 27)
+        .frame(maxWidth: .infinity)
 		.padding(.top, 12)
         .padding(.bottom, 9)
-		.background(Color.green50)
+		.background(Color.green50.opacity(0.5))
 		.clipShape(RoundedRectangle(cornerRadius: 8))
 	}
 }

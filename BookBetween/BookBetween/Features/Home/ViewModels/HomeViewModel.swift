@@ -39,6 +39,7 @@ final class HomeViewModel {
                     kdcCode: "813",
                     kdcName: "현대문학"
                 )
+<<<<<<< Updated upstream
             ),
             recentBook: HomeRecentBook(
                 memberBook: HomeMemberBook(
@@ -108,6 +109,27 @@ final class HomeViewModel {
                         publisher: "민음사",
                         coverImageUrl: "https://image.example.com/book3.jpg"
                     )
+=======
+            ],
+            recruitingMeetings: [
+                BookMeeting(
+                    id: 1,
+                    book: Book(id: 3, title: "빛은 얼마나 깊이 스미는가", author: ""),
+                    meetingDate: Date(),
+                    timerMinutes: 60,
+                    maxParticipants: 6,
+                    currentParticipants: 2,
+                    status: .recruiting
+                ),
+                BookMeeting(
+                    id: 2,
+                    book: Book(id: 4, title: "프로젝트 헤일미리", author: ""),
+                    meetingDate: Date(),
+                    timerMinutes: 60,
+                    maxParticipants: 6,
+                    currentParticipants: 2,
+                    status: .recruiting
+>>>>>>> Stashed changes
                 )
             ]
         )
