@@ -66,8 +66,12 @@ private struct AccountSetupLeafDecorationView: View {
 private struct AccountSetupContentView: View {
   let onStart: () -> Void
 
-  @State private var nickname = ""
+  @State private var generatedNickname: GeneratedNickname?
   @State private var isAgreed = false
+
+  private var nickname: String {
+    self.generatedNickname?.text ?? ""
+  }
 
   private var isStartButtonEnabled: Bool {
     !self.nickname.isEmpty && self.isAgreed
@@ -81,7 +85,9 @@ private struct AccountSetupContentView: View {
       AccountSetupNicknameSectionView(
         nickname: self.nickname,
         refreshButtonAction: {
-          self.nickname = "책 먹는 여우"
+          self.generatedNickname = NicknameGenerator.generate(
+            excluding: self.generatedNickname?.text
+          )
         }
       )
         .padding(.top, 36)
@@ -202,9 +208,8 @@ private struct AccountSetupNicknameRefreshButton: View {
   var body: some View {
     Button(action: self.action) {
       Image("refresh")
-        .frame(width: 19.49956, height: 19.50294)
+            .frame(width: 19.99, height: 20)
     }
-    .buttonStyle(.plain)
   }
 }
 
