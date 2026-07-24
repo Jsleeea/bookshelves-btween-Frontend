@@ -106,7 +106,10 @@ struct ChatView: View {
 
       HStack(spacing: 4) {
         HStack(spacing: 4) {
-          Image(systemName: "person.2")
+          Image("people_icon")
+            .resizable()
+            .scaledToFit()
+            .frame(width: 14, height: 12)
           Text("2/4")
             .caption1RegularStyle
         }
@@ -120,7 +123,10 @@ struct ChatView: View {
         }
 
         HStack(spacing: 4) {
-          Image(systemName: "clock")
+          Image("time_icon")
+            .resizable()
+            .scaledToFit()
+            .frame(width: 13, height: 13)
           Text("24:13")
             .caption1RegularStyle
         }
@@ -133,7 +139,10 @@ struct ChatView: View {
             .stroke(.gray200, lineWidth: 1)
         }
 
-        Image(systemName: "bell")
+        Image("siren_icon")
+          .resizable()
+          .scaledToFit()
+          .frame(width: 18, height: 22.6)
           .foregroundStyle(.gray600)
           .padding(.leading, 4)
       }
@@ -146,8 +155,10 @@ struct ChatView: View {
 
   private var noticeBannerView: some View {
     HStack(spacing: 6) {
-      Image(systemName: "sparkles")
-        .foregroundStyle(.gray500)
+      Image("star_icon")
+        .resizable()
+        .scaledToFit()
+        .frame(width: 14, height: 14)
       Text("이 대화방은 24분 후 사라집니다.")
         .caption2RegularStyle
         .foregroundStyle(.gray700)
