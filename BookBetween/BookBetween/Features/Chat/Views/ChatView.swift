@@ -89,6 +89,18 @@ struct ChatView: View {
           .resizable()
           .scaledToFit()
           .frame(width: 30, height: 30)
+          .background(
+            LinearGradient(
+              stops: [
+                Gradient.Stop(color: .white, location: 0.8367),
+                Gradient.Stop(color: .white.opacity(0.2), location: 1.5517)
+              ],
+              startPoint: .bottom,
+              endPoint: .top
+            )
+          )
+          .clipShape(RoundedRectangle(cornerRadius: 20))
+          .shadow(color: Color(hex: "2B2A28").opacity(0.16), radius: 24, x: 0, y: 20)
           .padding(.trailing, 28)
           .offset(y: -(30 + 20))
       }
