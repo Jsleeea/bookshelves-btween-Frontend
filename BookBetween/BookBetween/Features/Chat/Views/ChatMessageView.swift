@@ -25,32 +25,27 @@ struct ChatMessageView: View {
   // MARK: - My Message
 
   private var myMessageView: some View {
-    VStack(alignment: .trailing, spacing: 0) {
-      Text("나")
+    HStack(alignment: .bottom, spacing: 4) {
+      Text(time)
+        .font(.caption2Regular)
+        .tracking(-0.03)
+        .lineSpacing(6)
+        .foregroundStyle(.gray200)
+
+      Text(message)
         .caption1RegularStyle
-        .foregroundStyle(.gray600)
-
-      HStack(alignment: .bottom, spacing: 1.57) {
-        Text(time)
-          .caption2RegularStyle
-          .foregroundStyle(.gray300)
-
-        Text(message)
-          .body2RegularStyle
-          .foregroundStyle(.white)
-          .padding(.horizontal, 12.43)
-          .padding(.vertical, 8.28)
-          .background(.green500)
-          .clipShape(
-            UnevenRoundedRectangle(
-              topLeadingRadius: 18.64,
-              bottomLeadingRadius: 18.64,
-              bottomTrailingRadius: 18.64,
-              topTrailingRadius: 6.21
-            )
+        .foregroundStyle(.white)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 5)
+        .background(.green500)
+        .clipShape(
+          UnevenRoundedRectangle(
+            topLeadingRadius: 18.64,
+            bottomLeadingRadius: 18.64,
+            bottomTrailingRadius: 18.64,
+            topTrailingRadius: 6.21
           )
-          .shadow(color: .black.opacity(0.1), radius: 2, x: -2, y: 2)
-      }
+        )
     }
     .frame(maxWidth: .infinity, alignment: .trailing)
   }
@@ -58,7 +53,7 @@ struct ChatMessageView: View {
   // MARK: - Other Message
 
   private var otherMessageView: some View {
-    HStack(alignment: .top, spacing: 5.01) {
+    HStack(alignment: .top, spacing: 4) {
       Circle()
         .fill(.gray300)
         .frame(width: 34.99, height: 34.99)
@@ -70,21 +65,25 @@ struct ChatMessageView: View {
               .clipShape(Circle())
           }
         }
-        .shadow(color: .black.opacity(0.1), radius: 2, x: -2, y: 2)
+        .shadow1()
 
       VStack(alignment: .leading, spacing: 3) {
         Text(nickname)
-          .caption1SemiBoldStyle
+          .font(.caption1SemiBold)
+          .tracking(-0.036)
+          .lineSpacing(8)
           .foregroundStyle(.gray600)
           .padding(.leading, 4.14)
 
-        HStack(alignment: .bottom, spacing: 1.57){
+        HStack(alignment: .bottom, spacing: 4){
           Text(message)
-            .body2RegularStyle
-            .foregroundStyle(.gray800)
-            .padding(.horizontal, 12.43)
-            .padding(.vertical, 8.28)
-            .frame(minHeight: 38.57)
+            .font(.caption1Regular)
+            .tracking(-0.036)
+            .lineSpacing(8)
+            .foregroundStyle(Color(hex: "1E2B34"))
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .frame(minHeight: 32)
             .background(.white)
             .clipShape(
               UnevenRoundedRectangle(
@@ -101,13 +100,14 @@ struct ChatMessageView: View {
                 bottomTrailingRadius: 18.64,
                 topTrailingRadius: 18.64
               )
-              .stroke(.gray300, lineWidth: 0.5)
+              .stroke(.gray200, lineWidth: 1)
             }
-            .shadow(color: .black.opacity(0.1), radius: 2, x: -2, y: 2)
 
           Text(time)
-            .caption2RegularStyle
-            .foregroundStyle(.gray300)
+            .font(.caption2Regular)
+            .tracking(-0.03)
+            .lineSpacing(6)
+            .foregroundStyle(.gray200)
             .offset(y: 1.57)
         }
       }
