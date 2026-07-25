@@ -18,6 +18,7 @@ struct ChatView: View {
   }
 
   @State private var messageText: String = ""
+  @State private var isQuestionExpanded: Bool = false
   private let currentQuestionCount: Int = 2
   private let maxQuestionCount: Int = 5
 
@@ -57,23 +58,32 @@ struct ChatView: View {
       self.headerView
 
       ScrollView(showsIndicators: false) {
-        VStack(spacing: 0) {
-          self.questionView
+        ZStack(alignment: .top) {
+          VStack(spacing: 0) {
+            self.questionView
 
-          VStack(spacing: 20) {
-            ForEach(self.messages) { message in
-              ChatMessageView(
-                nickname: message.nickname,
-                message: message.message,
-                time: message.time,
-                isMyMessage: message.isMyMessage,
-                profileImageName: message.profileImageName
-              )
+            VStack(spacing: 20) {
+              ForEach(self.messages) { message in
+                ChatMessageView(
+                  nickname: message.nickname,
+                  message: message.message,
+                  time: message.time,
+                  isMyMessage: message.isMyMessage,
+                  profileImageName: message.profileImageName
+                )
+              }
             }
+            .padding(.top, 32)
+            .padding(.horizontal, 30)
+            .padding(.bottom, 16)
           }
-          .padding(.top, 32)
-          .padding(.horizontal, 30)
-          .padding(.bottom, 16)
+
+          // ZStack의 나중 자식이라 항상 채팅 목록 위에 그려짐이 보장됨
+          if self.isQuestionExpanded {
+            self.expandedQuestionView
+              .padding(.horizontal, 20)
+              .padding(.top, 20)
+          }
         }
       }
 
@@ -229,6 +239,7 @@ struct ChatView: View {
         .scaledToFit()
         .frame(width: 14, height: 7)
         .foregroundStyle(.gray600)
+        .rotationEffect(.degrees(self.isQuestionExpanded ? 180 : 0))
         .padding(.vertical, 21)
         .padding(.trailing, 21)
     }
@@ -263,8 +274,62 @@ struct ChatView: View {
         .stroke(.white, lineWidth: 1)
     }
     .shadow1()
+    .opacity(self.isQuestionExpanded ? 0 : 1)
+    .onTapGesture {
+      withAnimation {
+        self.isQuestionExpanded.toggle()
+      }
+    }
     .padding(.horizontal, 20)
     .padding(.top, 20)
+  }
+
+  private var expandedQuestionView: some View {
+    VStack(alignment: .leading, spacing: 0) {
+      HStack(spacing: 0) {
+        Image("star_icon")
+          .resizable()
+          .renderingMode(.template)
+          .scaledToFit()
+          .frame(width: 14, height: 14)
+          .foregroundStyle(.green600)
+          .padding(.trailing, 4)
+        Text("첫번째 질문 보기")
+          .body2SemiBoldStyle
+          .foregroundStyle(.green600)
+        Spacer()
+        Image("open_button")
+          .resizable()
+          .renderingMode(.template)
+          .scaledToFit()
+          .frame(width: 14, height: 7)
+          .foregroundStyle(.gray600)
+          .rotationEffect(.degrees(180))
+          .padding(.vertical, 21)
+          .padding(.trailing, 21)
+      }
+      .padding(.leading, 20)
+      .frame(height: 49)
+
+      // FIXME: 폰트/색상/패딩 정보 확인 필요 - 임시로 body2RegularStyle/gray800 사용
+      Text("작품을 읽으며 가장 오래\n마음에 남은 장면은 무엇이었나요?")
+        .body2RegularStyle
+        .foregroundStyle(.gray800)
+        .padding(.horizontal, 20)
+        .padding(.bottom, 20)
+    }
+    .frame(width: 362)
+    .background(
+      Image("question_background")
+        .resizable()
+    )
+    .fixedSize(horizontal: false, vertical: true)
+    .shadow1()
+    .onTapGesture {
+      withAnimation {
+        self.isQuestionExpanded.toggle()
+      }
+    }
   }
 }
 
