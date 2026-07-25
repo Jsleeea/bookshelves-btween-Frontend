@@ -8,49 +8,74 @@
 import SwiftUI
 
 struct ChatMessageView: View {
+
+  // MARK: - Metric
+
+  private enum Metric {
+    static let rowSpacing: CGFloat = 4
+    static let timeTracking: CGFloat = -0.03
+    static let timeLineSpacing: CGFloat = 6
+    static let timeOffsetY: CGFloat = 1.57
+
+    static let bubbleHorizontalPadding: CGFloat = 10
+    static let bubbleVerticalPadding: CGFloat = 5
+    static let bubbleRoundedCornerRadius: CGFloat = 18.64
+    static let bubbleSharpCornerRadius: CGFloat = 6.21
+
+    static let profileImageSize: CGFloat = 34.99
+    static let contentSpacing: CGFloat = 3
+    static let captionTracking: CGFloat = -0.036
+    static let captionLineSpacing: CGFloat = 8
+    static let nicknameLeadingPadding: CGFloat = 4.14
+
+    static let bubbleMinHeight: CGFloat = 32
+    static let otherBubbleBorderWidth: CGFloat = 1
+    static let otherBubbleTextColorHex: String = "1E2B34"
+  }
+
+  // MARK: - Properties
+
   let nickname: String
   let message: String
   let time: String
   let isMyMessage: Bool
   let profileImageName: String?
 
+  // MARK: - Body
+
   var body: some View {
-    if isMyMessage {
-      myMessageView
+    if self.isMyMessage {
+      self.myMessageView
     } else {
-      otherMessageView
+      self.otherMessageView
     }
   }
 
   // MARK: - My Message
 
   private var myMessageView: some View {
-    VStack(alignment: .trailing, spacing: 0) {
-      Text("나")
+    HStack(alignment: .bottom, spacing: Metric.rowSpacing) {
+      Text(self.time)
+        .font(.caption2Regular)
+        .tracking(Metric.timeTracking)
+        .lineSpacing(Metric.timeLineSpacing)
+        .foregroundStyle(.gray200)
+
+      Text(self.message)
         .caption1RegularStyle
-        .foregroundStyle(.gray600)
-
-      HStack(alignment: .bottom, spacing: 1.57) {
-        Text(time)
-          .caption2RegularStyle
-          .foregroundStyle(.gray300)
-
-        Text(message)
-          .body2RegularStyle
-          .foregroundStyle(.white)
-          .padding(.horizontal, 12.43)
-          .padding(.vertical, 8.28)
-          .background(.green500)
-          .clipShape(
-            UnevenRoundedRectangle(
-              topLeadingRadius: 18.64,
-              bottomLeadingRadius: 18.64,
-              bottomTrailingRadius: 18.64,
-              topTrailingRadius: 6.21
-            )
+        .foregroundStyle(.white)
+        .padding(.horizontal, Metric.bubbleHorizontalPadding)
+        .padding(.vertical, Metric.bubbleVerticalPadding)
+        .frame(minHeight: Metric.bubbleMinHeight)
+        .background(.green500)
+        .clipShape(
+          UnevenRoundedRectangle(
+            topLeadingRadius: Metric.bubbleRoundedCornerRadius,
+            bottomLeadingRadius: Metric.bubbleRoundedCornerRadius,
+            bottomTrailingRadius: Metric.bubbleRoundedCornerRadius,
+            topTrailingRadius: Metric.bubbleSharpCornerRadius
           )
-          .shadow(color: .black.opacity(0.1), radius: 2, x: -2, y: 2)
-      }
+        )
     }
     .frame(maxWidth: .infinity, alignment: .trailing)
   }
@@ -58,57 +83,62 @@ struct ChatMessageView: View {
   // MARK: - Other Message
 
   private var otherMessageView: some View {
-    HStack(alignment: .top, spacing: 5.01) {
+    HStack(alignment: .top, spacing: Metric.rowSpacing) {
       Circle()
         .fill(.gray300)
-        .frame(width: 34.99, height: 34.99)
+        .frame(width: Metric.profileImageSize, height: Metric.profileImageSize)
         .overlay {
-          if let imageName = profileImageName {
+          if let imageName = self.profileImageName {
             Image(imageName)
               .resizable()
               .scaledToFill()
               .clipShape(Circle())
           }
         }
-        .shadow(color: .black.opacity(0.1), radius: 2, x: -2, y: 2)
+        .shadow1()
 
-      VStack(alignment: .leading, spacing: 3) {
-        Text(nickname)
-          .caption1SemiBoldStyle
+      VStack(alignment: .leading, spacing: Metric.contentSpacing) {
+        Text(self.nickname)
+          .font(.caption1SemiBold)
+          .tracking(Metric.captionTracking)
+          .lineSpacing(Metric.captionLineSpacing)
           .foregroundStyle(.gray600)
-          .padding(.leading, 4.14)
+          .padding(.leading, Metric.nicknameLeadingPadding)
 
-        HStack(alignment: .bottom, spacing: 1.57){
-          Text(message)
-            .body2RegularStyle
-            .foregroundStyle(.gray800)
-            .padding(.horizontal, 12.43)
-            .padding(.vertical, 8.28)
-            .frame(minHeight: 38.57)
+        HStack(alignment: .bottom, spacing: Metric.rowSpacing) {
+          Text(self.message)
+            .font(.caption1Regular)
+            .tracking(Metric.captionTracking)
+            .lineSpacing(Metric.captionLineSpacing)
+            .foregroundStyle(Color(hex: Metric.otherBubbleTextColorHex))
+            .padding(.horizontal, Metric.bubbleHorizontalPadding)
+            .padding(.vertical, Metric.bubbleVerticalPadding)
+            .frame(minHeight: Metric.bubbleMinHeight)
             .background(.white)
             .clipShape(
               UnevenRoundedRectangle(
-                topLeadingRadius: 6.21,
-                bottomLeadingRadius: 18.64,
-                bottomTrailingRadius: 18.64,
-                topTrailingRadius: 18.64
+                topLeadingRadius: Metric.bubbleSharpCornerRadius,
+                bottomLeadingRadius: Metric.bubbleRoundedCornerRadius,
+                bottomTrailingRadius: Metric.bubbleRoundedCornerRadius,
+                topTrailingRadius: Metric.bubbleRoundedCornerRadius
               )
             )
             .overlay {
               UnevenRoundedRectangle(
-                topLeadingRadius: 6.21,
-                bottomLeadingRadius: 18.64,
-                bottomTrailingRadius: 18.64,
-                topTrailingRadius: 18.64
+                topLeadingRadius: Metric.bubbleSharpCornerRadius,
+                bottomLeadingRadius: Metric.bubbleRoundedCornerRadius,
+                bottomTrailingRadius: Metric.bubbleRoundedCornerRadius,
+                topTrailingRadius: Metric.bubbleRoundedCornerRadius
               )
-              .stroke(.gray300, lineWidth: 0.5)
+              .stroke(.gray200, lineWidth: Metric.otherBubbleBorderWidth)
             }
-            .shadow(color: .black.opacity(0.1), radius: 2, x: -2, y: 2)
 
-          Text(time)
-            .caption2RegularStyle
-            .foregroundStyle(.gray300)
-            .offset(y: 1.57)
+          Text(self.time)
+            .font(.caption2Regular)
+            .tracking(Metric.timeTracking)
+            .lineSpacing(Metric.timeLineSpacing)
+            .foregroundStyle(.gray200)
+            .offset(y: Metric.timeOffsetY)
         }
       }
     }
