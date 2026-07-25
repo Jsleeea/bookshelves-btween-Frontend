@@ -17,6 +17,10 @@ struct ChatView: View {
     let profileImageName: String?
   }
 
+  @State private var messageText: String = ""
+  private let currentQuestionCount: Int = 2
+  private let maxQuestionCount: Int = 5
+
   private let messages: [ChatMessage] = [
     ChatMessage(
       nickname: "조용한 두루미",
@@ -50,15 +54,14 @@ struct ChatView: View {
 
   var body: some View {
     VStack(spacing: 0) {
-      headerView
+      self.headerView
 
       ScrollView(showsIndicators: false) {
         VStack(spacing: 0) {
-          noticeBannerView
-          questionView
+          self.questionView
 
-          VStack(spacing: 44) {
-            ForEach(messages) { message in
+          VStack(spacing: 20) {
+            ForEach(self.messages) { message in
               ChatMessageView(
                 nickname: message.nickname,
                 message: message.message,
@@ -68,11 +71,30 @@ struct ChatView: View {
               )
             }
           }
-          .padding(.top, 40)
+          .padding(.top, 32)
           .padding(.horizontal, 30)
           .padding(.bottom, 16)
         }
       }
+
+      ChatBottomView(
+        messageText: self.$messageText,
+        currentQuestionCount: self.currentQuestionCount,
+        maxQuestionCount: self.maxQuestionCount,
+        onRequestQuestionTap: {},
+        onSendTap: {}
+      )
+      .overlay(alignment: .topTrailing) {
+        Image("down_button")
+          .resizable()
+          .scaledToFit()
+          .frame(width: 30, height: 30)
+          .padding(.trailing, 28)
+          .offset(y: -(30 + 20))
+      }
+      .padding(.horizontal, 20)
+      .padding(.top, 44)
+      .padding(.bottom, 12)
     }
     .background(
       LinearGradient(
@@ -90,7 +112,9 @@ struct ChatView: View {
     HStack {
       VStack(alignment: .leading, spacing: 2) {
         Text("익명 독서 대화방")
-          .body2SemiBoldStyle
+          .font(.body2SemiBold)
+          .tracking(-0.042)
+          .lineSpacing(6)
           .foregroundStyle(.gray600)
         HStack(spacing: 0) {
           Text("싯다르타 · ")
@@ -108,103 +132,127 @@ struct ChatView: View {
         HStack(spacing: 4) {
           Image("people_icon")
             .resizable()
+            .renderingMode(.template)
             .scaledToFit()
-            .frame(width: 14, height: 12)
+            .frame(width: 13, height: 12)
           Text("2/4")
-            .caption1RegularStyle
+            .font(.caption1SemiBold)
+            .tracking(-0.036)
+            .lineSpacing(8)
         }
         .foregroundStyle(.gray600)
         .frame(width: 72, height: 24)
-        .background(.white)
+        .background(
+          // linear-gradient(0deg, #FFF 83.67%, rgba(255, 255, 255, 0.20) 155.17%)
+          LinearGradient(
+            gradient: Gradient(stops: [
+              .init(color: .white, location: 0.8367),
+              .init(color: .white.opacity(0.2), location: 1.5517)
+            ]),
+            startPoint: .bottom,
+            endPoint: .top
+          )
+        )
         .clipShape(Capsule())
-        .overlay {
-          Capsule()
-            .stroke(.gray200, lineWidth: 1)
-        }
 
         HStack(spacing: 4) {
           Image("time_icon")
             .resizable()
+            .renderingMode(.template)
             .scaledToFit()
-            .frame(width: 13, height: 13)
+            .frame(width: 12, height: 12)
           Text("24:13")
-            .caption1RegularStyle
+            .font(.caption1SemiBold)
+            .tracking(-0.036)
+            .lineSpacing(8)
         }
         .foregroundStyle(.gray600)
         .frame(width: 72, height: 24)
-        .background(.white)
+        .background(
+          // linear-gradient(0deg, #FFF 83.67%, rgba(255, 255, 255, 0.20) 155.17%)
+          LinearGradient(
+            gradient: Gradient(stops: [
+              .init(color: .white, location: 0.8367),
+              .init(color: .white.opacity(0.2), location: 1.5517)
+            ]),
+            startPoint: .bottom,
+            endPoint: .top
+          )
+        )
         .clipShape(Capsule())
-        .overlay {
-          Capsule()
-            .stroke(.gray200, lineWidth: 1)
-        }
 
         Image("siren_icon")
           .resizable()
+          .renderingMode(.template)
           .scaledToFit()
-          .frame(width: 18, height: 22.6)
-          .foregroundStyle(.gray600)
+          .frame(width: 18, height: 22)
+          .foregroundStyle(.gray500)
+          .shadow(color: .black.opacity(0.25), radius: 4, x: 0, y: 4)
           .padding(.leading, 4)
       }
     }
     .padding(.horizontal, 30)
-    .padding(.vertical, 12)
-  }
-
-  // MARK: - Notice Banner
-
-  private var noticeBannerView: some View {
-    HStack(spacing: 6) {
-      Image("star_icon")
-        .resizable()
-        .scaledToFit()
-        .frame(width: 14, height: 14)
-      Text("이 대화방은 24분 후 사라집니다.")
-        .caption2RegularStyle
-        .foregroundStyle(.gray700)
-    }
-    .frame(maxWidth: .infinity)
-    .padding(.vertical, 7)
-    .background(.white)
-    .clipShape(RoundedRectangle(cornerRadius: 20))
-    .shadow(color: .black.opacity(0.1), radius: 2, x: -2, y: 2)
-    .padding(.horizontal, 37)
-    .padding(.top, 22)
+    .padding(.top, 8.5)
+    .padding(.bottom, 12)
   }
 
   // MARK: - Question
 
   private var questionView: some View {
-    HStack {
-      Image(systemName: "leaf.fill")
-        .foregroundStyle(.green700)
+    HStack(spacing: 0) {
+      Image("star_icon")
+        .resizable()
+        .renderingMode(.template)
+        .scaledToFit()
+        .frame(width: 14, height: 14)
+        .foregroundStyle(.green600)
+        .padding(.trailing, 4)
       Text("첫번째 질문 보기")
         .body2SemiBoldStyle
         .foregroundStyle(.green600)
       Spacer()
-      Image(systemName: "chevron.down")
-        .foregroundStyle(.green700)
+      Image("open_button")
+        .resizable()
+        .renderingMode(.template)
+        .scaledToFit()
+        .frame(width: 14, height: 7)
+        .foregroundStyle(.gray600)
+        .padding(.vertical, 21)
+        .padding(.trailing, 21)
     }
-    .padding(.horizontal, 20)
-    .padding(.vertical, 18)
+    .padding(.leading, 20)
+    .frame(height: 49)
     .background(
-      LinearGradient(
-        stops: [
-          Gradient.Stop(color: Color(hex: "CCE1D2"), location: 0),
-          Gradient.Stop(color: Color(hex: "CCE1D2").opacity(0.4), location: 1.0)
-        ],
-        startPoint: .top,
-        endPoint: .bottom
-      )
+      ZStack {
+        // 선형 100%: #FFFFFF 100% 0% -> #FFFFFF 40% 100%
+        LinearGradient(
+          stops: [
+            Gradient.Stop(color: .white, location: 0),
+            Gradient.Stop(color: .white.opacity(0.4), location: 1.0)
+          ],
+          startPoint: .top,
+          endPoint: .bottom
+        )
+        // 선형 80%: #CCE1D2 100% 0% -> #CCE1D2 40% 100%
+        LinearGradient(
+          stops: [
+            Gradient.Stop(color: Color(hex: "CCE1D2"), location: 0),
+            Gradient.Stop(color: Color(hex: "CCE1D2").opacity(0.4), location: 1.0)
+          ],
+          startPoint: .top,
+          endPoint: .bottom
+        )
+        .opacity(0.8)
+      }
     )
     .clipShape(RoundedRectangle(cornerRadius: 12))
     .overlay {
       RoundedRectangle(cornerRadius: 12)
         .stroke(.white, lineWidth: 1)
     }
-    .shadow(color: .black.opacity(0.1), radius: 4, x: -4, y: 4)
+    .shadow1()
     .padding(.horizontal, 20)
-    .padding(.top, 17.29)
+    .padding(.top, 20)
   }
 }
 
