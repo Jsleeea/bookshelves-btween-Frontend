@@ -14,13 +14,16 @@ struct AppRootView: View {
     @State private var launchPhase: AppLaunchPhase = .splash
     @State private var loginViewModel: LoginViewModel
     private let memberService: MemberServiceProtocol?
+    private let bookService: BookServiceProtocol
 
     init(
         loginViewModel: LoginViewModel,
-        memberService: MemberServiceProtocol? = nil
+        memberService: MemberServiceProtocol? = nil,
+        bookService: BookServiceProtocol = BookService.stubbed()
     ) {
         _loginViewModel = State(initialValue: loginViewModel)
         self.memberService = memberService
+        self.bookService = bookService
     }
 
     var body: some View {
@@ -70,6 +73,7 @@ struct AppRootView: View {
         case .success(.main):
             MainTabView(
                 memberService: memberService,
+                bookService: bookService,
                 onLogout: {
                     try await loginViewModel.logout()
                 }

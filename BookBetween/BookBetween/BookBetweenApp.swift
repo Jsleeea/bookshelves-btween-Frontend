@@ -13,6 +13,7 @@ import KakaoSDKCommon
 struct BookBetweenApp: App {
     private let loginViewModel: LoginViewModel
     private let memberService: MemberServiceProtocol
+    private let bookService: BookServiceProtocol
 
     init() {
         guard let kakaoNativeAppKey = Bundle.main.object(
@@ -60,13 +61,17 @@ struct BookBetweenApp: App {
         self.memberService = MemberService(
             configuration: authenticatedNetworkConfiguration
         )
+        self.bookService = BookService(
+            configuration: authenticatedNetworkConfiguration
+        )
     }
 
     var body: some Scene {
         WindowGroup {
             AppRootView(
                 loginViewModel: loginViewModel,
-                memberService: memberService
+                memberService: memberService,
+                bookService: bookService
             )
                 .onOpenURL { url in
                     if AuthApi.isKakaoTalkLoginUrl(url) {
