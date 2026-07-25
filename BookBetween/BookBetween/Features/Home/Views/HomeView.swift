@@ -148,15 +148,25 @@ struct HomeView: View {
                 }
                 .padding(.vertical, 18)
                 .padding(.leading, 19)
+
                 Spacer()
-                
-                BookCoverImage(book: recommendation,
-                               placeholderImageName: "book_cover_recommend"
+
+                BookCoverImage(
+                    book: recommendation,
+                    placeholderImageName: "book_cover_recommend"
                 )
-                .frame(width:87, height: 132)
+                .frame(width: 87, height: 132)
                 .frame(maxHeight: .infinity, alignment: .bottom)
                 .padding(.trailing, 27)
                 .padding(.bottom, 14)
+            }
+            .background(alignment: .bottomTrailing) {
+                Image("home_recommendation_leaf")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 64, height: 58)
+                    .allowsHitTesting(false)
+                    .offset(x: -100, y: -30)
             }
         }
         .frame(height: 160)
@@ -190,7 +200,6 @@ struct HomeView: View {
                 }
             }
         }
-        .padding(.horizontal, 9)
         .padding(.top, 20)
     }
 }
