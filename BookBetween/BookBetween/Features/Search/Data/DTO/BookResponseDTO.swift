@@ -21,6 +21,47 @@ struct BookSearchItemDTO: Decodable {
     let description: String?
     let coverImageUrl: String?
     let saveable: Bool
+
+    private enum CodingKeys: String, CodingKey {
+        case isbn
+        case title
+        case author
+        case publisher
+        case publishedDate
+        case description
+        case coverImageUrl
+        case saveable
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        isbn = try container.decodeIfPresent(String.self, forKey: .isbn)
+        title = try container.decodeIfPresent(String.self, forKey: .title)
+            ?? "제목 정보 없음"
+        author = try container.decodeIfPresent(String.self, forKey: .author)
+            ?? "저자 미상"
+        publisher = try container.decodeIfPresent(
+            String.self,
+            forKey: .publisher
+        )
+        publishedDate = try container.decodeIfPresent(
+            String.self,
+            forKey: .publishedDate
+        )
+        description = try container.decodeIfPresent(
+            String.self,
+            forKey: .description
+        )
+        coverImageUrl = try container.decodeIfPresent(
+            String.self,
+            forKey: .coverImageUrl
+        )
+        saveable = try container.decodeIfPresent(
+            Bool.self,
+            forKey: .saveable
+        ) ?? false
+    }
 }
 
 struct BookDetailResultDTO: Decodable {
@@ -113,7 +154,9 @@ extension BookDetailResultDTO {
 extension RecentSearchResultDTO {
     func toDomain() throws -> [RecentSearchItem] {
         try recentSearches.map { item in
-            guard let searchedAt = ISO8601DateFormatter().date(from: item.searchedAt) else {
+            guard let searchedAt = RecentSearchDateParser.date(
+                from: item.searchedAt
+            ) else {
                 throw BookDTOError.invalidDate(item.searchedAt)
             }
 
@@ -122,6 +165,24 @@ extension RecentSearchResultDTO {
                 searchedAt: searchedAt
             )
         }
+    }
+}
+
+private enum RecentSearchDateParser {
+    private static let fractionalSecondsFormatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [
+            .withInternetDateTime,
+            .withFractionalSeconds
+        ]
+        return formatter
+    }()
+
+    private static let standardFormatter = ISO8601DateFormatter()
+
+    static func date(from value: String) -> Date? {
+        fractionalSecondsFormatter.date(from: value)
+            ?? standardFormatter.date(from: value)
     }
 }
 

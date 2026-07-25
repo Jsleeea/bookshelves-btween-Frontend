@@ -13,13 +13,16 @@ struct MainTabView: View {
     @State private var homeNavigationPath = NavigationPath()
 
     private let memberService: MemberServiceProtocol?
+    private let bookService: BookServiceProtocol
     private let onLogout: () async throws -> Void
 
     init(
         memberService: MemberServiceProtocol? = nil,
+        bookService: BookServiceProtocol = BookService.stubbed(),
         onLogout: @escaping () async throws -> Void = {}
     ) {
         self.memberService = memberService
+        self.bookService = bookService
         self.onLogout = onLogout
     }
 
@@ -38,7 +41,13 @@ struct MainTabView: View {
                             }
                     }
                 case .search:
-                    NavigationStack { SearchView() }
+                    NavigationStack {
+                        SearchView(
+                            viewModel: SearchViewModel(
+                                service: bookService
+                            )
+                        )
+                    }
                 case .bookClub:
                     NavigationStack { BookClubView() }
                 case .myLibrary:
