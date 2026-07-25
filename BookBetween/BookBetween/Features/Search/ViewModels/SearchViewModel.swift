@@ -37,7 +37,10 @@ final class SearchViewModel {
         do {
             recentKeywords = try await service.fetchRecentSearches().map(\.keyword)
         } catch {
-            errorMessage = error.localizedDescription
+            recentKeywords = []
+            #if DEBUG
+            print("[Recent Search] 최근 검색어 로딩 실패: \(error)")
+            #endif
         }
     }
 
@@ -83,6 +86,11 @@ final class SearchViewModel {
             !submittedQuery.isEmpty
         else { return }
 
+        guard currentPage < 50 else {
+            hasNext = false
+            return
+        }
+
         isLoadingNextPage = true
         errorMessage = nil
         defer { isLoadingNextPage = false }
@@ -97,6 +105,18 @@ final class SearchViewModel {
             searchResults.append(contentsOf: result.books)
             currentPage = result.page
             hasNext = result.hasNext
+        } catch let error as NetworkError {
+            switch error {
+            case .decoding, .emptyResult:
+                hasNext = false
+                #if DEBUG
+                print(
+                    "[Book Search] 마지막 페이지 응답 처리 중단: \(error)"
+                )
+                #endif
+            case .transport, .server:
+                errorMessage = error.localizedDescription
+            }
         } catch {
             errorMessage = error.localizedDescription
         }

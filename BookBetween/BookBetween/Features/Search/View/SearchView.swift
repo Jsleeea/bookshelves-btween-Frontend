@@ -148,7 +148,7 @@ struct SearchView: View {
     }
     
     private func SearchResultSectionView(idleHeight: CGFloat) -> some View {
-        VStack(spacing: 12) {
+        LazyVStack(spacing: 12) {
             if viewModel.isSearching {
                 ProgressView()
                     .padding(.top, 24)
