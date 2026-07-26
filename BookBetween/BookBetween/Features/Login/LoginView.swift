@@ -77,7 +77,7 @@ private struct LoginBackgroundView: View {
         center: UnitPoint(x: 0.5, y: 0.47)
       )
       .frame(width: 373, height: 376)
-      .offset(y: -55)
+      .position(x: 197.5, y: 352)
     }
   }
 }
@@ -88,13 +88,14 @@ private struct LoginContentView: View {
 
   var body: some View {
     VStack(spacing: 0) {
-      Spacer()
+      
 
       LoginLogoView()
+        .padding(.top, 209)
         .padding(.bottom, 24)
 
       LoginTitleSectionView()
-        .padding(.bottom, 20)
+        .padding(.bottom, 32)
 
       LoginSocialButtonSectionView(
         isLoading: isLoading,
@@ -113,7 +114,7 @@ private struct LoginLogoView: View {
     Image("logo")
       .resizable()
       .scaledToFit()
-      .frame(width: 152, height: 131)
+      .frame(width: 266, height: 161)
   }
 }
 
@@ -122,7 +123,7 @@ private struct LoginTitleSectionView: View {
     VStack(spacing: 10) {
         // 폰트 추가 후 수정 필요
       Text("책장을 넘어서,\n한 권으로 시작하는 모임")
-        .head1Style
+        .pointText1Style
         .multilineTextAlignment(.center)
         .foregroundStyle(Color.green900)
 
@@ -145,6 +146,8 @@ private struct LoginSocialButtonSectionView: View {
       )
 
       GoogleLoginButton()
+
+      AppleLoginButton()
     }
   }
 }
@@ -163,18 +166,17 @@ private struct KakaoLoginButton: View {
           Image("kakao")
             .resizable()
             .scaledToFit()
-            .frame(width: 17.99993, height: 16.8)
+            .frame(width: 18, height: 18)
 
           Text("카카오 로그인")
-            // 폰트 추가 후 수정 필요
-            .body1SemiBoldStyle
+            .font(.system(size: 15, weight: .semibold))
             .foregroundStyle(.black)
         }
       }
       .frame(maxWidth: .infinity)
       .frame(height: 45)
       .background(Color(red: 1.0, green: 0.9, blue: 0.0))
-      .clipShape(RoundedRectangle(cornerRadius: 6))
+      .clipShape(RoundedRectangle(cornerRadius: 8))
     }
     .disabled(isLoading)
   }
@@ -188,21 +190,42 @@ private struct GoogleLoginButton: View {
         Image("google")
           .resizable()
           .scaledToFit()
-          .frame(width: 19.5732, height: 20)
+          .frame(width: 19.5, height: 20)
 
         Text("Google 계정으로 로그인")
-          // 폰트 추가 후 수정 필요
-          .body1SemiBoldStyle
+          .font(
+            Font.custom("Roboto", size: 14)
+              .weight(.medium)
+          )
+          .multilineTextAlignment(.center)
           .foregroundStyle(.black)
       }
       .frame(maxWidth: .infinity)
-      .frame(height: 43.97727)
+      .frame(height: 45)
       .background(.white)
-      .overlay {
-        RoundedRectangle(cornerRadius: 6)
-          .stroke(Color.gray800, lineWidth: 1)
+      .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+  }
+}
+
+private struct AppleLoginButton: View {
+  var body: some View {
+    Button {
+    } label: {
+      HStack(spacing: 8) {
+        Image("apple")
+          .resizable()
+          .scaledToFit()
+          .frame(width: 13, height: 14)
+
+        Text("Apple로 로그인")
+          .font(.system(size: 16, weight: .semibold))
+          .foregroundStyle(.white)
       }
-      .clipShape(RoundedRectangle(cornerRadius: 6))
+      .frame(maxWidth: .infinity)
+      .frame(height: 45)
+      .background(.black)
+      .clipShape(RoundedRectangle(cornerRadius: 8))
     }
   }
 }
