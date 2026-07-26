@@ -58,11 +58,14 @@ struct MyLibraryBookCardView: View {
 	// MARK: - Views
 
 	private var bookCover: some View {
-		BookCoverImage(book: record.book, placeholderImageName: "book_cover_meeting_1")
+		BookCoverImage(book: record.book, placeholderImageName: "book_cover_mock")
 			.aspectRatio(29.0/44.0, contentMode: .fit)
 			.frame(height: 130)
-			.clipped()
-			.shadow(color: .black.opacity(0.1), radius: 4, x: -4, y: 4)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .overlay {
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.gray200, lineWidth: 0.5)
+            }
 	}
 
 	private var bookInfo: some View {

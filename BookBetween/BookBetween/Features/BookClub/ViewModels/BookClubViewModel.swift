@@ -1,8 +1,3 @@
-//
-//  BookClubViewModel.swift
-//  BookBetween
-//
-
 import Foundation
 import Observation
 
@@ -19,13 +14,13 @@ enum BookClubTab: CaseIterable {
 		}
 	}
 
-	var horizontalPadding: CGFloat {
-		switch self {
+    var horizontalPadding: CGFloat {
+        switch self {
         case .myMeetings: return 10
-		case .createdMeetings: return 10
-		case .search: return 10
-		}
-	}
+        case .createdMeetings: return 10
+        case .search: return 10
+        }
+    }
 
 	var verticalPadding: CGFloat {
 		switch self {
@@ -51,20 +46,51 @@ final class BookClubViewModel {
 	var selectedMonth: Int = 0
 
 	var filteredParticipatingMeetings: [BookMeeting] {
-		participatingMeetings.filter { meeting in
-			let components = Calendar.current.dateComponents([.year, .month], from: meeting.meetingDate)
-			let yearMatch = selectedYear == 0 || components.year == selectedYear
-			let monthMatch = selectedMonth == 0 || components.month == selectedMonth
-			return yearMatch && monthMatch
+		let meetings: [BookMeeting]
+		if meetingService == nil {
+			meetings = participatingMeetings.filter { meeting in
+				let components = Calendar.current.dateComponents([.year, .month], from: meeting.meetingDate)
+				let yearMatch = selectedYear == 0 || components.year == selectedYear
+				let monthMatch = selectedMonth == 0 || components.month == selectedMonth
+				return yearMatch && monthMatch
+			}
+		} else {
+			meetings = participatingMeetings
 		}
+		return sortedMeetings(meetings)
 	}
 
 	var filteredCreatedMeetings: [BookMeeting] {
-		createdMeetings.filter { meeting in
-			let components = Calendar.current.dateComponents([.year, .month], from: meeting.meetingDate)
-			let yearMatch = selectedYear == 0 || components.year == selectedYear
-			let monthMatch = selectedMonth == 0 || components.month == selectedMonth
-			return yearMatch && monthMatch
+		let meetings: [BookMeeting]
+		if meetingService == nil {
+			meetings = createdMeetings.filter { meeting in
+				let components = Calendar.current.dateComponents([.year, .month], from: meeting.meetingDate)
+				let yearMatch = selectedYear == 0 || components.year == selectedYear
+				let monthMatch = selectedMonth == 0 || components.month == selectedMonth
+				return yearMatch && monthMatch
+			}
+		} else {
+			meetings = createdMeetings
+		}
+		return sortedMeetings(meetings)
+	}
+
+	private func sortedMeetings(_ meetings: [BookMeeting]) -> [BookMeeting] {
+		let statusPriority: (BookMeetingStatus) -> Int = {
+			switch $0 {
+			case .inProgress: return 0
+			case .upcoming:   return 1
+			case .recruiting: return 2
+			case .completed:  return 3
+			}
+		}
+		return meetings.sorted { a, b in
+			let pa = statusPriority(a.status), pb = statusPriority(b.status)
+			if pa != pb { return pa < pb }
+			// 참여완료는 최근 날짜가 위, 나머지는 가까운 미래가 위
+			return a.status == .completed
+				? a.meetingDate > b.meetingDate
+				: a.meetingDate < b.meetingDate
 		}
 	}
 
@@ -76,8 +102,14 @@ final class BookClubViewModel {
 
 	var recruitingMeetings: [BookMeeting] = []
 
+	var apiSearchResults: [BookMeeting] = []
+	var isSearchLoading = false
+
 	var meetingSearchResults: [BookMeeting] {
 		guard !searchText.isEmpty else { return [] }
+		if meetingService != nil {
+			return apiSearchResults
+		}
 		return recruitingMeetings.filter {
 			$0.book.title.localizedCaseInsensitiveContains(searchText)
 		}
@@ -139,6 +171,15 @@ final class BookClubViewModel {
 				status: .completed
 			),
 			BookMeeting(
+				id: 9,
+				book: Book(id: 304, title: "싯다르타", author: "헤르만 헤세", description: "인도를 배경으로 한 청년 싯다르타의 깨달음을 향한 정신적 여정을 그린 소설."),
+				meetingDate: Date(),
+				timerMinutes: 24,
+				maxParticipants: 4,
+				currentParticipants: 3,
+				status: .inProgress
+			),
+			BookMeeting(
 				id: 5,
 				book: Book(id: 302, title: "혼모노", author: "성해나"),
 				readingStartDate: date2,
@@ -186,5 +227,43 @@ final class BookClubViewModel {
 				status: .upcoming
 			)
 		]
+	}
+
+	// MARK: - Actions
+
+	func fetchMyMeetings() async {
+		guard let meetingService else { return }
+		let year: Int? = selectedYear > 0 ? selectedYear : nil
+		let month: Int? = (selectedYear > 0 && selectedMonth > 0) ? selectedMonth : nil
+
+		async let participatingResult = meetingService.fetchMyMeetings(isLeader: false, year: year, month: month, page: 1, size: 50)
+		async let createdResult = meetingService.fetchMyMeetings(isLeader: true, year: year, month: month, page: 1, size: 50)
+
+		if let meetings = try? await participatingResult { participatingMeetings = meetings }
+		if let meetings = try? await createdResult { createdMeetings = meetings }
+	}
+
+	func searchMeetings(query: String) async {
+		guard let meetingService, !query.isEmpty else {
+			apiSearchResults = []
+			return
+		}
+		isSearchLoading = true
+		defer { isSearchLoading = false }
+		do {
+			apiSearchResults = try await meetingService.searchMeetings(name: query, page: 1, size: 20)
+		} catch {
+			apiSearchResults = []
+		}
+	}
+
+	func participateMeeting(meetingId: Int) async -> Bool {
+		guard let meetingService else { return false }
+		do {
+			_ = try await meetingService.participateMeeting(meetingId: meetingId)
+			return true
+		} catch {
+			return false
+		}
 	}
 }

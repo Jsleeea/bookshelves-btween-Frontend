@@ -47,6 +47,15 @@ struct BookClubView: View {
 		}
 		.background(Color.beige100)
 		.toolbar(.hidden, for: .navigationBar)
+		.task {
+			await viewModel.fetchMyMeetings()
+		}
+		.onChange(of: viewModel.selectedYear) {
+			Task { await viewModel.fetchMyMeetings() }
+		}
+		.onChange(of: viewModel.selectedMonth) {
+			Task { await viewModel.fetchMyMeetings() }
+		}
 	}
 
 	// MARK: - Tab Selector
@@ -113,6 +122,9 @@ struct BookClubView: View {
 		}
 		.onChange(of: viewModel.searchText) {
 			currentMeetingPage = 0
+			Task {
+				await viewModel.searchMeetings(query: viewModel.searchText)
+			}
 		}
 	}
 
@@ -162,9 +174,8 @@ struct BookClubView: View {
 				.font(.body1Regular)
                 .foregroundStyle(Color.gray500)
 		}
+        .frame(height: 46)
 		.padding(.horizontal, 11)
-		.padding(.top, 12)
-        .padding(.bottom, 14)
 		.background(.white)
 		.clipShape(RoundedRectangle(cornerRadius: 10))
 		.overlay {
@@ -279,7 +290,7 @@ struct BookClubView: View {
 					HStack(spacing: 20) {
 						ForEach(viewModel.bookSearchResults, id: \.id) { book in
 							NavigationLink {
-								BookMeetingCreateView(book: book)
+								BookMeetingCreateView(book: book, service: viewModel.meetingService)
 							} label: {
 								BookSearchCardView(book: book)
 							}

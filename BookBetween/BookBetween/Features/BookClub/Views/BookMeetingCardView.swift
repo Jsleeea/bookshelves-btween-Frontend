@@ -51,7 +51,7 @@ struct BookMeetingCardView: View {
 		.clipShape(RoundedRectangle(cornerRadius: 12))
 		.overlay {
 			RoundedRectangle(cornerRadius: 12)
-				.stroke(Color.gray300, lineWidth: 0.5)
+				.stroke(Color.gray200, lineWidth: 0.5)
 		}
         .padding(.horizontal, 19)
         .frame(height: 110)
@@ -60,10 +60,10 @@ struct BookMeetingCardView: View {
     // MARK: - bookCover
     
 	private var bookCover: some View {
-		BookCoverImage(book: meeting.book, placeholderImageName: "book_cover_02")
-			.aspectRatio(29.0/44.0, contentMode: .fit)
-			.frame(height: 86)
-			.clipped()
+		BookCoverImage(book: meeting.book, placeholderImageName: "book_cover_mock")
+            .aspectRatio(29.0/44.0, contentMode: .fit)
+            .frame(height: 86)
+			.clipShape(RoundedRectangle(cornerRadius: 8))
             .overlay {
                 RoundedRectangle(cornerRadius: 8)
                     .stroke(Color.gray200, lineWidth: 0.5)
@@ -84,17 +84,19 @@ struct BookMeetingCardView: View {
 
 	private var badgeForegroundColor: Color {
 		switch meeting.status {
-        case .recruiting: return Color.blue600
-		case .upcoming:   return Color.green800
-		case .completed:  return Color.gray600
+        case .recruiting:  return Color.blue600
+		case .upcoming:    return Color.green800
+        case .inProgress:  return Color.red01
+		case .completed:   return Color.gray600
 		}
 	}
 
 	private var badgeBackgroundColor: Color {
 		switch meeting.status {
-        case .recruiting: return Color.pointColor01
-		case .upcoming:   return Color.green50
-		case .completed:  return Color.gray200
+        case .recruiting:  return Color.blue01
+		case .upcoming:    return Color.green50
+        case .inProgress:  return Color.red50
+		case .completed:   return Color.gray200
 		}
 	}
 
@@ -119,13 +121,13 @@ struct BookMeetingCardView: View {
 			Image("icon_group")
                 .resizable()
                 .scaledToFill()
-                .frame(width: 13, height: 12)
+                .frame(width: 11, height: 11)
                 .clipped()
                 .padding(.trailing, 4)
             
 			Text("\(meeting.currentParticipants)/\(meeting.maxParticipants)")
 				.caption1RegularStyle
-                .padding(.trailing, 3)
+                .padding(.trailing, 8)
             
 			separator
                 .padding(.trailing, 8)
@@ -168,9 +170,12 @@ struct BookMeetingCardView: View {
 
     @ViewBuilder
     private var destination: some View {
-        if meeting.status == .completed {
+        switch meeting.status {
+        case .completed:
             BookMeetingResultView(meeting: meeting, service: service)
-        } else {
+        case .inProgress:
+            ChatView()
+        default:
             BookMeetingDetailView(meeting: meeting, service: service)
         }
     }

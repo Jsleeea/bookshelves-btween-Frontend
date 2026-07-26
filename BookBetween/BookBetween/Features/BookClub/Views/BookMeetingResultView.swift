@@ -11,31 +11,18 @@ struct BookMeetingResultView: View {
         self.service = service
     }
 
-	private var discussion: BookMeetingDiscussion {
-		BookMeetingDiscussion(
-			meeting: meeting,
-			topics: [
-				DiscussionTopic(
-					id: 1,
-					question: "왜 싯다르타는 계속 떠났을까?",
-					content: "많은 참여자들은 싯다르타가 깨달음을 얻기 위해서가 아니라, 타인의 답을 자신의 답으로 받아들일 수 없었기 때문에 떠났다고 이야기했다.",
-					quote: nil
-				),
-				DiscussionTopic(
-					id: 2,
-					question: "가장 인상 깊었던 시기",
-					content: "참여자들은 의외로 싯다르타가 성공과 쾌락을 경험하던 시기를 많이 언급했다. 완벽한 실패와 방황과 실패의 시간이 있었기에 마지막 깨달음이 의미 있게 다가왔다는 의견이 많았다.실패와 방황과 실패의 시간이 있었기에 마지막 깨달음이 의미 있게 다가왔다는 의견이 많았다실패와 방황과 실패의 시간이 있었기에 마지막 깨달음이 의미 있게 다가왔다는 의견이 많았다",
-					quote: nil
-				),
-				DiscussionTopic(
-					id: 3,
-					question: "현재의 나와 연결되는 부분",
-					content: "많은 참여자들이 진로 고민, 인간관계, 미래에 대한 불안을 이야기하며 싯다르타의 방황과 자신의 삶을 연결 지었다. 특히 '남들과 비교하여 조급해질 때가 많다.'는 이야기에 여러 참여자가 공감했다.",
-					quote: nil
-				)
-			],
-			keywords: []
-		)
+	private var effectiveTopics: [DiscussionTopic] {
+		if let summaries = meeting.meetingSummary, !summaries.isEmpty {
+			return summaries.map {
+				DiscussionTopic(id: $0.questionOrder, question: $0.question, content: $0.summary, quote: nil)
+			}
+		}
+		// Preview/fallback mock
+		return [
+			DiscussionTopic(id: 1, question: "왜 싯다르타는 계속 떠났을까?", content: "많은 참여자들은 싯다르타가 깨달음을 얻기 위해서가 아니라, 타인의 답을 자신의 답으로 받아들일 수 없었기 때문에 떠났다고 이야기했다.", quote: nil),
+			DiscussionTopic(id: 2, question: "가장 인상 깊었던 시기", content: "참여자들은 의외로 싯다르타가 성공과 쾌락을 경험하던 시기를 많이 언급했다참여자들은 의외로 싯다르타가 성공과 쾌락을 경험하던 시기를 많이 언급했다참여자들은 의외로 싯다르타가 성공과 쾌락을 경험하던 시기를 많이 언급했다.여자들은 의외로 싯다르타가 성공과 쾌락을 경험하던 시기를 많이 언급했다참여자들은 의외로 싯다르타가 성공과 쾌락을 경험하던 시기를 많이 언급했다참여자들은 의외로 싯다르타가 성공여자들은 의외로 싯다르타가 성공과 쾌락을 경험하던 시기를 많이 언급했다참여자들은 의외로 싯다르타가 성공과 쾌락을 경험하던 시기를 많이 언급했다참여자들은 의외로 싯다르타가 성공과 쾌락을 경험하던 시기를 많이 언급했다참여자들은 의외로 싯다르타가 성공여자들은 의외로 싯다르타가 성공과 쾌락을 경험하던 시기를 많이 언급했다참여자들은 의외로 싯다르타가 성공여자들은 의외로 싯다르타가 성공과 쾌락을 경험하던 시기를 많이 언급했다참여자들은 의외로 싯다르타가 성공과 쾌락을 경험하던 시기를 많이 언급했다참여자들은 의외로 싯다르타가 성공", quote: nil),
+			DiscussionTopic(id: 3, question: "현재의 나와 연결되는 부분", content: "많은 참여자들이 진로 고민, 인간관계, 미래에 대한 불안을 이야기하며 싯다르타의 방황과 자신의 삶을 연결 지었다.", quote: nil)
+		]
 	}
 
 	var body: some View {
@@ -44,7 +31,7 @@ struct BookMeetingResultView: View {
 			leafDecoration
 			VStack(spacing: 0) {
 				navigationHeader
-                    .padding(.bottom, 16)
+                    .padding(.bottom, 8)
 
 				ScrollView(showsIndicators: false) {
 					VStack(alignment: .leading, spacing: 0) {
@@ -123,10 +110,11 @@ struct BookMeetingResultView: View {
 
 	private var bookHeaderSection: some View {
         HStack(spacing: 24) {
-			BookCoverImage(book: meeting.book, placeholderImageName: "book_cover_01")
+			BookCoverImage(book: meeting.book, placeholderImageName: "book_cover_mock")
 				.aspectRatio(29.0/44.0, contentMode: .fit)
 				.frame(height: 170)
-				.clipped()
+                .clipped()
+                .clipShape(RoundedRectangle(cornerRadius: 8))
                 .overlay {
                     RoundedRectangle(cornerRadius: 8)
                         .stroke(Color.gray200, lineWidth: 0.5)
@@ -146,10 +134,10 @@ struct BookMeetingResultView: View {
                 Spacer()
                 
 				compactInfoRows
-                    .foregroundStyle(Color.gray800)
                     .padding(.bottom, 2.6)
 			}
 		}
+        .padding(.top, 8)
 		.padding(.horizontal, 20)
 	}
 
@@ -167,7 +155,7 @@ struct BookMeetingResultView: View {
 			compactInfoRow(icon: { Image("icon_clock").resizable().scaledToFill().frame(width: 12, height: 12).clipped() },
 						   text: "모임 시간: \(meeting.timerMinutes)분")
 			compactInfoRow(icon: { Image("icon_group") },
-						   text: "참여자: \(meeting.maxParticipants)/6") //수정필요(6 > 모임 신청한 참여자수)
+						   text: "참여자: \(meeting.currentParticipants)/\(meeting.maxParticipants)")
 		}
 	}
 
@@ -215,7 +203,8 @@ struct BookMeetingResultView: View {
 			}
             Spacer()
 		}
-		.padding(12)
+        .padding(.vertical, 12)
+        .padding(.horizontal, 12)
 		.background(
 			LinearGradient(
 				stops: [
@@ -248,11 +237,11 @@ struct BookMeetingResultView: View {
 	// MARK: - Discussion
 
 	private var discussionSection: some View {
-		VStack(spacing: 0) {
-			ForEach(Array(discussion.topics.enumerated()), id: \.element.id) { index, topic in
+		VStack(alignment: .leading, spacing: 0) {
+			ForEach(Array(effectiveTopics.enumerated()), id: \.element.id) { index, topic in
 				topicRow(topic)
 					.fixedSize(horizontal: false, vertical: true)
-				if index < discussion.topics.count - 1 {
+				if index < effectiveTopics.count - 1 {
 					dashedDivider
 				}
 			}
@@ -275,7 +264,7 @@ struct BookMeetingResultView: View {
 
 	private var dashedDivider: some View {
 		HorizontalLine()
-			.stroke(Color.gray300, style: StrokeStyle(lineWidth: 1, dash: [5, 5]))
+			.stroke(Color.gray300, style: StrokeStyle(lineWidth: 1, dash: [3, 1]))
 			.frame(height: 1)
             .padding(.vertical, 12)
 	}
@@ -343,7 +332,8 @@ struct BookMeetingResultView: View {
 				book: Book(
 					id: 1,
 					title: "빛은 얼마나 깊이 스미는가",
-					author: "사브리나 임볼리"
+					author: "사브리나 임볼리",
+					publisher: "민음사"
 				),
 				readingStartDate: Calendar.current.date(from: DateComponents(year: 2026, month: 11, day: 25)) ?? Date(),
 				readingEndDate: Calendar.current.date(from: DateComponents(year: 2026, month: 11, day: 28)) ?? Date(),
