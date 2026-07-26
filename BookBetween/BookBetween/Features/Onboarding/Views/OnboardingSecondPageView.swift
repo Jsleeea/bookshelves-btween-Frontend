@@ -55,7 +55,7 @@ struct OnboardingSecondPageView: View {
     Image("onboarding2")
       .resizable()
       .scaledToFit()
-      .frame(width: 556, height: 310)
+      .frame(width: 402, height: 310)
   }
 
   // MARK: - 왼쪽 나뭇잎 이미지
@@ -64,8 +64,8 @@ struct OnboardingSecondPageView: View {
     Image("onboarding2LeafLeft")
       .resizable()
       .scaledToFit()
-      .frame(width: 183.28, height: 273.36)
-      .position(x: 155, y: 610.68)
+      .frame(width: 162, height: 316)
+      .position(x: 68, y: 668)
   }
 
   // MARK: - 오른쪽 나뭇잎 이미지
@@ -74,8 +74,8 @@ struct OnboardingSecondPageView: View {
     Image("onboarding2LeafRight")
       .resizable()
       .scaledToFit()
-      .frame(width: 183.28, height: 273.36)
-      .position(x: 404.63, y: 287.68)
+      .frame(width: 129, height: 296)
+      .position(x: 342.5, y: 296)
   }
 
   // MARK: - 파란색 배경 그라데이션
