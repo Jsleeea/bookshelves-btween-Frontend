@@ -16,23 +16,30 @@ struct MeetingSummaryItem: Decodable {
 enum BookMeetingStatus: Decodable {
     case recruiting
     case upcoming
+    case inProgress
     case completed
+
+    init(_ rawString: String) {
+        switch rawString {
+        case "RECRUITING": self = .recruiting
+        case "UPCOMING", "SCHEDULED": self = .upcoming
+        case "IN_PROGRESS", "ONGOING": self = .inProgress
+        case "COMPLETED", "DONE": self = .completed
+        default: self = .upcoming
+        }
+    }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
         let value = try container.decode(String.self)
-        switch value {
-        case "RECRUITING": self = .recruiting
-        case "UPCOMING", "SCHEDULED": self = .upcoming
-        case "COMPLETED", "DONE": self = .completed
-        default: self = .upcoming
-        }
+        self.init(value)
     }
 
     var title: String {
         switch self {
         case .recruiting: return "모집중"
         case .upcoming: return "참여예정"
+        case .inProgress: return "참여중"
         case .completed: return "참여완료"
         }
     }

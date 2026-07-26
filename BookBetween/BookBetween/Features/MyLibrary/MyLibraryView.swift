@@ -15,7 +15,7 @@ struct MyLibraryView: View {
             .padding(.bottom, 11)
 
 			tabSelector
-                .padding(.bottom, 28)
+                .padding(.bottom, 26)
 
 			ScrollView(showsIndicators: false) {
 				VStack(spacing: 16) {
@@ -23,6 +23,7 @@ struct MyLibraryView: View {
 						MyLibraryBookCardView(record: record)
 					}
 				}
+                .padding(.top, 1)
 				.padding(.bottom, 24)
 			}
 			.scrollBounceBehavior(.basedOnSize)
@@ -40,6 +41,7 @@ struct MyLibraryView: View {
 				}
 			}
             .padding(.top, 1)
+            .padding(.bottom, 1)
             .padding(.horizontal, 30)
 		}
 	}
