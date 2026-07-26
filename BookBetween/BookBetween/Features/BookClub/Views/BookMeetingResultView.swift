@@ -42,7 +42,7 @@ struct BookMeetingResultView: View {
 						discussionSection
                             
 					}
-					.padding(.bottom, 60)
+					.padding(.bottom, 100)
 				}
 				.scrollBounceBehavior(.basedOnSize)
 			}
@@ -59,13 +59,13 @@ struct BookMeetingResultView: View {
     // MARK: - Background
 
     private var gradientBackground: some View {
-        Color(hex: "FAF9F6")
+        Color.beige01
             .ignoresSafeArea()
             .overlay(alignment: .topLeading) {
                 Ellipse()
                     .fill(
                         RadialGradient(
-                            colors: [Color(hex: "DCEBE1"), Color(hex: "FAF9F6")],
+                            colors: [Color.green01, Color.beige01],
                             center: .center,
                             startRadius: 0,
                             endRadius: 281

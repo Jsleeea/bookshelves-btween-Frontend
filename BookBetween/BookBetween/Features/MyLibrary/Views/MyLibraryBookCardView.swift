@@ -17,14 +17,16 @@ struct MyLibraryBookCardView: View {
 				VStack(alignment: .leading, spacing: 0) {
 					bookInfo
 
+                    Spacer()
+                    
 					if let quote = record.memo, !quote.isEmpty {
 						Text("\u{201C}\(quote)\u{201D}")
 							.caption2RegularStyle
 							.foregroundStyle(Color.gray500)
 							.lineLimit(2)
+                            .padding(.bottom, 6.5)
 					}
 				}
-
 				Spacer()
 			}
 
@@ -49,7 +51,7 @@ struct MyLibraryBookCardView: View {
 		.clipShape(RoundedRectangle(cornerRadius: 12))
 		.overlay {
 			RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.gray300, lineWidth: 0.5)
+                .stroke(Color.gray200, lineWidth: 0.5)
 		}
         .padding(.horizontal, 19)
         .frame(height: 160)
@@ -72,8 +74,6 @@ struct MyLibraryBookCardView: View {
 		VStack(alignment: .leading, spacing: 2) {
 			Text(record.book.title)
 				.body1SemiBoldStyle
-                .foregroundStyle(Color.gray800)
-				.lineLimit(1)
                 .padding(.top, 6.5)
 
 			Text(record.book.author)

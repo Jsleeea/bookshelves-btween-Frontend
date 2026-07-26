@@ -3,6 +3,7 @@ import SwiftUI
 struct BookClubView: View {
 	@State private var viewModel = BookClubViewModel()
 	@State private var currentMeetingPage = 0
+	@FocusState private var isSearchFocused: Bool
 	private let bookGridColumns = [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())]
 
 	var body: some View {
@@ -14,7 +15,7 @@ struct BookClubView: View {
 				Spacer()
 			}
 			.padding(.horizontal, 30)
-            .padding(.bottom, 11)
+            .padding(.bottom, 6)
 
 			tabSelector
 
@@ -41,6 +42,7 @@ struct BookClubView: View {
 						}
 					}
                     .padding(.top, 1)
+					.padding(.bottom, 100)
 				}
 				.scrollBounceBehavior(.basedOnSize)
 			}
@@ -68,7 +70,7 @@ struct BookClubView: View {
 				}
 			}
             
-                .padding(.top, 1)
+                .padding(.top, 6)
                 .padding(.bottom, 8)
 			.padding(.horizontal, 30)
 		}
@@ -81,8 +83,7 @@ struct BookClubView: View {
 			Text(tab.title)
 				.caption1SemiBoldStyle
 				.foregroundStyle(viewModel.selectedTab == tab ? Color.gray50 : Color.gray200)
-				.padding(.horizontal, tab.horizontalPadding)
-				.padding(.vertical, tab.verticalPadding)
+				.frame(width: tab.pillWidth, height: 30)
 				.background(viewModel.selectedTab == tab ? Color.green600 : Color.gray50)
 				.clipShape(Capsule())
 				.overlay(Capsule().stroke(Color.gray200, lineWidth: viewModel.selectedTab == tab ? 0 : 1))
@@ -103,21 +104,28 @@ struct BookClubView: View {
 	private var searchContent: some View {
 		VStack(spacing: 0) {
 			searchBar
+                .padding(.bottom, 8)
 
 			ScrollView(showsIndicators: false) {
 				VStack(alignment: .leading, spacing: 0) {
-					if viewModel.meetingSearchResults.isEmpty {
-						emptyMeetingStateView
-					} else {
-						meetingResultsSection
+					ZStack(alignment: .top) {
+						if viewModel.meetingSearchResults.isEmpty {
+							emptyMeetingStateView
+						} else {
+							meetingResultsSection
+						}
 					}
+					.frame(height: 522)
 
 					if !viewModel.searchText.isEmpty {
 						bookResultsSection
 					}
 				}
-				.padding(.top, 16)
+				.padding(.top, 8)
+				.contentShape(Rectangle())
+				.onTapGesture { isSearchFocused = false }
 			}
+			.scrollDismissesKeyboard(.immediately)
 			.scrollBounceBehavior(.basedOnSize)
 		}
 		.onChange(of: viewModel.searchText) {
@@ -128,23 +136,48 @@ struct BookClubView: View {
 		}
 	}
 
-    //수정필요
 	private var emptyMeetingStateView: some View {
-        ZStack {
-            leafDecoration
-            VStack(spacing: 12) {
-                Image(.launchLogo)
+        GeometryReader { geo in
+            let w = geo.size.width
+            let h = geo.size.height
+            ZStack {
+                RadialGradient(
+                    colors: [
+                        Color.green01.opacity(0.58),
+                        Color.white.opacity(0)
+                    ],
+                    center: UnitPoint(x: 0.5, y: 0.48),
+                    startRadius: 12,
+                    endRadius: 270
+                )
+
+                Image("leaf_left")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 100, height: 108)
+                    .position(x: 30, y: h * 0.13)
+
+                Image("leaf_right")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 100, height: 108)
+                    .position(x: w - 30, y: h * 0.22)
+
+                Image("search_logo")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 152, height: 131)
+                    .position(x: w / 2, y: h * 0.46)
 
                 Text("검색된 모임이 없습니다")
                     .pointText5Style
                     .foregroundStyle(Color.green900)
+                    .position(x: w / 2, y: h * 0.67)
             }
+            .allowsHitTesting(false)
         }
-		.frame(maxWidth: .infinity)
-	}
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
     
     // MARK: - Decoration
 
@@ -173,6 +206,7 @@ struct BookClubView: View {
 			TextField("모임 검색", text: Bindable(viewModel).searchText)
 				.font(.body1Regular)
                 .foregroundStyle(Color.gray500)
+				.focused($isSearchFocused)
 		}
         .frame(height: 46)
 		.padding(.horizontal, 11)
@@ -206,11 +240,10 @@ struct BookClubView: View {
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                 }
-                .frame(height: 336)
 
 				pageIndicator
                     .padding(.top, 92)
-                    .padding(.bottom, 42)
+                    .padding(.bottom, 40)
 			}
 		}
 	}
@@ -228,16 +261,18 @@ struct BookClubView: View {
                     .foregroundStyle(Color.gray600)
 			}
 
-			ForEach(0..<meetingPages.count, id: \.self) { page in
-				Button {
-					currentMeetingPage = page
-				} label: {
-					Text("\(page + 1)")
-                        .font(.body2Regular)
-						.foregroundStyle(page == currentMeetingPage ? Color.gray50 : Color.gray600)
-						.frame(width: 26, height: 26)
-						.background(page == currentMeetingPage ? Color.green700 : Color.clear)
-						.clipShape(Circle())
+			HStack(spacing: 6) {
+				ForEach(0..<meetingPages.count, id: \.self) { page in
+					Button {
+						currentMeetingPage = page
+					} label: {
+						Text("\(page + 1)")
+							.font(.body2Regular)
+							.foregroundStyle(page == currentMeetingPage ? Color.gray50 : Color.gray600)
+							.frame(width: 20, height: 20)
+							.background(page == currentMeetingPage ? Color.green700 : Color.clear)
+							.clipShape(Circle())
+					}
 				}
 			}
 
@@ -265,7 +300,7 @@ struct BookClubView: View {
                     .pointText4Style
                     .foregroundStyle(Color.gray800)
                     .padding(.bottom, 5.14)
-                
+
 				HStack(spacing: 0) {
                     Rectangle()
                         .frame(width: 110, height: 1)
@@ -279,7 +314,7 @@ struct BookClubView: View {
 				}
                 .padding(.bottom, 6.86)
                 .padding(.horizontal, 7)
-                
+
 				Text("아래 목록에서 도서를 선택해보세요")
 					.caption1RegularStyle
 					.foregroundStyle(Color.gray400)
@@ -296,9 +331,24 @@ struct BookClubView: View {
 							}
 						}
 					}
-					.padding(.bottom, 72)
+					.padding(.bottom, 100)
 				}
 			}
+            .background(alignment: .topLeading) {
+                Ellipse()
+                    .fill(
+                        RadialGradient(
+                            colors: [Color.green01, Color.green01.opacity(0)],
+                            center: .center,
+                            startRadius: 0,
+                            endRadius: 281
+                        )
+                    )
+                    .frame(width: 562, height: 454)
+                    .opacity(0.40)
+                    .offset(x: -175, y: -50)
+                    .allowsHitTesting(false)
+            }
 		}
 	}
 }

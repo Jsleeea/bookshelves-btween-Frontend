@@ -14,21 +14,13 @@ enum BookClubTab: CaseIterable {
 		}
 	}
 
-    var horizontalPadding: CGFloat {
+    var pillWidth: CGFloat {
         switch self {
-        case .myMeetings: return 10
-        case .createdMeetings: return 10
-        case .search: return 10
+        case .myMeetings: return 70
+        case .createdMeetings: return 90
+        case .search: return 70
         }
     }
-
-	var verticalPadding: CGFloat {
-		switch self {
-		case .myMeetings: return 5
-		case .createdMeetings: return 5
-		case .search: return 5
-		}
-	}
 }
 
 @Observable
