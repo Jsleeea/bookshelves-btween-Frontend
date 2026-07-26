@@ -64,8 +64,8 @@ struct OnboardingThirdPageView: View {
     Image("onboarding3LeafLeft")
       .resizable()
       .scaledToFit()
-      .frame(width: 115.71, height: 129.46)
-      .position(x: 44.845, y: 158.84)
+      .frame(width: 129, height: 143)
+      .position(x: 64.5, y: 156.5)
   }
 
   // MARK: - 오른쪽 나뭇잎 이미지
@@ -74,8 +74,8 @@ struct OnboardingThirdPageView: View {
     Image("onboarding3LeafRight")
       .resizable()
       .scaledToFit()
-      .frame(width: 115.71, height: 129.46)
-      .position(x: 348.855, y: 240.73)
+      .frame(width: 120, height: 142)
+      .position(x: 342, y: 255)
   }
 
   // MARK: - 초록색 배경 그라데이션
