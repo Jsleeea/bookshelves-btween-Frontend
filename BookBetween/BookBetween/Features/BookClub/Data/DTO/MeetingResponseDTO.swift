@@ -1,9 +1,11 @@
-//
-//  MeetingResponseDTO.swift
-//  BookBetween
-//
-
 import Foundation
+
+private let meetingDateFormatter: DateFormatter = {
+    let f = DateFormatter()
+    f.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+    f.locale = Locale(identifier: "en_US_POSIX")
+    return f
+}()
 
 struct MeetingResultDTO: Decodable {
     let id: Int
@@ -36,21 +38,11 @@ struct MeetingSummaryItemDTO: Decodable {
 
 extension MeetingResultDTO {
     func toDomain() throws -> BookMeeting {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-
-        guard let meetingDate = formatter.date(from: startDate) else {
+        guard let meetingDate = meetingDateFormatter.date(from: startDate) else {
             throw MeetingDTOError.invalidDate(startDate)
         }
 
-        let statusValue: BookMeetingStatus
-        switch status {
-        case "RECRUITING": statusValue = .recruiting
-        case "UPCOMING", "SCHEDULED": statusValue = .upcoming
-        case "COMPLETED", "DONE": statusValue = .completed
-        default: statusValue = .upcoming
-        }
+        let statusValue = BookMeetingStatus(status)
 
         return BookMeeting(
             id: id,
@@ -74,6 +66,64 @@ extension MeetingResultDTO {
                 MeetingSummaryItem(questionOrder: $0.questionOrder, question: $0.question, summary: $0.summary)
             }
         )
+    }
+}
+
+struct MeetingParticipationResultDTO: Decodable {
+    let meetingParticipantId: Int
+}
+
+struct MeetingCreateRequestBody: Encodable {
+    let startDate: String
+    let startTime: String
+    let maxParticipants: Int
+    let duration: Int
+}
+
+struct MeetingCreateResultDTO: Decodable {
+    let id: Int
+}
+
+struct MeetingListResultDTO: Decodable {
+    let meetings: [MeetingListItemDTO]
+    let page: Int
+    let size: Int
+    let hasNext: Bool
+}
+
+struct MeetingListItemDTO: Decodable {
+    let id: Int
+    let chatroomId: Int
+    let status: String
+    let startDate: String
+    let currentParticipants: Int
+    let maxParticipants: Int
+    let duration: Int
+    let book: MeetingListBookDTO
+}
+
+struct MeetingListBookDTO: Decodable {
+    let id: Int
+    let title: String
+    let coverImageUrl: String?
+}
+
+extension MeetingListResultDTO {
+    func toDomain() -> [BookMeeting] {
+        return meetings.compactMap { item in
+            guard let meetingDate = meetingDateFormatter.date(from: item.startDate) else { return nil }
+            let statusValue = BookMeetingStatus(item.status)
+            return BookMeeting(
+                id: item.id,
+                chatroomId: item.chatroomId,
+                book: Book(id: item.book.id, title: item.book.title, author: "", coverImageUrl: item.book.coverImageUrl),
+                meetingDate: meetingDate,
+                timerMinutes: item.duration,
+                maxParticipants: item.maxParticipants,
+                currentParticipants: item.currentParticipants,
+                status: statusValue
+            )
+        }
     }
 }
 

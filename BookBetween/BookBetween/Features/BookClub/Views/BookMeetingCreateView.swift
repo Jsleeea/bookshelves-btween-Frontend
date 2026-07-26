@@ -9,6 +9,8 @@ struct BookMeetingCreateView: View {
 	@State private var showingMeetingTimePicker = false
 	@State private var showingTimerPicker = false
 	@State private var showingParticipantsPicker = false
+	@State private var isCreating = false
+	@State private var creationError: String?
 
 	private static let dateOnlyFormatter: DateFormatter = {
 		let f = DateFormatter()
@@ -22,7 +24,27 @@ struct BookMeetingCreateView: View {
 		return f
 	}()
 
+	private static let apiDateFormatter: DateFormatter = {
+		let f = DateFormatter()
+		f.dateFormat = "yyyy-MM-dd"
+		f.locale = Locale(identifier: "en_US_POSIX")
+		return f
+	}()
+
+	private static let apiTimeFormatter: DateFormatter = {
+		let f = DateFormatter()
+		f.dateFormat = "HH:mm"
+		f.locale = Locale(identifier: "en_US_POSIX")
+		return f
+	}()
+
 	let book: Book
+	private let service: (any MeetingServiceProtocol)?
+
+	init(book: Book, service: (any MeetingServiceProtocol)? = nil) {
+		self.book = book
+		self.service = service
+	}
 
 	var body: some View {
         ZStack {
@@ -30,10 +52,9 @@ struct BookMeetingCreateView: View {
             leafDecoration
             VStack(spacing: 0) {
                 navigationHeader
-                    .padding(.top, 1)
                     .padding(.bottom, 7)
                 subtitleHeader
-                    .padding(.bottom, 12)
+                    .padding(.bottom, 6)
 
                 ScrollView(showsIndicators: false) {
                     VStack(alignment: .center, spacing: 0) {
@@ -42,21 +63,45 @@ struct BookMeetingCreateView: View {
                         descriptionText
                             .padding(.bottom, 52)
                         meetingInfoSection
-                            .padding(.bottom, 32)
+                            .padding(.bottom, 40)
                         noticeSection
-                            .padding(.horizontal, 29)
-                            .padding(.bottom, 12)
+                            .padding(.bottom, 24)
+                        bottomButton(isCreating ? "생성 중..." : "+ 모임 생성하기") {
+                            guard !isCreating, let isbn = book.isbn else { return }
+                            Task {
+                                isCreating = true
+                                defer { isCreating = false }
+                                do {
+                                    _ = try await service?.createMeeting(
+                                        isbn: isbn,
+                                        startDate: Self.apiDateFormatter.string(from: meetingDate),
+                                        startTime: Self.apiTimeFormatter.string(from: meetingDate),
+                                        maxParticipants: maxParticipants,
+                                        duration: timerMinutes
+                                    )
+                                    dismiss()
+                                } catch {
+                                    creationError = error.localizedDescription
+                                }
+                            }
+                        }
+                        .padding(.bottom, 42)
+                        .disabled(isCreating || book.isbn == nil)
                     }
                 }
                 .scrollBounceBehavior(.basedOnSize)
-                .safeAreaInset(edge: .bottom) {
-                    bottomButton("+ 모임 생성하기") {}
-                        .padding(.horizontal, 29)
-                }
             }
         }
 		.toolbar(.hidden, for: .navigationBar)
 		.hideTabBar()
+		.alert("모임 생성 실패", isPresented: Binding(
+			get: { creationError != nil },
+			set: { if !$0 { creationError = nil } }
+		)) {
+			Button("확인", role: .cancel) { creationError = nil }
+		} message: {
+			Text(creationError ?? "")
+		}
 	}
 
     // MARK: - Decoration
@@ -106,22 +151,24 @@ struct BookMeetingCreateView: View {
 
 	private var bookHeaderSection: some View {
 		HStack(alignment: .center, spacing: 16) {
-			BookCoverImage(book: book, placeholderImageName: "book_cover_01")
+			BookCoverImage(book: book, placeholderImageName: "book_cover_mock")
 				.aspectRatio(29.0/44.0, contentMode: .fit)
 				.frame(height: 160)
-				.clipped()
-				.shadow(color: .black.opacity(0.1), radius: 4, x: -4, y: 4)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color.gray200, lineWidth: 0.5)
+                }
 
-			VStack(alignment: .leading, spacing: 0) {
+			VStack(alignment: .leading, spacing: 4) {
 				Text(book.title)
 					.head1Style
                     .foregroundStyle(Color.gray800)
-                    .padding(.bottom, 8)
+                    .padding(.bottom, 4)
 
 				Text(book.publisher.map { "\(book.author) | \($0)" } ?? book.author)
-					.caption1RegularStyle
+					.body2RegularStyle
 					.foregroundStyle(Color.gray500)
-                    .padding(.bottom, 4)
 
 				if let kdcName = book.kdcName {
 					Text(kdcName)
@@ -136,7 +183,8 @@ struct BookMeetingCreateView: View {
             
             Spacer()
 		}
-        .padding(.horizontal, 29.5)
+        .padding(.top, 6)
+        .padding(.horizontal, 28.5)
 	}
 
 	@ViewBuilder
@@ -181,7 +229,7 @@ struct BookMeetingCreateView: View {
 				value: Self.dateOnlyFormatter.string(from: meetingDate),
 				isExpanded: showingMeetingDatePicker,
 				onTap: {
-					withAnimation(.easeInOut(duration: 0.2)) {
+					withAnimation(.easeInOut(duration: 0.3)) {
 						showingMeetingTimePicker = false
 						showingTimerPicker = false
 						showingParticipantsPicker = false
@@ -222,7 +270,7 @@ struct BookMeetingCreateView: View {
 				value: Self.timeOnlyFormatter.string(from: meetingDate),
 				isExpanded: showingMeetingTimePicker,
 				onTap: {
-					withAnimation(.easeInOut(duration: 0.2)) {
+					withAnimation(.easeInOut(duration: 0.3)) {
 						showingMeetingDatePicker = false
 						showingTimerPicker = false
 						showingParticipantsPicker = false
@@ -234,9 +282,9 @@ struct BookMeetingCreateView: View {
 						.datePickerStyle(.wheel)
 						.labelsHidden()
 						.environment(\.locale, Locale(identifier: "en_GB"))
+                        .frame(width: 300)
 						.frame(height: 150)
 						.clipped()
-						.padding(.horizontal, 8)
 				}
 			)
             .padding(.top, 24)
@@ -251,7 +299,7 @@ struct BookMeetingCreateView: View {
 				value: "\(timerMinutes)분",
 				isExpanded: showingTimerPicker,
 				onTap: {
-					withAnimation(.easeInOut(duration: 0.2)) {
+					withAnimation(.easeInOut(duration: 0.3)) {
 						showingMeetingDatePicker = false
 						showingMeetingTimePicker = false
 						showingParticipantsPicker = false
@@ -281,7 +329,7 @@ struct BookMeetingCreateView: View {
 				value: "\(maxParticipants)/6",
 				isExpanded: showingParticipantsPicker,
 				onTap: {
-					withAnimation(.easeInOut(duration: 0.2)) {
+					withAnimation(.easeInOut(duration: 0.3)) {
 						showingMeetingDatePicker = false
 						showingMeetingTimePicker = false
 						showingTimerPicker = false
@@ -312,7 +360,7 @@ struct BookMeetingCreateView: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .overlay {
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.gray300, lineWidth: 0.5)
+                .stroke(Color.gray200, lineWidth: 0.5)
         }
 	}
 
@@ -403,7 +451,7 @@ struct BookMeetingCreateView: View {
 			VStack(alignment: .leading, spacing: 4) {
 				Text("모임은 타이머 설정 시간 만료 후  자동으로 폭파돼요.")
 					.caption2SemiBoldStyle
-					.foregroundStyle(Color.green600)
+					.foregroundStyle(Color.green700)
 				Text("편안하고 안전한 대화를 위해 최소인원 3명 이상이 필요해요.")
 					.caption2RegularStyle
 					.foregroundStyle(Color.gray500)
@@ -414,6 +462,7 @@ struct BookMeetingCreateView: View {
         .padding(.bottom, 9)
 		.background(Color.green50.opacity(0.5))
 		.clipShape(RoundedRectangle(cornerRadius: 8))
+        .padding(.horizontal, 29)
 	}
 }
 

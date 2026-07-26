@@ -5,6 +5,8 @@ struct BookMeetingDetailView: View {
 
     private let service: (any MeetingServiceProtocol)?
     @State private var meeting: BookMeeting
+    @State private var isParticipating = false
+    @State private var participationError: String?
 
     init(meeting: BookMeeting, service: (any MeetingServiceProtocol)? = nil) {
         self._meeting = State(initialValue: meeting)
@@ -17,7 +19,9 @@ struct BookMeetingDetailView: View {
 			leafDecoration
 			VStack(spacing: 0) {
 				navigationHeader
+                    .padding(.bottom, 7)
 				subtitleHeader
+                    .padding(.bottom, 6)
 
 				ScrollView(showsIndicators: false) {
 					VStack(alignment: .center, spacing: 0) {
@@ -26,23 +30,41 @@ struct BookMeetingDetailView: View {
 						descriptionText
 							.padding(.bottom, 52)
 						meetingInfoSection
-                            .padding(.bottom, 32)
+                            .padding(.bottom, 40)
                         noticeSection
-                            .padding(.horizontal, 29)
-                            .padding(.bottom, 12)
+                            .padding(.bottom, 24)
+                        if meeting.status == .recruiting {
+                            bottomButton(isParticipating ? "참여 중..." : "모임 참여하기") {
+                                guard !isParticipating else { return }
+                                Task {
+                                    isParticipating = true
+                                    do {
+                                        _ = try await service?.participateMeeting(meetingId: meeting.id)
+                                        dismiss()
+                                    } catch {
+                                        participationError = error.localizedDescription
+                                        isParticipating = false
+                                    }
+                                }
+                            }
+                            .padding(.bottom, 42)
+                            .disabled(isParticipating)
+                        }
 					}
 				}
 				.scrollBounceBehavior(.basedOnSize)
-                .safeAreaInset(edge: .bottom) {
-                    if meeting.status == .recruiting {
-                        bottomButton("모임 참여하기") {}
-                            .padding(.horizontal, 29)
-                    }
-                }
 			}
 		}
 		.toolbar(.hidden, for: .navigationBar)
 		.hideTabBar()
+		.alert("모임 참여 실패", isPresented: Binding(
+			get: { participationError != nil },
+			set: { if !$0 { participationError = nil } }
+		)) {
+			Button("확인", role: .cancel) { participationError = nil }
+		} message: {
+			Text(participationError ?? "")
+		}
 		.task {
 			guard let service else { return }
 			if let fetched = try? await service.fetchMeetingDetail(meetingId: meeting.id) {
@@ -76,14 +98,12 @@ struct BookMeetingDetailView: View {
 					.clipped()
 					.foregroundStyle(Color.gray600)
 			}
-			Text(navigationTitle)
+			Text("독서 모임")
 				.head2Style
 				.foregroundStyle(Color.gray900)
 			Spacer()
 		}
 		.padding(.horizontal, 30)
-		.padding(.top, 1)
-		.padding(.bottom, 7)
 	}
 
 	private var subtitleHeader: some View {
@@ -94,41 +114,38 @@ struct BookMeetingDetailView: View {
 			Spacer()
 		}
 		.padding(.horizontal, 62)
-		.padding(.bottom, 12)
 	}
 
     // MARK: - Dynamic Header
 
-    private var navigationTitle: String {
-        meeting.status == .upcoming ? "독서 모임" : "독서 모임"
-    }
-
     private var navigationSubtitle: String {
-        meeting.status == .upcoming
-            ? "같이 읽을 책과 모임 정보를 확인해주세요"
-            : "참여하는 모임의 일정을 확인해주세요"
+        meeting.status == .recruiting
+            ? "참여하는 모임의 일정을 확인해주세요"
+            : "같이 읽을 책과 모임 정보를 확인해주세요"
     }
 
 	// MARK: - Book Header
 
 	private var bookHeaderSection: some View {
 		HStack(alignment: .center, spacing: 16) {
-			BookCoverImage(book: meeting.book, placeholderImageName: "book_cover_01")
+			BookCoverImage(book: meeting.book, placeholderImageName: "book_cover_mock")
 				.aspectRatio(29.0/44.0, contentMode: .fit)
 				.frame(height: 160)
 				.clipped()
-				.shadow(color: .black.opacity(0.1), radius: 4, x: -4, y: 4)
+                .overlay {
+                    RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.gray200, lineWidth: 0.5)
+                }
 
-			VStack(alignment: .leading, spacing: 0) {
+			VStack(alignment: .leading, spacing: 4) {
 				Text(meeting.book.title)
 					.head1Style
 					.foregroundStyle(Color.gray800)
-					.padding(.bottom, 8)
+					.padding(.bottom, 4)
 
 				Text(meeting.book.publisher.map { "\(meeting.book.author) | \($0)" } ?? meeting.book.author)
-					.caption1RegularStyle
+					.body2RegularStyle
 					.foregroundStyle(Color.gray500)
-					.padding(.bottom, 4)
 
 				if let kdcName = meeting.book.kdcName {
 					Text(kdcName)
@@ -143,7 +160,8 @@ struct BookMeetingDetailView: View {
 
 			Spacer()
 		}
-		.padding(.horizontal, 29.5)
+        .padding(.top, 6)
+		.padding(.horizontal, 28.5)
 	}
 
 	@ViewBuilder
@@ -203,7 +221,7 @@ struct BookMeetingDetailView: View {
 			Divider()
 				.overlay(Color.gray300)
 
-			infoRow(icon: { Image("icon_group") }, label: "참여자 수", value: "\(meeting.maxParticipants)/6")
+			infoRow(icon: { Image("icon_group") }, label: "참여자 수", value: "\(meeting.currentParticipants)/\(meeting.maxParticipants)")
 				.padding(.top, 24)
 				.padding(.bottom, 6)
 
@@ -249,7 +267,7 @@ struct BookMeetingDetailView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("모임은 타이머 설정 시간 만료 후  자동으로 폭파돼요.")
                     .caption2SemiBoldStyle
-                    .foregroundStyle(Color.green600)
+                    .foregroundStyle(Color.green700)
                 Text("편안하고 안전한 대화를 위해 최소인원 3명 이상이 필요해요.")
                     .caption2RegularStyle
                     .foregroundStyle(Color.gray500)
@@ -261,6 +279,7 @@ struct BookMeetingDetailView: View {
         .padding(.bottom, 9)
         .background(Color.green50.opacity(0.5))
         .clipShape(RoundedRectangle(cornerRadius: 8))
+        .padding(.horizontal, 29)
     }
 
 	// MARK: - Helpers
@@ -297,6 +316,7 @@ func bottomButton(_ title: String, action: @escaping () -> Void) -> some View {
 			.padding(.vertical, 14)
 			.background(Color.green600)
 			.clipShape(RoundedRectangle(cornerRadius: 10.3))
+            .padding(.horizontal, 29)
 	}
 	.background {
 		Color.white.ignoresSafeArea(edges: .bottom)

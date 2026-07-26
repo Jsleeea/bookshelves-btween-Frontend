@@ -53,6 +53,9 @@ struct MonthYearPickerView: View {
             }
             .pickerStyle(.wheel)
             .frame(width: 130)
+            .onChange(of: selectedYear) { _, newYear in
+                if newYear == 0 { selectedMonth = 0 }
+            }
 
             Picker("월", selection: $selectedMonth) {
                 Text("전체").tag(0)
@@ -62,6 +65,8 @@ struct MonthYearPickerView: View {
             }
             .pickerStyle(.wheel)
             .frame(width: 90)
+            .disabled(selectedYear == 0)
+            .opacity(selectedYear == 0 ? 0.4 : 1)
         }
         .padding(.horizontal, 8)
         .frame(height: 180)
