@@ -23,14 +23,10 @@ struct OnboardingView: View {
           .frame(width: geometry.size.width, height: geometry.size.height)
 
         VStack(spacing: 0) {
-          OnboardingTopBar(
-            backButtonAction: {
-              self.viewModel.backButtonDidTap()
-            },
-            skipButtonAction: {
-              self.viewModel.skipButtonDidTap()
-            }
-          )
+          OnboardingBackButton {
+            self.viewModel.backButtonDidTap()
+          }
+          .frame(maxWidth: .infinity, alignment: .leading)
           .padding(.horizontal, 21)
           .padding(.top, 16)
 
@@ -50,9 +46,14 @@ struct OnboardingView: View {
             }
           }
           .padding(.horizontal, 29)
+          .padding(.bottom, 24)
+
+          OnboardingSkipButton {
+            self.viewModel.skipButtonDidTap()
+          }
         }
         .frame(width: geometry.size.width, height: geometry.size.height)
-        .padding(.bottom, 32)
+        .padding(.bottom, 27)
       }
       .frame(width: geometry.size.width, height: geometry.size.height)
     }
