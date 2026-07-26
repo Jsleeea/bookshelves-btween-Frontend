@@ -12,10 +12,9 @@ struct MyLibraryView: View {
                 Spacer()
             }
             .padding(.horizontal, 30)
-            .padding(.bottom, 11)
+            .padding(.bottom, 6)
 
 			tabSelector
-                .padding(.bottom, 26)
 
 			ScrollView(showsIndicators: false) {
 				VStack(spacing: 16) {
@@ -23,8 +22,8 @@ struct MyLibraryView: View {
 						MyLibraryBookCardView(record: record)
 					}
 				}
-                .padding(.top, 1)
-				.padding(.bottom, 24)
+                .padding(.top, 14)
+				.padding(.bottom, 100)
 			}
 			.scrollBounceBehavior(.basedOnSize)
 		}
@@ -40,8 +39,8 @@ struct MyLibraryView: View {
 					tabPill(for: tab)
 				}
 			}
-            .padding(.top, 1)
-            .padding(.bottom, 1)
+            .padding(.top, 6)
+            .padding(.bottom, 14)
             .padding(.horizontal, 30)
 		}
 	}
@@ -51,10 +50,9 @@ struct MyLibraryView: View {
 			viewModel.selectedTab = tab
 		} label: {
 			Text(tab.title)
-				.caption1SemiBoldStyle
+				.body2SemiBoldStyle
 				.foregroundStyle(viewModel.selectedTab == tab ? Color.green600 : Color.green600)
-                .padding(.horizontal, tab.horizontalPadding)
-                .padding(.vertical, tab.verticalPadding)
+                .frame(width: 70, height: 30)
 				.background(viewModel.selectedTab == tab ? Color.green50 : Color.white)
 				.clipShape(Capsule())
 				.overlay {

@@ -16,7 +16,9 @@ struct BookMeetingDetailView: View {
 	var body: some View {
 		ZStack {
             Color.beige100.ignoresSafeArea()
-			leafDecoration
+			if meeting.status != .upcoming {
+				leafDecoration
+			}
 			VStack(spacing: 0) {
 				navigationHeader
                     .padding(.bottom, 7)

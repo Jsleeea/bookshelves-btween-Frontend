@@ -208,6 +208,8 @@ struct ChatView: View {
       )
       .ignoresSafeArea()
     )
+    .toolbar(.hidden, for: .navigationBar)
+    .hideTabBar()
   }
 
   // MARK: - Header
