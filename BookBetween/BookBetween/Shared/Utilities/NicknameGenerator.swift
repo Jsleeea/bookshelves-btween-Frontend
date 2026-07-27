@@ -27,7 +27,7 @@ struct GeneratedNickname {
     )
 }
 
-enum ProfileBackgroundColorCode: String, Codable {
+nonisolated enum ProfileBackgroundColorCode: String, Codable {
     case brown = "BROWN"
     case purple = "PURPLE"
     case blue = "BLUE"
