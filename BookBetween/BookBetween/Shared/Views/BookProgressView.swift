@@ -49,8 +49,14 @@ struct BookProgressView: View {
     var body: some View {
         HStack(spacing: 8) {
             GeometryReader { geo in
-                let fullWidth = geo.size.width
-                let knobX = knobSize / 2 + (fullWidth - knobSize) * progressRatio
+                let measuredWidth = geo.size.width
+                let fullWidth = measuredWidth.isFinite ? max(measuredWidth, 0) : 0
+                let availableWidth = max(fullWidth - knobSize, 0)
+                let knobX = min(
+                    knobSize / 2 + availableWidth * progressRatio,
+                    fullWidth
+                )
+                let fillWidth = max(knobX, 0)
 
                 ZStack(alignment: .leading) {
                     // 배경 트랙
@@ -70,7 +76,7 @@ struct BookProgressView: View {
                         .frame(width: fullWidth, height: barHeight)
                         .mask(alignment: .leading) {
                             Capsule()
-                                .frame(width: knobX, height: barHeight)
+                                .frame(width: fillWidth, height: barHeight)
                         }
 
                     // 손잡이
