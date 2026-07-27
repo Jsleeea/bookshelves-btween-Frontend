@@ -44,17 +44,17 @@ private struct AccountSetupLeafDecorationView: View {
   var body: some View {
     GeometryReader { _ in
       ZStack {
-        Image("accountSetupleaf")
+        Image("onboarding3LeafLeft")
           .resizable()
           .scaledToFit()
-          .frame(width: 123.45, height: 138.25)
-          .position(x: 65, y: 95)
+          .frame(width: 129, height: 143)
+          .position(x: 64.5, y: 82.5)
 
-        Image("accountSetupLeafRight")
+        Image("onboarding3LeafRight")
           .resizable()
           .scaledToFit()
-          .frame(width: 122.96, height: 137.71)
-          .position(x: 344.30, y: 210)
+          .frame(width: 120, height: 142)
+          .position(x: 342, y: 181)
       }
     }
     .ignoresSafeArea()
@@ -85,7 +85,7 @@ private struct AccountSetupContentView: View {
   var body: some View {
     VStack(alignment: .leading, spacing: 0) {
       AccountSetupTitleSectionView()
-        .padding(.top, 126)
+        .padding(.top, 109)
 
       AccountSetupNicknameSectionView(
         nickname: self.nickname,
@@ -95,7 +95,7 @@ private struct AccountSetupContentView: View {
           )
         }
       )
-        .padding(.top, 36)
+        .padding(.top, 40)
 
       AccountSetupGenreSectionView()
         .padding(.top, 32)
@@ -139,13 +139,13 @@ private struct AccountSetupContentView: View {
 
 private struct AccountSetupTitleSectionView: View {
   var body: some View {
-    VStack(alignment: .leading, spacing: 4) {
+    VStack(alignment: .leading, spacing: 8) {
       Text("계정 설정")
         .head1Style
         .foregroundStyle(Color.gray800)
 
       Text("나중에 수정할 수 있어요")
-        .caption1SemiBoldStyle
+        .body2SemiBoldStyle
         .foregroundStyle(Color.gray500)
     }
     .frame(maxWidth: .infinity, alignment: .leading)
@@ -164,7 +164,7 @@ private struct AccountSetupNicknameSectionView: View {
       Text("닉네임")
         .body1SemiBoldStyle
         .foregroundStyle(Color.gray800)
-        .padding(.leading, 30)
+        .padding(.leading, 19)
 
       AccountSetupNicknameInputView(
         nickname: self.nickname,
@@ -177,7 +177,7 @@ private struct AccountSetupNicknameSectionView: View {
         .body2RegularStyle
         .foregroundStyle(Color.gray500)
         .padding(.top, 8)
-        .padding(.leading, 30)
+        .padding(.leading, 29)
     }
     .frame(maxWidth: .infinity, alignment: .leading)
   }
@@ -192,14 +192,14 @@ private struct AccountSetupNicknameInputView: View {
   var body: some View {
     HStack(spacing: 0) {
       Text(self.nickname.isEmpty ? "랜덤 닉네임을 생성해보세요" : self.nickname)
-        .body1RegularStyle
-        .foregroundStyle(self.nickname.isEmpty ? Color.gray500 : Color.gray800)
+        .body2RegularStyle
+        .foregroundStyle(self.nickname.isEmpty ? Color.gray600 : Color.gray800)
 
       Spacer()
 
       AccountSetupNicknameRefreshButton(action: self.refreshButtonAction)
     }
-    .padding(.leading, 18)
+    .padding(.leading, 10)
     .padding(.trailing, 22.12)
     .frame(height: 46)
     .background(
@@ -218,7 +218,6 @@ private struct AccountSetupNicknameInputView: View {
         .inset(by: 0.25)
         .stroke(Color.gray200, lineWidth: 0.5)
     }
-    .shadow(color: Color.black.opacity(0.25), radius: 4, x: 0, y: 4)
   }
 }
 
