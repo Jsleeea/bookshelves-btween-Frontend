@@ -100,6 +100,8 @@ private struct AccountSetupContentView: View {
       AccountSetupGenreSectionView()
         .padding(.top, 32)
 
+      Spacer(minLength: 48)
+
       AccountSetupTermsAgreementView(
         isServiceTermsAgreed: self.$isServiceTermsAgreed,
         isPrivacyTermsAgreed: self.$isPrivacyTermsAgreed,
@@ -110,16 +112,14 @@ private struct AccountSetupContentView: View {
           self.isShowingPrivacyTerms = true
         }
       )
-        .padding(.top, 48)
 
       AccountSetupStartButtonView(
         isEnabled: self.isStartButtonEnabled
       ) {
         self.onStart()
       }
-      .padding(.top, 12)
-
-      Spacer()
+      .padding(.top, 13)
+      .padding(.bottom, 16)
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     .fullScreenCover(isPresented: self.$isShowingServiceTerms) {
@@ -292,7 +292,7 @@ private struct AccountSetupTermsAgreementView: View {
   let privacyTermsDetailButtonAction: () -> Void
 
   var body: some View {
-    VStack(spacing: 0) {
+    VStack(spacing: 12) {
       AccountSetupTermsAgreementRow(
         title: "서비스 이용약관 동의",
         isAgreed: self.$isServiceTermsAgreed,
@@ -321,12 +321,12 @@ private struct AccountSetupTermsAgreementRow: View {
   let detailButtonAction: () -> Void
 
   var body: some View {
-    HStack(spacing: 0) {
+    HStack(spacing: 12) {
       Button {
         self.isAgreed.toggle()
       } label: {
         AccountSetupAgreementCheckboxView(isChecked: self.isAgreed)
-          .frame(width: 44, height: 44)
+          .frame(width: 22, height: 22)
       }
 
       HStack(spacing: 12) {
@@ -346,11 +346,9 @@ private struct AccountSetupTermsAgreementRow: View {
           .resizable()
           .scaledToFit()
           .frame(width: 9, height: 18)
-          .frame(width: 44, height: 44)
       }
-      .buttonStyle(.plain)
     }
-    .frame(height: 54)
+    .frame(height: 22)
   }
 }
 
