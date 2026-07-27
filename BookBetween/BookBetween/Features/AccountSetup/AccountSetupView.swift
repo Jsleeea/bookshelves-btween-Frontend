@@ -44,17 +44,17 @@ private struct AccountSetupLeafDecorationView: View {
   var body: some View {
     GeometryReader { _ in
       ZStack {
-        Image("accountSetupleaf")
+        Image("onboarding3LeafLeft")
           .resizable()
           .scaledToFit()
-          .frame(width: 123.45, height: 138.25)
-          .position(x: 65, y: 95)
+          .frame(width: 129, height: 143)
+          .position(x: 64.5, y: 82.5)
 
-        Image("accountSetupLeafRight")
+        Image("onboarding3LeafRight")
           .resizable()
           .scaledToFit()
-          .frame(width: 122.96, height: 137.71)
-          .position(x: 344.30, y: 210)
+          .frame(width: 120, height: 142)
+          .position(x: 342, y: 181)
       }
     }
     .ignoresSafeArea()
@@ -67,20 +67,25 @@ private struct AccountSetupContentView: View {
   let onStart: () -> Void
 
   @State private var generatedNickname: GeneratedNickname?
-  @State private var isAgreed = false
+  @State private var isServiceTermsAgreed = false
+  @State private var isPrivacyTermsAgreed = false
+  @State private var isShowingServiceTerms = false
+  @State private var isShowingPrivacyTerms = false
 
   private var nickname: String {
     self.generatedNickname?.text ?? ""
   }
 
   private var isStartButtonEnabled: Bool {
-    !self.nickname.isEmpty && self.isAgreed
+    !self.nickname.isEmpty
+      && self.isServiceTermsAgreed
+      && self.isPrivacyTermsAgreed
   }
 
   var body: some View {
     VStack(alignment: .leading, spacing: 0) {
       AccountSetupTitleSectionView()
-        .padding(.top, 126)
+        .padding(.top, 109)
 
       AccountSetupNicknameSectionView(
         nickname: self.nickname,
@@ -90,26 +95,43 @@ private struct AccountSetupContentView: View {
           )
         }
       )
-        .padding(.top, 36)
+        .padding(.top, 40)
 
       AccountSetupGenreSectionView()
         .padding(.top, 32)
 
+      Spacer(minLength: 48)
+
       AccountSetupTermsAgreementView(
-        isAgreed: self.$isAgreed
+        isServiceTermsAgreed: self.$isServiceTermsAgreed,
+        isPrivacyTermsAgreed: self.$isPrivacyTermsAgreed,
+        serviceTermsDetailButtonAction: {
+          self.isShowingServiceTerms = true
+        },
+        privacyTermsDetailButtonAction: {
+          self.isShowingPrivacyTerms = true
+        }
       )
-        .padding(.top, 48)
 
       AccountSetupStartButtonView(
         isEnabled: self.isStartButtonEnabled
       ) {
         self.onStart()
       }
-      .padding(.top, 12)
-
-      Spacer()
+      .padding(.top, 13)
+      .padding(.bottom, 16)
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    .fullScreenCover(isPresented: self.$isShowingServiceTerms) {
+      ServiceTermsDetailView {
+        self.isServiceTermsAgreed = true
+      }
+    }
+    .fullScreenCover(isPresented: self.$isShowingPrivacyTerms) {
+      PrivacyConsentDetailView {
+        self.isPrivacyTermsAgreed = true
+      }
+    }
   }
 }
 
@@ -117,13 +139,13 @@ private struct AccountSetupContentView: View {
 
 private struct AccountSetupTitleSectionView: View {
   var body: some View {
-    VStack(alignment: .leading, spacing: 4) {
+    VStack(alignment: .leading, spacing: 8) {
       Text("계정 설정")
         .head1Style
         .foregroundStyle(Color.gray800)
 
       Text("나중에 수정할 수 있어요")
-        .caption1SemiBoldStyle
+        .body2SemiBoldStyle
         .foregroundStyle(Color.gray500)
     }
     .frame(maxWidth: .infinity, alignment: .leading)
@@ -142,7 +164,7 @@ private struct AccountSetupNicknameSectionView: View {
       Text("닉네임")
         .body1SemiBoldStyle
         .foregroundStyle(Color.gray800)
-        .padding(.leading, 30)
+        .padding(.leading, 19)
 
       AccountSetupNicknameInputView(
         nickname: self.nickname,
@@ -155,7 +177,7 @@ private struct AccountSetupNicknameSectionView: View {
         .body2RegularStyle
         .foregroundStyle(Color.gray500)
         .padding(.top, 8)
-        .padding(.leading, 30)
+        .padding(.leading, 29)
     }
     .frame(maxWidth: .infinity, alignment: .leading)
   }
@@ -170,14 +192,14 @@ private struct AccountSetupNicknameInputView: View {
   var body: some View {
     HStack(spacing: 0) {
       Text(self.nickname.isEmpty ? "랜덤 닉네임을 생성해보세요" : self.nickname)
-        .body1RegularStyle
-        .foregroundStyle(self.nickname.isEmpty ? Color.gray500 : Color.gray800)
+        .body2RegularStyle
+        .foregroundStyle(self.nickname.isEmpty ? Color.gray600 : Color.gray800)
 
       Spacer()
 
       AccountSetupNicknameRefreshButton(action: self.refreshButtonAction)
     }
-    .padding(.leading, 18)
+    .padding(.leading, 10)
     .padding(.trailing, 22.12)
     .frame(height: 46)
     .background(
@@ -196,7 +218,6 @@ private struct AccountSetupNicknameInputView: View {
         .inset(by: 0.25)
         .stroke(Color.gray200, lineWidth: 0.5)
     }
-    .shadow(color: Color.black.opacity(0.25), radius: 4, x: 0, y: 4)
   }
 }
 
@@ -263,41 +284,70 @@ private struct AccountSetupGenreSectionView: View {
 // MARK: - 약관 동의 영역
 
 private struct AccountSetupTermsAgreementView: View {
-  @Binding var isAgreed: Bool
+  @Binding var isServiceTermsAgreed: Bool
+  @Binding var isPrivacyTermsAgreed: Bool
+
+  let serviceTermsDetailButtonAction: () -> Void
+  let privacyTermsDetailButtonAction: () -> Void
 
   var body: some View {
-    HStack(spacing: 0) {
+    VStack(spacing: 12) {
+      AccountSetupTermsAgreementRow(
+        title: "서비스 이용약관 동의",
+        isAgreed: self.$isServiceTermsAgreed,
+        detailButtonAction: self.serviceTermsDetailButtonAction
+      )
+
+      Divider()
+        .foregroundStyle(Color.gray200)
+
+      AccountSetupTermsAgreementRow(
+        title: "개인정보 수집 및 이용 동의",
+        isAgreed: self.$isPrivacyTermsAgreed,
+        detailButtonAction: self.privacyTermsDetailButtonAction
+      )
+      Divider()
+        .foregroundStyle(Color.gray200)
+
+    }
+    .padding(.horizontal, 29)
+  }
+}
+
+private struct AccountSetupTermsAgreementRow: View {
+  let title: String
+  @Binding var isAgreed: Bool
+  let detailButtonAction: () -> Void
+
+  var body: some View {
+    HStack(spacing: 12) {
       Button {
         self.isAgreed.toggle()
       } label: {
         AccountSetupAgreementCheckboxView(isChecked: self.isAgreed)
+          .frame(width: 22, height: 22)
       }
 
-      Text("이용약관 및 개인정보 처리방침에 동의합니다.")
-        .caption1SemiBoldStyle
-        .foregroundStyle(Color.gray500)
-        .padding(.leading, 10)
+      HStack(spacing: 12) {
+        Text("[필수]")
+          .body2SemiBoldStyle
+          .foregroundStyle(Color.green700)
+
+        Text(self.title)
+          .body2SemiBoldStyle
+          .foregroundStyle(Color.gray800)
+      }
 
       Spacer()
 
-      Button {
-      } label: {
-        Image("icon_chevron_right_gray500")
+      Button(action: self.detailButtonAction) {
+        Image("icon_chevron_right_gray")
           .resizable()
           .scaledToFit()
-          .frame(width: 6, height: 12)
+          .frame(width: 9, height: 18)
       }
-      .buttonStyle(.plain)
     }
-    .padding(.horizontal, 16)
-    .frame(height: 41)
-    .background(Color.white)
-    .cornerRadius(12)
-    .overlay {
-      RoundedRectangle(cornerRadius: 12)
-        .stroke(Color.gray300, lineWidth: 0.5)
-    }
-    .padding(.horizontal, 28.5)
+    .frame(height: 22)
   }
 }
 
@@ -310,7 +360,7 @@ private struct AccountSetupAgreementCheckboxView: View {
     ZStack {
       RoundedRectangle(cornerRadius: 1)
             .fill(self.isChecked ? Color.green600 : Color.clear)
-        .frame(width: 15, height: 15)
+        .frame(width: 22, height: 22)
         .overlay {
           RoundedRectangle(cornerRadius: 1)
             .inset(by: 0.5)
@@ -323,7 +373,7 @@ private struct AccountSetupAgreementCheckboxView: View {
       if self.isChecked {
         Image("check")
           .foregroundStyle(Color.white)
-          .frame(width: 10, height: 6)
+          .frame(width: 15, height: 9)
 
       }
     }
