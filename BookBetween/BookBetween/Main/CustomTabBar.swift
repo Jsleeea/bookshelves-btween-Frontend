@@ -32,9 +32,12 @@ struct CustomTabBar: View {
                     selectedTab = tab
                 } label: {
                     VStack(spacing: 6) {
-                        Image(systemName: tab.iconName)
-                            .font(.system(size: 19))
-                            .foregroundStyle(selectedTab == tab ? .green800 : .gray400)
+                        Image(
+                            tab.iconName(isSelected: selectedTab == tab)
+                        )
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 22, height: 22)
 
                         Text(tab.title)
                             .body2RegularStyle

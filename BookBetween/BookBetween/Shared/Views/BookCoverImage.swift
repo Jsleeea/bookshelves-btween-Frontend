@@ -25,17 +25,35 @@ struct BookCoverImage: View {
     }
 
     var body: some View {
-        AsyncImage(url: coverURL) { phase in
-            switch phase {
-            case .success(let image):
-                image
-                    .resizable()
-                    .scaledToFill()
-            default:
-                Image(placeholderImageName)
-                    .resizable()
-                    .scaledToFill()
+        if let coverURL {
+            AsyncImage(url: coverURL) { phase in
+                switch phase {
+                case .empty:
+                    placeholderImage
+                case .success(let image):
+                    image
+                        .resizable()
+                        .scaledToFill()
+                case .failure:
+                    fallbackImage
+                @unknown default:
+                    fallbackImage
+                }
             }
+        } else {
+            fallbackImage
         }
+    }
+
+    private var placeholderImage: some View {
+        Image(placeholderImageName)
+            .resizable()
+            .scaledToFill()
+    }
+
+    private var fallbackImage: some View {
+        Image("book_cover_mock")
+            .resizable()
+            .scaledToFill()
     }
 }
