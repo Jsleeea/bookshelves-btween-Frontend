@@ -18,7 +18,12 @@ struct MeetingCardView: View {
                     coverImageUrl: meeting.book.coverImageUrl,
                     placeholderImageName: "book_cover_meeting_1"
                 )
-                    .frame(width: 71, height: 108)
+                .frame(width: 71, height: 108)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .overlay {
+                        RoundedRectangle(cornerRadius: 8)
+                        .strokeBorder(.gray200, lineWidth: 0.5)
+                }
 
                 VStack(alignment: .leading, spacing: 0) {
                     Text(meeting.book.title)
