@@ -12,6 +12,8 @@ import SwiftUI
 struct PrivacyConsentDetailView: View {
   @Environment(\.dismiss) private var dismiss
 
+  @State private var hasReachedBottom = false
+
   let onAgree: () -> Void
 
   var body: some View {
@@ -75,6 +77,15 @@ struct PrivacyConsentDetailView: View {
         .padding(.bottom, 40)
         .background(Color.beige100)
       }
+      .onScrollGeometryChange(for: Bool.self) { geometry in
+        guard geometry.contentSize.height > 0 else { return false }
+
+        return geometry.visibleRect.maxY >= geometry.contentSize.height - 1
+      } action: { _, hasReachedBottom in
+        if hasReachedBottom {
+          self.hasReachedBottom = true
+        }
+      }
     }
     .background(Color.white.ignoresSafeArea())
     .safeAreaInset(edge: .bottom, spacing: 0) {
@@ -87,9 +98,12 @@ struct PrivacyConsentDetailView: View {
           .foregroundStyle(Color.beige100)
           .frame(maxWidth: .infinity)
           .frame(height: 53)
-          .background(Color.gray400)
+          .background(
+            self.hasReachedBottom ? Color.green600 : Color.gray400
+          )
           .clipShape(RoundedRectangle(cornerRadius: 12))
       }
+      .disabled(!self.hasReachedBottom)
       .padding(.horizontal, 29)
       .padding(.bottom, 16)
       .background(Color.beige100)
