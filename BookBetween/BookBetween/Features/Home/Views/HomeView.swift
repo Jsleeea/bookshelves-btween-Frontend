@@ -33,6 +33,7 @@ struct HomeView: View {
                     RecruitingMeetingSection(home: home)
                 }
                 .padding(.horizontal, 19)
+                .padding(.bottom, 100)
             }
         }
         .overlay {
@@ -156,6 +157,13 @@ struct HomeView: View {
                     placeholderImageName: "book_cover_recommend"
                 )
                 .frame(width: 87, height: 132)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .shadow(
+                    color: Color(red: 0.33, green: 0.32, blue: 0.31).opacity(0.2),
+                    radius: 1.5,
+                    x: 0,
+                    y: 3
+                )
                 .frame(maxHeight: .infinity, alignment: .bottom)
                 .padding(.trailing, 27)
                 .padding(.bottom, 14)

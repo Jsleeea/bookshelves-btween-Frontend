@@ -24,22 +24,32 @@ struct SearchView: View {
 
     var body: some View {
         GeometryReader { geometry in
-            ScrollView(showsIndicators: false) {
-                VStack(alignment: .leading, spacing: 16) {
-                    TitleView
-                    SearchInputSectionView
-                    SearchResultSectionView(
-                        idleHeight: max(geometry.size.height - 145, 520)
-                    )
+            let idleHeight = max(geometry.size.height - 145, 520)
+
+            ZStack(alignment: .top) {
+                if !viewModel.isSearching && !viewModel.hasSearched {
+                    SearchIdleView(height: idleHeight)
+                        .padding(.horizontal, 19)
+                        .offset(y: 145)
                 }
-                .scrollDismissesKeyboard(.interactively)
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    isSearchFocused = false
+
+                ScrollView(showsIndicators: false) {
+                    VStack(alignment: .leading, spacing: 16) {
+                        TitleView
+                        SearchInputSectionView
+                        SearchResultSectionView(
+                            idleHeight: idleHeight
+                        )
+                    }
+                    .scrollDismissesKeyboard(.interactively)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        isSearchFocused = false
+                    }
+                    .padding(.horizontal, 19)
+                    //.padding(.top, 12)
+                    .padding(.bottom, 24)
                 }
-                .padding(.horizontal, 19)
-                .padding(.top, 12)
-                .padding(.bottom, 24)
             }
         }
         .toolbar(.hidden, for: .navigationBar)
@@ -95,7 +105,6 @@ struct SearchView: View {
             RoundedRectangle(cornerRadius: 12)
                 .stroke(Color.gray200, lineWidth: 0.5)
         )
-        .shadow(color: .black.opacity(0.12), radius: 4, x: 0, y: 2)
     }
     
     private var SearchBarView: some View {
@@ -153,7 +162,8 @@ struct SearchView: View {
                 ProgressView()
                     .padding(.top, 24)
             } else if !viewModel.hasSearched {
-                SearchIdleView(height: idleHeight)
+                Color.clear
+                    .frame(height: idleHeight)
             } else if viewModel.hasSearched && viewModel.searchResults.isEmpty {
                 Text("검색 결과가 없어요")
                     .body2RegularStyle
@@ -185,7 +195,7 @@ struct SearchView: View {
                         Color(hex: "DCEBE1").opacity(0.58),
                         Color.white.opacity(0)
                     ],
-                    center: UnitPoint(x: 0.5, y: 0.48),
+                    center: UnitPoint(x: 0.5, y: 0.36),
                     startRadius: 12,
                     endRadius: 270
                 )
@@ -206,7 +216,7 @@ struct SearchView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 152, height: 134)
-                    .position(x: width / 2, y: height * 0.46)
+                    .position(x: width / 2, y: height * 0.36)
 
                 VStack(spacing: 10) {
                     Text("원하는 책을 찾아보세요")
@@ -218,7 +228,7 @@ struct SearchView: View {
                         .foregroundStyle(Color.gray600)
                         .multilineTextAlignment(.center)
                 }
-                .position(x: width / 2, y: height * 0.67)
+                .position(x: width / 2, y: height * 0.57)
             }
             .allowsHitTesting(false)
         }

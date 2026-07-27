@@ -13,8 +13,15 @@ struct RecentBookCardView: View {
     var body: some View {
         HStack(spacing: 0){
             BookCoverImage(book: record.book, placeholderImageName: "book_cover_recent")
-                .frame(width: 72.8, height: 109.52)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
+                .frame(width: 71, height: 108)
+                .overlay {
+                        RoundedRectangle(cornerRadius: 8)
+                        .strokeBorder(.gray200, lineWidth: 0.5)
+                }
+
+            
+            
             VStack(alignment: .leading){
                 HStack{
                     VStack(alignment: .leading, spacing: 0){

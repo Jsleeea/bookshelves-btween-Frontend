@@ -20,13 +20,18 @@ enum TabCase: Int, CaseIterable {
         }
     }
 
-    var iconName: String {
-        switch self {
-        case .home:    return "house"
-        case .search:  return "magnifyingglass"
-        case .bookClub:   return "person.2"
-        case .myLibrary: return "book"
-        case .profile:      return "person"
+    func iconName(isSelected: Bool) -> String {
+        switch (self, isSelected) {
+        case (.home, false):       return "icon_tab_home_empty"
+        case (.home, true):        return "icon_tab_home_fill"
+        case (.search, false):     return "icon_tab_search_empty"
+        case (.search, true):      return "icon_tab_search_fill"
+        case (.bookClub, false):   return "icon_tab_group_empty"
+        case (.bookClub, true):    return "icon_tab_group_fill"
+        case (.myLibrary, false):  return "icon_tab_group_book_empty"
+        case (.myLibrary, true):   return "icon_tab_group_book_fill"
+        case (.profile, false):    return "icon_tab_profile_empty"
+        case (.profile, true):     return "icon_tab_profile_fill"
         }
     }
 }
