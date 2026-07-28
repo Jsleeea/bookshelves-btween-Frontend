@@ -10,9 +10,14 @@ import SwiftUI
 // MARK: - 계정 설정 화면
 
 struct AccountSetupView: View {
+  @State private var viewModel: AccountSetupViewModel
   let onStart: () -> Void
 
-  init(onStart: @escaping () -> Void = {}) {
+  init(
+    viewModel: AccountSetupViewModel,
+    onStart: @escaping () -> Void = {}
+  ) {
+    _viewModel = State(initialValue: viewModel)
     self.onStart = onStart
   }
 
@@ -20,7 +25,10 @@ struct AccountSetupView: View {
     ZStack {
       AccountSetupBackgroundView()
 
-      AccountSetupContentView(onStart: onStart)
+      AccountSetupContentView(
+        viewModel: viewModel,
+        onStart: onStart
+      )
     }
   }
 }
@@ -64,6 +72,7 @@ private struct AccountSetupLeafDecorationView: View {
 // MARK: - 콘텐츠 영역
 
 private struct AccountSetupContentView: View {
+  let viewModel: AccountSetupViewModel
   let onStart: () -> Void
 
   @State private var generatedNickname: GeneratedNickname?
@@ -402,5 +411,13 @@ private struct AccountSetupStartButtonView: View {
 }
 
 #Preview {
-  AccountSetupView()
+  AccountSetupView(
+    viewModel: AccountSetupViewModel(
+      onboardingService: OnboardingService(
+        configuration: NetworkConfiguration(
+          baseURL: URL(string: "https://stub.bookbetween.local")!
+        )
+      )
+    )
+  )
 }

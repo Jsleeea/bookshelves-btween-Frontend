@@ -12,6 +12,7 @@ import KakaoSDKCommon
 @main
 struct BookBetweenApp: App {
     private let loginViewModel: LoginViewModel
+    private let accountSetupViewModel: AccountSetupViewModel
     private let memberService: MemberServiceProtocol
     private let bookService: BookServiceProtocol
 
@@ -58,6 +59,11 @@ struct BookBetweenApp: App {
         )
 
         self.loginViewModel = loginViewModel
+        self.accountSetupViewModel = AccountSetupViewModel(
+            onboardingService: OnboardingService(
+                configuration: authenticatedNetworkConfiguration
+            )
+        )
         self.memberService = MemberService(
             configuration: authenticatedNetworkConfiguration
         )
@@ -70,6 +76,7 @@ struct BookBetweenApp: App {
         WindowGroup {
             AppRootView(
                 loginViewModel: loginViewModel,
+                accountSetupViewModel: accountSetupViewModel,
                 memberService: memberService,
                 bookService: bookService
             )

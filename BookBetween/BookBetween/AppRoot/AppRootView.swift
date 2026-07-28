@@ -13,15 +13,18 @@ struct AppRootView: View {
 
     @State private var launchPhase: AppLaunchPhase = .splash
     @State private var loginViewModel: LoginViewModel
+    @State private var accountSetupViewModel: AccountSetupViewModel
     private let memberService: MemberServiceProtocol?
     private let bookService: BookServiceProtocol
 
     init(
         loginViewModel: LoginViewModel,
+        accountSetupViewModel: AccountSetupViewModel,
         memberService: MemberServiceProtocol? = nil,
         bookService: BookServiceProtocol = BookService.stubbed()
     ) {
         _loginViewModel = State(initialValue: loginViewModel)
+        _accountSetupViewModel = State(initialValue: accountSetupViewModel)
         self.memberService = memberService
         self.bookService = bookService
     }
@@ -66,7 +69,9 @@ struct AppRootView: View {
     private var authenticationContent: some View {
         switch loginViewModel.state {
         case .success(.accountSetup):
-            AccountSetupView {
+            AccountSetupView(
+                viewModel: accountSetupViewModel
+            ) {
                 loginViewModel.completeAccountSetup()
             }
 
@@ -109,6 +114,13 @@ private struct AccountRecoveryPlaceholderView: View {
                 baseURL: URL(string: "https://stub.bookbetween.local")!,
                 provider: AuthStubProviderFactory.make(
                     scenario: .pendingOnboarding
+                )
+            )
+        ),
+        accountSetupViewModel: AccountSetupViewModel(
+            onboardingService: OnboardingService(
+                configuration: NetworkConfiguration(
+                    baseURL: URL(string: "https://stub.bookbetween.local")!
                 )
             )
         )
