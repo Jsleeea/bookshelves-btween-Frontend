@@ -132,11 +132,16 @@ struct ProfileView: View {
     }
 
     private var profileImage: some View {
-        ZStack {
+        let animalImageName = NicknameGenerator.animalImageName(
+            for: viewModel.profile?.nicknameAnimal
+                ?? GeneratedNickname.placeholder.animal
+        )
+
+        return ZStack {
             Circle()
                 .fill(Color.yellow.opacity(0.35))
 
-            Image("ex_animal")
+            Image(animalImageName)
                 .resizable()
                 .scaledToFit()
         }

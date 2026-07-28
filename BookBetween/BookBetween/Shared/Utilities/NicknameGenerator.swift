@@ -8,13 +8,32 @@ import Foundation
 // MARK: - 랜덤 닉네임 생성기
 
 struct GeneratedNickname {
-    let text: String
+    let noun: String
+    let modifier: String
+    let animal: String
     let animalImageName: String
+    let profileBackgroundColor: ProfileBackgroundColorCode
+
+    var text: String {
+        "\(noun) \(modifier) \(animal)"
+    }
 
     static let placeholder = GeneratedNickname(
-        text: "책 먹는 여우",
-        animalImageName: "ex_animal"
+        noun: "책",
+        modifier: "먹는",
+        animal: "곰",
+        animalImageName: "animal_bear",
+        profileBackgroundColor: .brown
     )
+}
+
+nonisolated enum ProfileBackgroundColorCode: String, Codable {
+    case brown = "BROWN"
+    case purple = "PURPLE"
+    case blue = "BLUE"
+    case green = "GREEN"
+    case red = "RED"
+    case yellow = "YELLOW"
 }
 
 enum NicknameGenerator {
@@ -35,33 +54,38 @@ enum NicknameGenerator {
     ]
 
     private static let animals: [NicknameAnimal] = [
-        NicknameAnimal(name: "곰", imageName: "animal_bear"),
-        NicknameAnimal(name: "다람쥐", imageName: "animal_squirrel"),
-        NicknameAnimal(name: "고슴도치", imageName: "animal_hedgehog"),
-        NicknameAnimal(name: "나무늘보", imageName: "animal_sloth"),
-        NicknameAnimal(name: "올빼미", imageName: "animal_owl"),
-        NicknameAnimal(name: "너구리", imageName: "animal_raccoon"),
-        NicknameAnimal(name: "북극곰", imageName: "animal_polar_bear"),
-        NicknameAnimal(name: "판다", imageName: "animal_panda"),
-        NicknameAnimal(name: "코알라", imageName: "animal_koala"),
-        NicknameAnimal(name: "코끼리", imageName: "animal_elephant"),
-        NicknameAnimal(name: "고래", imageName: "animal_whale"),
-        NicknameAnimal(name: "상어", imageName: "animal_shark"),
-        NicknameAnimal(name: "펭귄", imageName: "animal_penguin"),
-        NicknameAnimal(name: "악어", imageName: "animal_crocodile"),
-        NicknameAnimal(name: "개구리", imageName: "animal_frog"),
-        NicknameAnimal(name: "거북이", imageName: "animal_turtle"),
-        NicknameAnimal(name: "토끼", imageName: "animal_rabbit"),
-        NicknameAnimal(name: "수달", imageName: "animal_otter"),
-        NicknameAnimal(name: "비버", imageName: "animal_beaver"),
-        NicknameAnimal(name: "얼룩말", imageName: "animal_zebra"),
-        NicknameAnimal(name: "사자", imageName: "animal_lion"),
-        NicknameAnimal(name: "호랑이", imageName: "animal_tiger"),
-        NicknameAnimal(name: "치타", imageName: "animal_cheetah"),
-        NicknameAnimal(name: "기린", imageName: "animal_giraffe")
+        NicknameAnimal(name: "곰", imageName: "animal_bear", backgroundColor: .brown),
+        NicknameAnimal(name: "다람쥐", imageName: "animal_squirrel", backgroundColor: .brown),
+        NicknameAnimal(name: "고슴도치", imageName: "animal_hedgehog", backgroundColor: .brown),
+        NicknameAnimal(name: "나무늘보", imageName: "animal_sloth", backgroundColor: .brown),
+        NicknameAnimal(name: "올빼미", imageName: "animal_owl", backgroundColor: .purple),
+        NicknameAnimal(name: "너구리", imageName: "animal_raccoon", backgroundColor: .purple),
+        NicknameAnimal(name: "북극곰", imageName: "animal_polar_bear", backgroundColor: .purple),
+        NicknameAnimal(name: "판다", imageName: "animal_panda", backgroundColor: .purple),
+        NicknameAnimal(name: "코알라", imageName: "animal_koala", backgroundColor: .purple),
+        NicknameAnimal(name: "코끼리", imageName: "animal_elephant", backgroundColor: .blue),
+        NicknameAnimal(name: "고래", imageName: "animal_whale", backgroundColor: .blue),
+        NicknameAnimal(name: "상어", imageName: "animal_shark", backgroundColor: .blue),
+        NicknameAnimal(name: "펭귄", imageName: "animal_penguin", backgroundColor: .blue),
+        NicknameAnimal(name: "악어", imageName: "animal_crocodile", backgroundColor: .green),
+        NicknameAnimal(name: "개구리", imageName: "animal_frog", backgroundColor: .green),
+        NicknameAnimal(name: "거북이", imageName: "animal_turtle", backgroundColor: .green),
+        NicknameAnimal(name: "토끼", imageName: "animal_rabbit", backgroundColor: .red),
+        NicknameAnimal(name: "수달", imageName: "animal_otter", backgroundColor: .red),
+        NicknameAnimal(name: "비버", imageName: "animal_beaver", backgroundColor: .red),
+        NicknameAnimal(name: "얼룩말", imageName: "animal_zebra", backgroundColor: .red),
+        NicknameAnimal(name: "사자", imageName: "animal_lion", backgroundColor: .yellow),
+        NicknameAnimal(name: "호랑이", imageName: "animal_tiger", backgroundColor: .yellow),
+        NicknameAnimal(name: "치타", imageName: "animal_cheetah", backgroundColor: .yellow),
+        NicknameAnimal(name: "기린", imageName: "animal_giraffe", backgroundColor: .yellow)
     ]
 
     // MARK: - 랜덤 닉네임 생성
+
+    static func animalImageName(for animalName: String) -> String {
+        animals.first { $0.name == animalName }?.imageName
+            ?? GeneratedNickname.placeholder.animalImageName
+    }
 
     static func generate(excluding currentNickname: String? = nil) -> GeneratedNickname {
         var nickname = makeNickname()
@@ -83,8 +107,11 @@ enum NicknameGenerator {
         }
 
         return GeneratedNickname(
-            text: "\(subject) \(adjective) \(animal.name)",
-            animalImageName: animal.imageName
+            noun: subject,
+            modifier: adjective,
+            animal: animal.name,
+            animalImageName: animal.imageName,
+            profileBackgroundColor: animal.backgroundColor
         )
     }
 }
@@ -94,4 +121,5 @@ enum NicknameGenerator {
 private struct NicknameAnimal {
     let name: String
     let imageName: String
+    let backgroundColor: ProfileBackgroundColorCode
 }

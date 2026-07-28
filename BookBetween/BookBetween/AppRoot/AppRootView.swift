@@ -13,15 +13,18 @@ struct AppRootView: View {
 
     @State private var launchPhase: AppLaunchPhase = .splash
     @State private var loginViewModel: LoginViewModel
+    @State private var accountSetupViewModel: AccountSetupViewModel
     private let memberService: MemberServiceProtocol?
     private let bookService: BookServiceProtocol
 
     init(
         loginViewModel: LoginViewModel,
+        accountSetupViewModel: AccountSetupViewModel,
         memberService: MemberServiceProtocol? = nil,
         bookService: BookServiceProtocol = BookService.stubbed()
     ) {
         _loginViewModel = State(initialValue: loginViewModel)
+        _accountSetupViewModel = State(initialValue: accountSetupViewModel)
         self.memberService = memberService
         self.bookService = bookService
     }
@@ -33,6 +36,12 @@ struct AppRootView: View {
                 SplashView()
                     .task {
                         try? await Task.sleep(for: .seconds(1.5))
+
+                        guard !Task.isCancelled else {
+                            return
+                        }
+
+                        await loginViewModel.restoreSession()
 
                         guard !Task.isCancelled else {
                             return
@@ -66,7 +75,9 @@ struct AppRootView: View {
     private var authenticationContent: some View {
         switch loginViewModel.state {
         case .success(.accountSetup):
-            AccountSetupView {
+            AccountSetupView(
+                viewModel: accountSetupViewModel
+            ) {
                 loginViewModel.completeAccountSetup()
             }
 
@@ -111,6 +122,9 @@ private struct AccountRecoveryPlaceholderView: View {
                     scenario: .pendingOnboarding
                 )
             )
+        ),
+        accountSetupViewModel: AccountSetupViewModel(
+            onboardingService: PreviewOnboardingService()
         )
     )
 }

@@ -10,9 +10,14 @@ import SwiftUI
 // MARK: - 계정 설정 화면
 
 struct AccountSetupView: View {
+  @State private var viewModel: AccountSetupViewModel
   let onStart: () -> Void
 
-  init(onStart: @escaping () -> Void = {}) {
+  init(
+    viewModel: AccountSetupViewModel,
+    onStart: @escaping () -> Void = {}
+  ) {
+    _viewModel = State(initialValue: viewModel)
     self.onStart = onStart
   }
 
@@ -20,7 +25,10 @@ struct AccountSetupView: View {
     ZStack {
       AccountSetupBackgroundView()
 
-      AccountSetupContentView(onStart: onStart)
+      AccountSetupContentView(
+        viewModel: viewModel,
+        onStart: onStart
+      )
     }
   }
 }
@@ -64,6 +72,7 @@ private struct AccountSetupLeafDecorationView: View {
 // MARK: - 콘텐츠 영역
 
 private struct AccountSetupContentView: View {
+  let viewModel: AccountSetupViewModel
   let onStart: () -> Void
 
   @State private var generatedNickname: GeneratedNickname?
@@ -71,6 +80,7 @@ private struct AccountSetupContentView: View {
   @State private var isPrivacyTermsAgreed = false
   @State private var isShowingServiceTerms = false
   @State private var isShowingPrivacyTerms = false
+  @State private var selectedCategoryIDs: Set<Int> = []
 
   private var nickname: String {
     self.generatedNickname?.text ?? ""
@@ -80,6 +90,8 @@ private struct AccountSetupContentView: View {
     !self.nickname.isEmpty
       && self.isServiceTermsAgreed
       && self.isPrivacyTermsAgreed
+      && self.viewModel.hasLoadedTerms
+      && !self.viewModel.isLoadingTerms
   }
 
   var body: some View {
@@ -97,7 +109,9 @@ private struct AccountSetupContentView: View {
       )
         .padding(.top, 40)
 
-      AccountSetupGenreSectionView()
+      AccountSetupGenreSectionView(
+        selectedCategoryIDs: self.$selectedCategoryIDs
+      )
         .padding(.top, 32)
 
       Spacer(minLength: 48)
@@ -114,14 +128,60 @@ private struct AccountSetupContentView: View {
       )
 
       AccountSetupStartButtonView(
-        isEnabled: self.isStartButtonEnabled
+        isEnabled: self.isStartButtonEnabled,
+        isLoading: self.viewModel.isLoading
       ) {
-        self.onStart()
+        self.completeOnboarding()
       }
       .padding(.top, 13)
       .padding(.bottom, 16)
+      .alert(
+        "계정 설정을 완료하지 못했습니다.",
+        isPresented: Binding(
+          get: { self.viewModel.errorMessage != nil },
+          set: { isPresented in
+            if !isPresented {
+              self.viewModel.resetState()
+            }
+          }
+        )
+      ) {
+        Button("확인") {
+          self.viewModel.resetState()
+        }
+      } message: {
+        Text(self.viewModel.errorMessage ?? "다시 시도해주세요.")
+      }
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    .task {
+      await self.viewModel.fetchTerms()
+    }
+    .alert(
+      "약관을 불러오지 못했습니다.",
+      isPresented: Binding(
+        get: { self.viewModel.termsErrorMessage != nil },
+        set: { isPresented in
+          if !isPresented {
+            self.viewModel.resetTermsError()
+          }
+        }
+      )
+    ) {
+      Button("다시 시도") {
+        self.viewModel.resetTermsError()
+
+        Task {
+          await self.viewModel.fetchTerms()
+        }
+      }
+
+      Button("취소", role: .cancel) {
+        self.viewModel.resetTermsError()
+      }
+    } message: {
+      Text(self.viewModel.termsErrorMessage ?? "다시 시도해주세요.")
+    }
     .fullScreenCover(isPresented: self.$isShowingServiceTerms) {
       ServiceTermsDetailView {
         self.isServiceTermsAgreed = true
@@ -131,6 +191,26 @@ private struct AccountSetupContentView: View {
       PrivacyConsentDetailView {
         self.isPrivacyTermsAgreed = true
       }
+    }
+  }
+
+  private func completeOnboarding() {
+    guard let generatedNickname = self.generatedNickname else {
+      return
+    }
+
+    Task {
+      await self.viewModel.completeOnboarding(
+        nickname: generatedNickname,
+        categoryIds: self.selectedCategoryIDs.sorted(),
+        agreedTermsIds: self.viewModel.requiredTermsIds
+      )
+
+      guard self.viewModel.state == .success else {
+        return
+      }
+
+      self.onStart()
     }
   }
 }
@@ -237,12 +317,25 @@ private struct AccountSetupNicknameRefreshButton: View {
 // MARK: - 장르 선택 영역
 
 private struct AccountSetupGenreSectionView: View {
-  @State private var selectedGenres: Set<String> = []
+  @Binding var selectedCategoryIDs: Set<Int>
 
-  private let genreRows: [[String]] = [
-    ["총류", "철학", "종교", "사회과학"],
-    ["자연과학", "기술과학", "예술"],
-    ["언어", "문학", "역사"]
+  private let genreRows: [[AccountSetupGenre]] = [
+    [
+      AccountSetupGenre(id: 1, name: "총류"),
+      AccountSetupGenre(id: 2, name: "철학"),
+      AccountSetupGenre(id: 3, name: "종교"),
+      AccountSetupGenre(id: 4, name: "사회과학")
+    ],
+    [
+      AccountSetupGenre(id: 5, name: "자연과학"),
+      AccountSetupGenre(id: 6, name: "기술과학"),
+      AccountSetupGenre(id: 7, name: "예술")
+    ],
+    [
+      AccountSetupGenre(id: 8, name: "언어"),
+      AccountSetupGenre(id: 9, name: "문학"),
+      AccountSetupGenre(id: 10, name: "역사")
+    ]
   ]
 
   var body: some View {
@@ -254,10 +347,10 @@ private struct AccountSetupGenreSectionView: View {
       VStack(alignment: .leading, spacing: 4) {
         ForEach(self.genreRows, id: \.self) { row in
           HStack(spacing: 8) {
-            ForEach(row, id: \.self) { genre in
+            ForEach(row) { genre in
               GenreChipView(
-                title: genre,
-                isSelected: self.selectedGenres.contains(genre)
+                title: genre.name,
+                isSelected: self.selectedCategoryIDs.contains(genre.id)
               ) {
                 self.toggleGenre(genre)
               }
@@ -272,13 +365,18 @@ private struct AccountSetupGenreSectionView: View {
 
   }
 
-  private func toggleGenre(_ genre: String) {
-    if self.selectedGenres.contains(genre) {
-      self.selectedGenres.remove(genre)
+  private func toggleGenre(_ genre: AccountSetupGenre) {
+    if self.selectedCategoryIDs.contains(genre.id) {
+      self.selectedCategoryIDs.remove(genre.id)
     } else {
-      self.selectedGenres.insert(genre)
+      self.selectedCategoryIDs.insert(genre.id)
     }
   }
+}
+
+private struct AccountSetupGenre: Identifiable, Hashable {
+  let id: Int
+  let name: String
 }
 
 // MARK: - 약관 동의 영역
@@ -384,23 +482,35 @@ private struct AccountSetupAgreementCheckboxView: View {
 
 private struct AccountSetupStartButtonView: View {
   let isEnabled: Bool
+  let isLoading: Bool
   let action: () -> Void
 
   var body: some View {
     Button(action: self.action) {
-      Text("시작하기")
-        .head3Style
-        .foregroundStyle(Color.white)
-        .frame(maxWidth: .infinity)
-        .frame(height: 53)
-        .background(self.isEnabled ? Color.green600 : Color.gray300)
-        .cornerRadius(12)
+      Group {
+        if self.isLoading {
+          ProgressView()
+            .tint(Color.white)
+        } else {
+          Text("시작하기")
+            .head3Style
+            .foregroundStyle(Color.white)
+        }
+      }
+      .frame(maxWidth: .infinity)
+      .frame(height: 53)
+      .background(self.isEnabled ? Color.green600 : Color.gray300)
+      .cornerRadius(12)
     }
-    .disabled(!self.isEnabled)
+    .disabled(!self.isEnabled || self.isLoading)
     .padding(.horizontal, 29)
   }
 }
 
 #Preview {
-  AccountSetupView()
+  AccountSetupView(
+    viewModel: AccountSetupViewModel(
+      onboardingService: PreviewOnboardingService()
+    )
+  )
 }
