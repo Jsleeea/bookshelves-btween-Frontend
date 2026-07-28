@@ -22,7 +22,7 @@ struct GeneratedNickname {
         noun: "책",
         modifier: "먹는",
         animal: "곰",
-        animalImageName: "ex_animal",
+        animalImageName: "animal_bear",
         profileBackgroundColor: .brown
     )
 }
@@ -81,6 +81,11 @@ enum NicknameGenerator {
     ]
 
     // MARK: - 랜덤 닉네임 생성
+
+    static func animalImageName(for animalName: String) -> String {
+        animals.first { $0.name == animalName }?.imageName
+            ?? GeneratedNickname.placeholder.animalImageName
+    }
 
     static func generate(excluding currentNickname: String? = nil) -> GeneratedNickname {
         var nickname = makeNickname()
