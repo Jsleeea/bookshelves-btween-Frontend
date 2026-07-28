@@ -31,3 +31,15 @@ nonisolated struct OnboardingCategoryDTO: Decodable {
     let id: Int
     let name: String
 }
+
+nonisolated struct OnboardingTermsResultDTO: Decodable {
+    let terms: [OnboardingTermDTO]
+}
+
+nonisolated struct OnboardingTermDTO: Decodable {
+    let termsId: Int
+    let title: String
+    let content: String
+    let version: String
+    let isRequired: Bool
+}

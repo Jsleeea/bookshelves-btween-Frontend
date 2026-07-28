@@ -19,6 +19,10 @@ final class AccountSetupViewModel {
     private let onboardingService: OnboardingServiceProtocol
 
     private(set) var state: AccountSetupViewState = .idle
+    private(set) var requiredTermsIds: [Int] = []
+    private(set) var hasLoadedTerms = false
+    private(set) var isLoadingTerms = false
+    private(set) var termsErrorMessage: String?
 
     var isLoading: Bool {
         state == .loading
@@ -34,6 +38,28 @@ final class AccountSetupViewModel {
 
     init(onboardingService: OnboardingServiceProtocol) {
         self.onboardingService = onboardingService
+    }
+
+    func fetchTerms() async {
+        guard !hasLoadedTerms,
+              !isLoadingTerms else {
+            return
+        }
+
+        isLoadingTerms = true
+        termsErrorMessage = nil
+        defer { isLoadingTerms = false }
+
+        do {
+            let terms = try await onboardingService.fetchTerms()
+            requiredTermsIds = terms
+                .filter(\.isRequired)
+                .map(\.termsId)
+                .sorted()
+            hasLoadedTerms = true
+        } catch {
+            termsErrorMessage = error.localizedDescription
+        }
     }
 
     func completeOnboarding(
@@ -73,6 +99,10 @@ final class AccountSetupViewModel {
 
     func resetState() {
         state = .idle
+    }
+
+    func resetTermsError() {
+        termsErrorMessage = nil
     }
 }
 

@@ -10,6 +10,7 @@ import Moya
 nonisolated struct OnboardingTarget: TargetType, AuthorizationRequirement {
     enum Endpoint {
         case complete(OnboardingRequestDTO)
+        case terms
     }
 
     let baseURL: URL
@@ -19,6 +20,8 @@ nonisolated struct OnboardingTarget: TargetType, AuthorizationRequirement {
         switch endpoint {
         case .complete:
             return "/api/v1/members/me/onboarding"
+        case .terms:
+            return "/api/v1/onboarding/terms"
         }
     }
 
@@ -26,6 +29,8 @@ nonisolated struct OnboardingTarget: TargetType, AuthorizationRequirement {
         switch endpoint {
         case .complete:
             return .post
+        case .terms:
+            return .get
         }
     }
 
@@ -33,11 +38,18 @@ nonisolated struct OnboardingTarget: TargetType, AuthorizationRequirement {
         switch endpoint {
         case .complete(let request):
             return .requestJSONEncodable(request)
+        case .terms:
+            return .requestPlain
         }
     }
 
     var requiresAuthorization: Bool {
-        true
+        switch endpoint {
+        case .complete:
+            return true
+        case .terms:
+            return false
+        }
     }
 
     var headers: [String: String]? {

@@ -118,11 +118,7 @@ private struct AccountRecoveryPlaceholderView: View {
             )
         ),
         accountSetupViewModel: AccountSetupViewModel(
-            onboardingService: OnboardingService(
-                configuration: NetworkConfiguration(
-                    baseURL: URL(string: "https://stub.bookbetween.local")!
-                )
-            )
+            onboardingService: PreviewOnboardingService()
         )
     )
 }

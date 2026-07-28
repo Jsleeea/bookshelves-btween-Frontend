@@ -90,6 +90,8 @@ private struct AccountSetupContentView: View {
     !self.nickname.isEmpty
       && self.isServiceTermsAgreed
       && self.isPrivacyTermsAgreed
+      && self.viewModel.hasLoadedTerms
+      && !self.viewModel.isLoadingTerms
   }
 
   var body: some View {
@@ -134,6 +136,34 @@ private struct AccountSetupContentView: View {
       .padding(.bottom, 16)
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    .task {
+      await self.viewModel.fetchTerms()
+    }
+    .alert(
+      "약관을 불러오지 못했습니다.",
+      isPresented: Binding(
+        get: { self.viewModel.termsErrorMessage != nil },
+        set: { isPresented in
+          if !isPresented {
+            self.viewModel.resetTermsError()
+          }
+        }
+      )
+    ) {
+      Button("다시 시도") {
+        self.viewModel.resetTermsError()
+
+        Task {
+          await self.viewModel.fetchTerms()
+        }
+      }
+
+      Button("취소", role: .cancel) {
+        self.viewModel.resetTermsError()
+      }
+    } message: {
+      Text(self.viewModel.termsErrorMessage ?? "다시 시도해주세요.")
+    }
     .fullScreenCover(isPresented: self.$isShowingServiceTerms) {
       ServiceTermsDetailView {
         self.isServiceTermsAgreed = true
@@ -434,11 +464,7 @@ private struct AccountSetupStartButtonView: View {
 #Preview {
   AccountSetupView(
     viewModel: AccountSetupViewModel(
-      onboardingService: OnboardingService(
-        configuration: NetworkConfiguration(
-          baseURL: URL(string: "https://stub.bookbetween.local")!
-        )
-      )
+      onboardingService: PreviewOnboardingService()
     )
   )
 }
