@@ -139,7 +139,7 @@ struct ProfileView: View {
 
         return ZStack {
             Circle()
-                .fill(Color.yellow.opacity(0.35))
+                .fill(profileBackgroundGradient)
 
             Image(animalImageName)
                 .resizable()
@@ -153,6 +153,39 @@ struct ProfileView: View {
         }
         // 그림자 추후에 값 수정해야함
         .shadow(color: Color.black.opacity(0.1), radius: 2, y: 2)
+    }
+
+    private var profileBackgroundGradient: LinearGradient {
+        let endColor: Color
+
+        switch ProfileBackgroundColorCode(
+            rawValue: viewModel.profile?.profileBackgroundColor ?? ""
+        ) {
+        case .purple:
+            endColor = Color(red: 0.47, green: 0.47, blue: 0.75)
+        case .blue:
+            endColor = Color(red: 0.51, green: 0.73, blue: 0.96)
+        case .green:
+            endColor = Color(red: 0.6, green: 0.76, blue: 0.65)
+        case .red:
+            endColor = Color(red: 1, green: 0.46, blue: 0.3)
+        case .yellow:
+            endColor = Color(red: 0.94, green: 0.79, blue: 0.37)
+        case .brown, .none:
+            endColor = Color(red: 0.69, green: 0.5, blue: 0.28)
+        }
+
+        return LinearGradient(
+            stops: [
+                Gradient.Stop(
+                    color: Color.white.opacity(0.4),
+                    location: 0
+                ),
+                Gradient.Stop(color: endColor, location: 1)
+            ],
+            startPoint: UnitPoint(x: -0.17, y: 0.17),
+            endPoint: UnitPoint(x: 1.17, y: 0.83)
+        )
     }
 
     private var editProfileButton: some View {
