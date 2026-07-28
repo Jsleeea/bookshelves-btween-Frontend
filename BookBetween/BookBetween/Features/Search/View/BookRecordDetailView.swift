@@ -52,7 +52,7 @@ struct BookRecordDetailView: View {
                 .scaledToFit()
                 .frame(width: 147, height: 133)
                 .opacity(0.75)
-                //.offset(y: 10)
+                .offset(x: 13)
                 .allowsHitTesting(false)
             }
         .toolbar(.hidden, for: .navigationBar)
