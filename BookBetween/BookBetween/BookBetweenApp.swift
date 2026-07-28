@@ -33,6 +33,7 @@ struct BookBetweenApp: App {
         }
 
         let authTokenStore = AuthTokenStore()
+        let authSessionStore = AuthSessionStore()
         let authNetworkConfiguration = NetworkConfiguration(
             baseURL: apiBaseURL,
             accessToken: {
@@ -46,7 +47,8 @@ struct BookBetweenApp: App {
         let loginViewModel = LoginViewModel(
             kakaoLoginService: KakaoLoginService(),
             authService: authService,
-            authTokenStore: authTokenStore
+            authTokenStore: authTokenStore,
+            authSessionStore: authSessionStore
         )
         let authenticatedNetworkConfiguration = NetworkConfiguration(
             baseURL: apiBaseURL,

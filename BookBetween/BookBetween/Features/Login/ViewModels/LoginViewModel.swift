@@ -25,6 +25,7 @@ final class LoginViewModel {
     private let kakaoLoginService: KakaoLoginServiceProtocol
     private let authService: AuthServiceProtocol
     private let authTokenStore: AuthTokenStoreProtocol
+    private let authSessionStore: AuthSessionStoreProtocol
 
     @ObservationIgnored
     private var reissueTask: Task<Void, Error>?
@@ -38,11 +39,13 @@ final class LoginViewModel {
     init(
         kakaoLoginService: KakaoLoginServiceProtocol,
         authService: AuthServiceProtocol,
-        authTokenStore: AuthTokenStoreProtocol = AuthTokenStore()
+        authTokenStore: AuthTokenStoreProtocol = AuthTokenStore(),
+        authSessionStore: AuthSessionStoreProtocol = AuthSessionStore()
     ) {
         self.kakaoLoginService = kakaoLoginService
         self.authService = authService
         self.authTokenStore = authTokenStore
+        self.authSessionStore = authSessionStore
     }
 
     func loginWithKakao() async {
@@ -87,17 +90,39 @@ final class LoginViewModel {
         state = .idle
     }
 
+    func restoreSession() async {
+        guard state == .idle,
+              let memberStatus = authSessionStore.memberStatus() else {
+            return
+        }
+
+        switch memberStatus {
+        case .pendingOnboarding, .active:
+            await restoreAuthenticatedSession(
+                memberStatus: memberStatus
+            )
+
+        case .withdrawn:
+            restoreAccountRecoverySession()
+
+        case .suspended, .anonymized:
+            clearLocalSession()
+        }
+    }
+
     func completeAccountSetup() {
         guard state == .success(.accountSetup) else {
             return
         }
 
+        authSessionStore.saveMemberStatus(.active)
         state = .success(.main)
     }
 
     func logout() async throws {
         try await authService.logout()
         try authTokenStore.clearSession()
+        authSessionStore.clear()
         printSessionTokenDeletionStatus()
         state = .idle
     }
@@ -155,6 +180,7 @@ final class LoginViewModel {
         } catch {
             if Self.requiresLoginAfterReissueFailure(error) {
                 try? authTokenStore.clearSession()
+                authSessionStore.clear()
                 state = .idle
             }
 
@@ -192,6 +218,7 @@ final class LoginViewModel {
                 accessToken: tokens.accessToken,
                 refreshToken: tokens.refreshToken
             )
+            authSessionStore.saveMemberStatus(.pendingOnboarding)
             printSessionTokenStorageStatus()
             return .success(.accountSetup)
 
@@ -201,6 +228,7 @@ final class LoginViewModel {
                 accessToken: tokens.accessToken,
                 refreshToken: tokens.refreshToken
             )
+            authSessionStore.saveMemberStatus(.active)
             printSessionTokenStorageStatus()
             return .success(.main)
 
@@ -210,14 +238,72 @@ final class LoginViewModel {
                 throw LoginViewModelError.missingRestoreToken
             }
             try authTokenStore.replaceWithRestoreToken(restoreToken)
+            authSessionStore.saveMemberStatus(.withdrawn)
             return .success(.accountRecovery)
 
         case .suspended:
+            clearLocalSession()
             throw LoginViewModelError.suspendedMember
 
         case .anonymized:
+            clearLocalSession()
             throw LoginViewModelError.unexpectedMemberStatus
         }
+    }
+
+    private func restoreAuthenticatedSession(
+        memberStatus: MemberStatus
+    ) async {
+        guard let refreshToken = try? authTokenStore.refreshToken(),
+              !refreshToken.isEmpty else {
+            clearLocalSession()
+            return
+        }
+
+        state = .loading
+
+        do {
+            try await reissueTokens()
+
+            switch memberStatus {
+            case .pendingOnboarding:
+                state = .success(.accountSetup)
+            case .active:
+                state = .success(.main)
+            case .withdrawn, .suspended, .anonymized:
+                clearLocalSession()
+            }
+
+            #if DEBUG
+            print("""
+            [SessionRestore]
+            memberStatus: \(memberStatus.rawValue)
+            restored: true
+            """)
+            #endif
+        } catch {
+            if state != .idle {
+                state = .failure(
+                    "로그인 상태를 복원하지 못했습니다. 다시 시도해주세요."
+                )
+            }
+        }
+    }
+
+    private func restoreAccountRecoverySession() {
+        guard let restoreToken = try? authTokenStore.restoreToken(),
+              !restoreToken.isEmpty else {
+            clearLocalSession()
+            return
+        }
+
+        state = .success(.accountRecovery)
+    }
+
+    private func clearLocalSession() {
+        try? authTokenStore.clearAll()
+        authSessionStore.clear()
+        state = .idle
     }
 
     private static func serviceTokens(

@@ -41,6 +41,12 @@ struct AppRootView: View {
                             return
                         }
 
+                        await loginViewModel.restoreSession()
+
+                        guard !Task.isCancelled else {
+                            return
+                        }
+
                         launchPhase = hasCompletedIntro
                             ? .authentication
                             : .landing
