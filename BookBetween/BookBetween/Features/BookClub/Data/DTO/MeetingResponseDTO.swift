@@ -9,13 +9,13 @@ private let meetingDateFormatter: DateFormatter = {
 
 struct MeetingResultDTO: Decodable {
     let id: Int
-    let chatroomId: Int
+    let chatroomId: Int?
     let book: MeetingBookDTO
     let startDate: String
     let duration: Int
     let maxParticipants: Int
     let currentParticipants: Int
-    let status: String
+    let status: String?
     let meetingSummary: [MeetingSummaryItemDTO]?
 }
 
@@ -42,11 +42,11 @@ extension MeetingResultDTO {
             throw MeetingDTOError.invalidDate(startDate)
         }
 
-        let statusValue = BookMeetingStatus(status)
+        let statusValue = status.map { BookMeetingStatus($0) } ?? .completed
 
         return BookMeeting(
             id: id,
-            chatroomId: chatroomId,
+            chatroomId: chatroomId ?? 0,
             book: Book(
                 id: book.id,
                 isbn: book.isbn,
@@ -74,6 +74,7 @@ struct MeetingParticipationResultDTO: Decodable {
 }
 
 struct MeetingCreateRequestBody: Encodable {
+    let isbn: String
     let startDate: String
     let startTime: String
     let maxParticipants: Int
@@ -93,7 +94,7 @@ struct MeetingListResultDTO: Decodable {
 
 struct MeetingListItemDTO: Decodable {
     let id: Int
-    let chatroomId: Int
+    let chatroomId: Int?
     let status: String
     let startDate: String
     let currentParticipants: Int
@@ -103,7 +104,7 @@ struct MeetingListItemDTO: Decodable {
 }
 
 struct MeetingListBookDTO: Decodable {
-    let id: Int
+    let id: Int?
     let title: String
     let coverImageUrl: String?
 }
@@ -115,7 +116,7 @@ extension MeetingListResultDTO {
             let statusValue = BookMeetingStatus(item.status)
             return BookMeeting(
                 id: item.id,
-                chatroomId: item.chatroomId,
+                chatroomId: item.chatroomId ?? 0,
                 book: Book(id: item.book.id, title: item.book.title, author: "", coverImageUrl: item.book.coverImageUrl),
                 meetingDate: meetingDate,
                 timerMinutes: item.duration,

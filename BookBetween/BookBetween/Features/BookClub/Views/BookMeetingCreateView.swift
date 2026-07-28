@@ -2,8 +2,8 @@ import SwiftUI
 
 struct BookMeetingCreateView: View {
 	@Environment(\.dismiss) private var dismiss
-	@State private var meetingDate = Calendar.current.date(from: DateComponents(year: 2026, month: 11, day: 30, hour: 10)) ?? Date()
-	@State private var timerMinutes = 30
+	@State private var meetingDate = Date()
+	@State private var timerMinutes = 5
 	@State private var maxParticipants = 3
 	@State private var showingMeetingDatePicker = false
 	@State private var showingMeetingTimePicker = false
@@ -40,10 +40,12 @@ struct BookMeetingCreateView: View {
 
 	let book: Book
 	private let service: (any MeetingServiceProtocol)?
+    private let onMeetingCreated: (() -> Void)?
 
-	init(book: Book, service: (any MeetingServiceProtocol)? = nil) {
+	init(book: Book, service: (any MeetingServiceProtocol)? = nil, onMeetingCreated: (() -> Void)? = nil) {
 		self.book = book
 		self.service = service
+        self.onMeetingCreated = onMeetingCreated
 	}
 
 	var body: some View {
@@ -80,6 +82,7 @@ struct BookMeetingCreateView: View {
                                         duration: timerMinutes
                                     )
                                     dismiss()
+                                    onMeetingCreated?()
                                 } catch {
                                     creationError = error.localizedDescription
                                 }
