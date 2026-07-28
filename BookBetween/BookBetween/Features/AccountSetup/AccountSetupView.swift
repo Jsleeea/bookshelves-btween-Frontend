@@ -80,6 +80,7 @@ private struct AccountSetupContentView: View {
   @State private var isPrivacyTermsAgreed = false
   @State private var isShowingServiceTerms = false
   @State private var isShowingPrivacyTerms = false
+  @State private var selectedCategoryIDs: Set<Int> = []
 
   private var nickname: String {
     self.generatedNickname?.text ?? ""
@@ -106,7 +107,9 @@ private struct AccountSetupContentView: View {
       )
         .padding(.top, 40)
 
-      AccountSetupGenreSectionView()
+      AccountSetupGenreSectionView(
+        selectedCategoryIDs: self.$selectedCategoryIDs
+      )
         .padding(.top, 32)
 
       Spacer(minLength: 48)
@@ -246,12 +249,25 @@ private struct AccountSetupNicknameRefreshButton: View {
 // MARK: - 장르 선택 영역
 
 private struct AccountSetupGenreSectionView: View {
-  @State private var selectedGenres: Set<String> = []
+  @Binding var selectedCategoryIDs: Set<Int>
 
-  private let genreRows: [[String]] = [
-    ["총류", "철학", "종교", "사회과학"],
-    ["자연과학", "기술과학", "예술"],
-    ["언어", "문학", "역사"]
+  private let genreRows: [[AccountSetupGenre]] = [
+    [
+      AccountSetupGenre(id: 1, name: "총류"),
+      AccountSetupGenre(id: 2, name: "철학"),
+      AccountSetupGenre(id: 3, name: "종교"),
+      AccountSetupGenre(id: 4, name: "사회과학")
+    ],
+    [
+      AccountSetupGenre(id: 5, name: "자연과학"),
+      AccountSetupGenre(id: 6, name: "기술과학"),
+      AccountSetupGenre(id: 7, name: "예술")
+    ],
+    [
+      AccountSetupGenre(id: 8, name: "언어"),
+      AccountSetupGenre(id: 9, name: "문학"),
+      AccountSetupGenre(id: 10, name: "역사")
+    ]
   ]
 
   var body: some View {
@@ -263,10 +279,10 @@ private struct AccountSetupGenreSectionView: View {
       VStack(alignment: .leading, spacing: 4) {
         ForEach(self.genreRows, id: \.self) { row in
           HStack(spacing: 8) {
-            ForEach(row, id: \.self) { genre in
+            ForEach(row) { genre in
               GenreChipView(
-                title: genre,
-                isSelected: self.selectedGenres.contains(genre)
+                title: genre.name,
+                isSelected: self.selectedCategoryIDs.contains(genre.id)
               ) {
                 self.toggleGenre(genre)
               }
@@ -281,13 +297,18 @@ private struct AccountSetupGenreSectionView: View {
 
   }
 
-  private func toggleGenre(_ genre: String) {
-    if self.selectedGenres.contains(genre) {
-      self.selectedGenres.remove(genre)
+  private func toggleGenre(_ genre: AccountSetupGenre) {
+    if self.selectedCategoryIDs.contains(genre.id) {
+      self.selectedCategoryIDs.remove(genre.id)
     } else {
-      self.selectedGenres.insert(genre)
+      self.selectedCategoryIDs.insert(genre.id)
     }
   }
+}
+
+private struct AccountSetupGenre: Identifiable, Hashable {
+  let id: Int
+  let name: String
 }
 
 // MARK: - 약관 동의 영역
