@@ -89,6 +89,7 @@ final class MeetingService: MeetingServiceProtocol {
 
     func createMeeting(isbn: String, startDate: String, startTime: String, maxParticipants: Int, duration: Int) async throws -> Int {
         let body = MeetingCreateRequestBody(
+            isbn: isbn,
             startDate: startDate,
             startTime: startTime,
             maxParticipants: maxParticipants,
@@ -96,7 +97,7 @@ final class MeetingService: MeetingServiceProtocol {
         )
         do {
             let response = try await provider.requestAsync(
-                MeetingTarget(baseURL: baseURL, endpoint: .createMeeting(isbn: isbn, body: body))
+                MeetingTarget(baseURL: baseURL, endpoint: .createMeeting(body: body))
             )
             let result = try response.decodePayload(MeetingCreateResultDTO.self)
             return result.id

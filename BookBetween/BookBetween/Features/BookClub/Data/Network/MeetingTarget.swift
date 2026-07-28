@@ -7,7 +7,7 @@ struct MeetingTarget: TargetType {
         case getMeetingDetail(meetingId: Int)
         case participateMeeting(meetingId: Int)
         case searchMeetings(name: String, page: Int, size: Int)
-        case createMeeting(isbn: String, body: MeetingCreateRequestBody)
+        case createMeeting(body: MeetingCreateRequestBody)
         case fetchMyMeetings(isLeader: Bool, year: Int?, month: Int?, page: Int, size: Int)
     }
 
@@ -22,8 +22,8 @@ struct MeetingTarget: TargetType {
             return "/api/v1/meetings/\(meetingId)/participation"
         case .searchMeetings:
             return "/api/v1/meetings"
-        case .createMeeting(let isbn, _):
-            return "/api/v1/\(isbn)/recruitment"
+        case .createMeeting:
+            return "/api/v1/meetings"
         case .fetchMyMeetings:
             return "/api/v1/meetings/me"
         }
@@ -55,7 +55,7 @@ struct MeetingTarget: TargetType {
                 parameters: ["name": name, "page": page, "size": size],
                 encoding: URLEncoding.queryString
             )
-        case .createMeeting(_, let body):
+        case .createMeeting(let body):
             return .requestJSONEncodable(body)
         case .fetchMyMeetings(let isLeader, let year, let month, let page, let size):
             var params: [String: Any] = ["isLeader": isLeader, "page": page, "size": size]

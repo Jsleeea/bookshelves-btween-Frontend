@@ -1,10 +1,14 @@
 import SwiftUI
 
 struct BookClubView: View {
-	@State private var viewModel = BookClubViewModel()
+	@State private var viewModel: BookClubViewModel
 	@State private var currentMeetingPage = 0
 	@FocusState private var isSearchFocused: Bool
 	private let bookGridColumns = [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())]
+
+	init(meetingService: (any MeetingServiceProtocol)? = nil, bookService: (any BookServiceProtocol)? = nil) {
+		_viewModel = State(initialValue: BookClubViewModel(meetingService: meetingService, bookService: bookService))
+	}
 
 	var body: some View {
 		VStack(spacing: 0) {
@@ -63,17 +67,15 @@ struct BookClubView: View {
 	// MARK: - Tab Selector
 
 	private var tabSelector: some View {
-		ScrollView(.horizontal, showsIndicators: false) {
-			HStack(spacing: 8) {
-				ForEach(BookClubTab.allCases, id: \.self) { tab in
-					tabPill(for: tab)
-				}
+		HStack(spacing: 8) {
+			ForEach(BookClubTab.allCases, id: \.self) { tab in
+				tabPill(for: tab)
 			}
-            
-                .padding(.top, 6)
-                .padding(.bottom, 8)
-			.padding(.horizontal, 30)
+			Spacer()
 		}
+        .padding(.top, 6)
+        .padding(.bottom, 8)
+        .padding(.horizontal, 30)
 	}
 
 	private func tabPill(for tab: BookClubTab) -> some View {
@@ -95,7 +97,7 @@ struct BookClubView: View {
 	@ViewBuilder
 	private func meetingList(_ meetings: [BookMeeting]) -> some View {
 		ForEach(meetings, id: \.id) { meeting in
-			BookMeetingCardView(meeting: meeting, service: viewModel.meetingService)
+			BookMeetingCardView(meeting: meeting, service: viewModel.meetingService, isParticipant: true)
 		}
 	}
 
@@ -323,9 +325,12 @@ struct BookClubView: View {
 
 				ScrollView(.horizontal, showsIndicators: false) {
 					HStack(spacing: 20) {
-						ForEach(viewModel.bookSearchResults, id: \.id) { book in
+						ForEach(viewModel.bookSearchResults, id: \.isbn) { book in
 							NavigationLink {
-								BookMeetingCreateView(book: book, service: viewModel.meetingService)
+								BookMeetingCreateView(book: book, service: viewModel.meetingService) {
+									viewModel.selectedTab = .createdMeetings
+									Task { await viewModel.fetchMyMeetings() }
+								}
 							} label: {
 								BookSearchCardView(book: book)
 							}

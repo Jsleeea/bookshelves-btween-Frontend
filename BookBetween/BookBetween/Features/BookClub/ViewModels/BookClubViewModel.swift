@@ -30,6 +30,7 @@ final class BookClubViewModel {
 
 	var selectedTab: BookClubTab = .myMeetings
 	var meetingService: (any MeetingServiceProtocol)?
+    private let bookService: (any BookServiceProtocol)?
 	var searchText: String = ""
 	var participatingMeetings: [BookMeeting] = []
 	var createdMeetings: [BookMeeting] = []
@@ -47,7 +48,9 @@ final class BookClubViewModel {
 				return yearMatch && monthMatch
 			}
 		} else {
-			meetings = participatingMeetings
+			var seen = Set<Int>()
+			meetings = (participatingMeetings + createdMeetings.map(withParticipantStatus))
+				.filter { seen.insert($0.id).inserted }
 		}
 		return sortedMeetings(meetings)
 	}
@@ -62,9 +65,23 @@ final class BookClubViewModel {
 				return yearMatch && monthMatch
 			}
 		} else {
-			meetings = createdMeetings
+			meetings = createdMeetings.map(withParticipantStatus)
 		}
 		return sortedMeetings(meetings)
+	}
+
+	private func withParticipantStatus(_ meeting: BookMeeting) -> BookMeeting {
+		guard meeting.status == .recruiting else { return meeting }
+		return BookMeeting(
+			id: meeting.id,
+			chatroomId: meeting.chatroomId,
+			book: meeting.book,
+			meetingDate: meeting.meetingDate,
+			timerMinutes: meeting.timerMinutes,
+			maxParticipants: meeting.maxParticipants,
+			currentParticipants: meeting.currentParticipants,
+			status: .upcoming
+		)
 	}
 
 	private func sortedMeetings(_ meetings: [BookMeeting]) -> [BookMeeting] {
@@ -95,6 +112,7 @@ final class BookClubViewModel {
 	var recruitingMeetings: [BookMeeting] = []
 
 	var apiSearchResults: [BookMeeting] = []
+	var apiBookSearchResults: [Book] = []
 	var isSearchLoading = false
 
 	var meetingSearchResults: [BookMeeting] {
@@ -109,12 +127,20 @@ final class BookClubViewModel {
 
 	var bookSearchResults: [Book] {
 		guard !searchText.isEmpty else { return [] }
+		if bookService != nil {
+			return apiBookSearchResults
+		}
 		return allBooks.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
 	}
 
 	// MARK: - Init
 
-	init() {
+	init(meetingService: (any MeetingServiceProtocol)? = nil, bookService: (any BookServiceProtocol)? = nil) {
+		self.meetingService = meetingService
+        self.bookService = bookService
+
+        guard meetingService == nil else { return }
+
 		let calendar = Calendar.current
 		let date1 = calendar.date(from: DateComponents(year: 2026, month: 6, day: 19, hour: 21)) ?? Date()
 		let date2 = calendar.date(from: DateComponents(year: 2026, month: 6, day: 20, hour: 6)) ?? Date()
@@ -236,16 +262,42 @@ final class BookClubViewModel {
 	}
 
 	func searchMeetings(query: String) async {
-		guard let meetingService, !query.isEmpty else {
+		guard !query.isEmpty else {
 			apiSearchResults = []
+			apiBookSearchResults = []
 			return
 		}
+
 		isSearchLoading = true
 		defer { isSearchLoading = false }
-		do {
-			apiSearchResults = try await meetingService.searchMeetings(name: query, page: 1, size: 20)
-		} catch {
+
+		if let svc = meetingService {
+			do {
+				apiSearchResults = try await svc.searchMeetings(name: query, page: 1, size: 20)
+			} catch {
+				apiSearchResults = []
+			}
+		} else {
 			apiSearchResults = []
+		}
+
+		if let svc = bookService {
+			do {
+				let page = try await svc.searchBooks(query: query, page: 1, size: 20)
+				let items = page.books.filter { $0.isSaveable }.map { $0.book }
+				var seenIsbns = Set<String>()
+				var seenTitles = Set<String>()
+				apiBookSearchResults = items.filter { book in
+					if let isbn = book.isbn {
+						return seenIsbns.insert(isbn).inserted && seenTitles.insert(book.title).inserted
+					}
+					return seenTitles.insert(book.title).inserted
+				}
+			} catch {
+				apiBookSearchResults = []
+			}
+		} else {
+			apiBookSearchResults = []
 		}
 	}
 

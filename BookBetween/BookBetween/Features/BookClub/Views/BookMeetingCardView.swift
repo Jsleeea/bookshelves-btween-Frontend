@@ -3,10 +3,12 @@ import SwiftUI
 struct BookMeetingCardView: View {
 	let meeting: BookMeeting
     let service: (any MeetingServiceProtocol)?
+    let isParticipant: Bool
 
-    init(meeting: BookMeeting, service: (any MeetingServiceProtocol)? = nil) {
+    init(meeting: BookMeeting, service: (any MeetingServiceProtocol)? = nil, isParticipant: Bool = false) {
         self.meeting = meeting
         self.service = service
+        self.isParticipant = isParticipant
     }
 
 	var body: some View {
@@ -176,7 +178,7 @@ struct BookMeetingCardView: View {
         case .inProgress:
             ChatView()
         default:
-            BookMeetingDetailView(meeting: meeting, service: service)
+            BookMeetingDetailView(meeting: meeting, service: service, isParticipant: isParticipant)
         }
     }
 

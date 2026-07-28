@@ -16,17 +16,20 @@ struct AppRootView: View {
     @State private var accountSetupViewModel: AccountSetupViewModel
     private let memberService: MemberServiceProtocol?
     private let bookService: BookServiceProtocol
+    private let meetingService: (any MeetingServiceProtocol)?
 
     init(
         loginViewModel: LoginViewModel,
         accountSetupViewModel: AccountSetupViewModel,
         memberService: MemberServiceProtocol? = nil,
-        bookService: BookServiceProtocol = BookService.stubbed()
+        bookService: BookServiceProtocol = BookService.stubbed(),
+        meetingService: (any MeetingServiceProtocol)? = nil
     ) {
         _loginViewModel = State(initialValue: loginViewModel)
         _accountSetupViewModel = State(initialValue: accountSetupViewModel)
         self.memberService = memberService
         self.bookService = bookService
+        self.meetingService = meetingService
     }
 
     var body: some View {
@@ -85,6 +88,7 @@ struct AppRootView: View {
             MainTabView(
                 memberService: memberService,
                 bookService: bookService,
+                meetingService: meetingService,
                 onLogout: {
                     try await loginViewModel.logout()
                 }

@@ -33,16 +33,15 @@ struct MyLibraryView: View {
 	// MARK: - Tab Selector
 
 	private var tabSelector: some View {
-		ScrollView(.horizontal, showsIndicators: false) {
-			HStack(spacing: 8) {
-				ForEach(MyLibraryTab.allCases, id: \.self) { tab in
-					tabPill(for: tab)
-				}
+		HStack(spacing: 8) {
+			ForEach(MyLibraryTab.allCases, id: \.self) { tab in
+				tabPill(for: tab)
 			}
-            .padding(.top, 6)
-            .padding(.bottom, 14)
-            .padding(.horizontal, 30)
+			Spacer()
 		}
+        .padding(.top, 6)
+        .padding(.bottom, 14)
+        .padding(.horizontal, 30)
 	}
 
 	private func tabPill(for tab: MyLibraryTab) -> some View {

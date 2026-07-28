@@ -5,6 +5,7 @@ struct BookMeetingResultView: View {
 
     private let service: (any MeetingServiceProtocol)?
     @State private var meeting: BookMeeting
+    @State private var meetingDismissed = false
 
     init(meeting: BookMeeting, service: (any MeetingServiceProtocol)? = nil) {
         self._meeting = State(initialValue: meeting)
@@ -50,9 +51,16 @@ struct BookMeetingResultView: View {
 		.toolbar(.hidden, for: .navigationBar)
 		.task {
 			guard let service else { return }
-			if let fetched = try? await service.fetchMeetingDetail(meetingId: meeting.id) {
-				meeting = fetched
+			do {
+				meeting = try await service.fetchMeetingDetail(meetingId: meeting.id)
+			} catch {
+				meetingDismissed = true
 			}
+		}
+		.alert("모임이 폭파됐어요", isPresented: $meetingDismissed) {
+			Button("확인") { dismiss() }
+		} message: {
+			Text("인원 미달로 모임이 자동으로 폭파됐습니다.")
 		}
 	}
 
@@ -113,7 +121,6 @@ struct BookMeetingResultView: View {
 			BookCoverImage(book: meeting.book, placeholderImageName: "book_cover_mock")
 				.aspectRatio(29.0/44.0, contentMode: .fit)
 				.frame(height: 170)
-                .clipped()
                 .clipShape(RoundedRectangle(cornerRadius: 8))
                 .overlay {
                     RoundedRectangle(cornerRadius: 8)
