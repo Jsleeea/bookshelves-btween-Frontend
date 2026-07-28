@@ -32,12 +32,8 @@ nonisolated struct OnboardingCategoryDTO: Decodable {
     let name: String
 }
 
-nonisolated struct OnboardingTermsResultDTO: Decodable {
-    let terms: [OnboardingTermDTO]
-}
-
 nonisolated struct OnboardingTermDTO: Decodable {
-    let termsId: Int
+    let id: Int
     let title: String
     let content: String
     let version: String

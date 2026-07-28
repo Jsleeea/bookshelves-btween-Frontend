@@ -71,8 +71,8 @@ final class OnboardingService: OnboardingServiceProtocol {
                     endpoint: .terms
                 )
             )
-            let result = try response.decodePayload(
-                OnboardingTermsResultDTO.self
+            let terms = try response.decodePayload(
+                [OnboardingTermDTO].self
             )
 
             #if DEBUG
@@ -80,11 +80,11 @@ final class OnboardingService: OnboardingServiceProtocol {
             [OnboardingTerms]
             URL: \(response.request?.url?.absoluteString ?? "확인 불가")
             HTTP: \(response.statusCode)
-            termsCount: \(result.terms.count)
+            termsCount: \(terms.count)
             """)
             #endif
 
-            return result.terms
+            return terms
         } catch let error as MoyaError {
             throw NetworkError.transport(error)
         }
@@ -95,14 +95,14 @@ final class PreviewOnboardingService: OnboardingServiceProtocol {
     func fetchTerms() async throws -> [OnboardingTermDTO] {
         [
             OnboardingTermDTO(
-                termsId: 1,
+                id: 1,
                 title: "이용약관",
                 content: "",
                 version: "1.0",
                 isRequired: true
             ),
             OnboardingTermDTO(
-                termsId: 2,
+                id: 2,
                 title: "개인정보 처리방침",
                 content: "",
                 version: "1.0",

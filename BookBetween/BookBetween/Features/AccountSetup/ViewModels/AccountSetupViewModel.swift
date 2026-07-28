@@ -54,7 +54,7 @@ final class AccountSetupViewModel {
             let terms = try await onboardingService.fetchTerms()
             requiredTermsIds = terms
                 .filter(\.isRequired)
-                .map(\.termsId)
+                .map(\.id)
                 .sorted()
             hasLoadedTerms = true
         } catch {
