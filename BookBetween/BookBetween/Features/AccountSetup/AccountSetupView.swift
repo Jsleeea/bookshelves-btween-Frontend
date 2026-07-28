@@ -128,12 +128,30 @@ private struct AccountSetupContentView: View {
       )
 
       AccountSetupStartButtonView(
-        isEnabled: self.isStartButtonEnabled
+        isEnabled: self.isStartButtonEnabled,
+        isLoading: self.viewModel.isLoading
       ) {
-        self.onStart()
+        self.completeOnboarding()
       }
       .padding(.top, 13)
       .padding(.bottom, 16)
+      .alert(
+        "계정 설정을 완료하지 못했습니다.",
+        isPresented: Binding(
+          get: { self.viewModel.errorMessage != nil },
+          set: { isPresented in
+            if !isPresented {
+              self.viewModel.resetState()
+            }
+          }
+        )
+      ) {
+        Button("확인") {
+          self.viewModel.resetState()
+        }
+      } message: {
+        Text(self.viewModel.errorMessage ?? "다시 시도해주세요.")
+      }
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     .task {
@@ -173,6 +191,26 @@ private struct AccountSetupContentView: View {
       PrivacyConsentDetailView {
         self.isPrivacyTermsAgreed = true
       }
+    }
+  }
+
+  private func completeOnboarding() {
+    guard let generatedNickname = self.generatedNickname else {
+      return
+    }
+
+    Task {
+      await self.viewModel.completeOnboarding(
+        nickname: generatedNickname,
+        categoryIds: self.selectedCategoryIDs.sorted(),
+        agreedTermsIds: self.viewModel.requiredTermsIds
+      )
+
+      guard self.viewModel.state == .success else {
+        return
+      }
+
+      self.onStart()
     }
   }
 }
@@ -444,19 +482,27 @@ private struct AccountSetupAgreementCheckboxView: View {
 
 private struct AccountSetupStartButtonView: View {
   let isEnabled: Bool
+  let isLoading: Bool
   let action: () -> Void
 
   var body: some View {
     Button(action: self.action) {
-      Text("시작하기")
-        .head3Style
-        .foregroundStyle(Color.white)
-        .frame(maxWidth: .infinity)
-        .frame(height: 53)
-        .background(self.isEnabled ? Color.green600 : Color.gray300)
-        .cornerRadius(12)
+      Group {
+        if self.isLoading {
+          ProgressView()
+            .tint(Color.white)
+        } else {
+          Text("시작하기")
+            .head3Style
+            .foregroundStyle(Color.white)
+        }
+      }
+      .frame(maxWidth: .infinity)
+      .frame(height: 53)
+      .background(self.isEnabled ? Color.green600 : Color.gray300)
+      .cornerRadius(12)
     }
-    .disabled(!self.isEnabled)
+    .disabled(!self.isEnabled || self.isLoading)
     .padding(.horizontal, 29)
   }
 }
