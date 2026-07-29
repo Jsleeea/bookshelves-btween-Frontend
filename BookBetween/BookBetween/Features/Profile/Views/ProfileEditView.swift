@@ -9,17 +9,44 @@ import SwiftUI
 
 struct ProfileEditView: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var generatedNickname = GeneratedNickname.placeholder
-    @State private var selectedProfileBackground: ProfileBackgroundColor = .brown
-    @State private var selectedGenres: Set<String> = ["사회과학", "문학"]
+    @State private var generatedNickname: GeneratedNickname
+    @State private var selectedProfileBackground: ProfileBackgroundColor
+    @State private var selectedGenres: Set<String>
     @State private var isLoggingOut = false
     @State private var logoutErrorMessage: String?
 
     private let onLogout: () async throws -> Void
 
     init(
+        profile: MemberProfile? = nil,
         onLogout: @escaping () async throws -> Void = {}
     ) {
+        let backgroundColorCode = ProfileBackgroundColorCode(
+            rawValue: profile?.profileBackgroundColor ?? ""
+        ) ?? .brown
+        let nickname = profile.map {
+            GeneratedNickname(
+                noun: $0.nicknameNoun,
+                modifier: $0.nicknameModifier,
+                animal: $0.nicknameAnimal,
+                animalImageName: NicknameGenerator.animalImageName(
+                    for: $0.nicknameAnimal
+                ),
+                profileBackgroundColor: backgroundColorCode
+            )
+        } ?? .placeholder
+
+        _generatedNickname = State(initialValue: nickname)
+        _selectedProfileBackground = State(
+            initialValue: ProfileBackgroundColor(
+                code: backgroundColorCode
+            )
+        )
+        _selectedGenres = State(
+            initialValue: Set(
+                profile?.categories.map(\.name) ?? []
+            )
+        )
         self.onLogout = onLogout
     }
 
@@ -316,6 +343,23 @@ private enum ProfileBackgroundColor: CaseIterable, Identifiable {
     case yellow
 
     var id: Self { self }
+
+    init(code: ProfileBackgroundColorCode) {
+        switch code {
+        case .brown:
+            self = .brown
+        case .purple:
+            self = .purple
+        case .blue:
+            self = .skyBlue
+        case .green:
+            self = .lightGreen
+        case .red:
+            self = .orange
+        case .yellow:
+            self = .yellow
+        }
+    }
 
     var gradient: LinearGradient {
         switch self {
