@@ -12,13 +12,31 @@ struct ProfileEditView: View {
     @State private var generatedNickname: GeneratedNickname
     @State private var selectedProfileBackground: ProfileBackgroundColor
     @State private var selectedGenres: Set<String>
+    @State private var isSaving = false
+    @State private var saveErrorMessage: String?
     @State private var isLoggingOut = false
     @State private var logoutErrorMessage: String?
 
+    private let onSave: (MemberProfileUpdateRequestDTO) async throws -> Void
     private let onLogout: () async throws -> Void
+    private let genreCategoryIDs: [String: Int] = [
+        "총류": 1,
+        "철학": 2,
+        "종교": 3,
+        "사회과학": 4,
+        "자연과학": 5,
+        "기술과학": 6,
+        "예술": 7,
+        "언어": 8,
+        "문학": 9,
+        "역사": 10
+    ]
 
     init(
         profile: MemberProfile? = nil,
+        onSave: @escaping (
+            MemberProfileUpdateRequestDTO
+        ) async throws -> Void = { _ in },
         onLogout: @escaping () async throws -> Void = {}
     ) {
         let backgroundColorCode = ProfileBackgroundColorCode(
@@ -47,6 +65,7 @@ struct ProfileEditView: View {
                 profile?.categories.map(\.name) ?? []
             )
         )
+        self.onSave = onSave
         self.onLogout = onLogout
     }
 
@@ -81,8 +100,11 @@ struct ProfileEditView: View {
 
                     ProfileAccountActionSectionView(
                         onSave: {
-                            // 프로필 저장 기능 연결 시 동작 추가
+                            Task {
+                                await saveProfile()
+                            }
                         },
+                        isSaving: isSaving,
                         onLogout: {
                             Task {
                                 await logout()
@@ -99,6 +121,23 @@ struct ProfileEditView: View {
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
         .alert(
+            "회원 정보를 수정하지 못했습니다.",
+            isPresented: Binding(
+                get: { saveErrorMessage != nil },
+                set: { isPresented in
+                    if !isPresented {
+                        saveErrorMessage = nil
+                    }
+                }
+            )
+        ) {
+            Button("확인", role: .cancel) {
+                saveErrorMessage = nil
+            }
+        } message: {
+            Text(saveErrorMessage ?? "")
+        }
+        .alert(
             "로그아웃에 실패했습니다.",
             isPresented: Binding(
                 get: { logoutErrorMessage != nil },
@@ -114,6 +153,31 @@ struct ProfileEditView: View {
             }
         } message: {
             Text(logoutErrorMessage ?? "")
+        }
+    }
+
+    private func saveProfile() async {
+        guard !isSaving else {
+            return
+        }
+
+        let categoryIDs = selectedGenres.compactMap {
+            genreCategoryIDs[$0]
+        }.sorted()
+        let request = MemberProfileUpdateRequestDTO(
+            nickname: generatedNickname,
+            profileBackgroundColor: selectedProfileBackground.code,
+            categoryIds: categoryIDs
+        )
+
+        isSaving = true
+        defer { isSaving = false }
+
+        do {
+            try await onSave(request)
+            dismiss()
+        } catch {
+            saveErrorMessage = error.localizedDescription
         }
     }
 
@@ -361,6 +425,23 @@ private enum ProfileBackgroundColor: CaseIterable, Identifiable {
         }
     }
 
+    var code: ProfileBackgroundColorCode {
+        switch self {
+        case .brown:
+            return .brown
+        case .lightGreen:
+            return .green
+        case .skyBlue:
+            return .blue
+        case .orange:
+            return .red
+        case .purple:
+            return .purple
+        case .yellow:
+            return .yellow
+        }
+    }
+
     var gradient: LinearGradient {
         switch self {
         case .orange:
@@ -462,20 +543,29 @@ private struct ProfileGenreSectionView: View {
 
 private struct ProfileAccountActionSectionView: View {
     let onSave: () -> Void
+    let isSaving: Bool
     let onLogout: () -> Void
     let onWithdraw: () -> Void
 
     var body: some View {
         VStack(spacing: 0) {
             Button(action: onSave) {
-                Text("저장하기")
-                    .body1SemiBoldStyle
-                    .foregroundStyle(Color.beige100)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 53)
-                    .background(Color.green600)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                Group {
+                    if isSaving {
+                        ProgressView()
+                            .tint(Color.beige100)
+                    } else {
+                        Text("저장하기")
+                            .body1SemiBoldStyle
+                    }
+                }
+                .foregroundStyle(Color.beige100)
+                .frame(maxWidth: .infinity)
+                .frame(height: 53)
+                .background(Color.green600)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
             }
+            .disabled(isSaving)
 
             Button(action: onLogout) {
                 HStack(spacing: 8) {

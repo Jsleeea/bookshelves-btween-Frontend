@@ -192,6 +192,11 @@ struct ProfileView: View {
         NavigationLink {
             ProfileEditView(
                 profile: viewModel.profile,
+                onSave: { request in
+                    try await viewModel.updateMyProfile(
+                        request: request
+                    )
+                },
                 onLogout: onLogout
             )
         } label: {

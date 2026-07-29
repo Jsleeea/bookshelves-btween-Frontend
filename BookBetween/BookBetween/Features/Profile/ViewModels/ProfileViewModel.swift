@@ -59,6 +59,18 @@ final class ProfileViewModel {
         }
     }
 
+    func updateMyProfile(
+        request: MemberProfileUpdateRequestDTO
+    ) async throws {
+        guard let memberService else {
+            throw NetworkError.emptyResult
+        }
+
+        profile = try await memberService.updateMyProfile(
+            request: request
+        )
+    }
+
     // MARK: - 월 이동
 
     func moveToPreviousMonth() {
