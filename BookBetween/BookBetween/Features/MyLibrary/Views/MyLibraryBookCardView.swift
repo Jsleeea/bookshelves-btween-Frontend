@@ -7,6 +7,8 @@ import SwiftUI
 
 struct MyLibraryBookCardView: View {
 	let record: UserBookRecord
+    let bookService: any BookServiceProtocol
+    let onRecordSaved: (UserBookRecord) -> Void
 
 	var body: some View {
 		ZStack {
@@ -39,7 +41,11 @@ struct MyLibraryBookCardView: View {
 			}
 
 			NavigationLink {
-				BookRecordDetailView(record: record)
+				BookRecordDetailView(
+                    record: record,
+                    service: bookService,
+                    onRecordSaved: onRecordSaved
+                )
 			} label: {
 				Color.clear
 					.contentShape(Rectangle())
@@ -134,7 +140,9 @@ struct MyLibraryBookCardView: View {
 				progress: 70,
 				rating: 4.5,
 				memo: "강은 어디에나 있다. 입구이자 출구이며, 시작이자 끝이다."
-			)
+			),
+            bookService: BookService.stubbed(),
+            onRecordSaved: { _ in }
 		)
 		.padding()
 	}

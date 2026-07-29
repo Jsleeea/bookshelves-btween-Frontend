@@ -9,6 +9,7 @@ import Foundation
 import Observation
 
 @Observable
+@MainActor
 final class BookRecordDetailViewModel {
     private(set) var record: UserBookRecord
     let isSaveable: Bool
@@ -16,10 +17,24 @@ final class BookRecordDetailViewModel {
     var progress: Int
     var rating: Double
     var memo: String
+    private(set) var isLoading = false
+    private(set) var isSaving = false
+    var errorMessage: String?
 
-    init(record: UserBookRecord, isSaveable: Bool = true) {
+    private let service: any BookServiceProtocol
+    private let loadsRemoteDetail: Bool
+    private var hasLoadedDetail = false
+
+    init(
+        record: UserBookRecord,
+        isSaveable: Bool = true,
+        service: any BookServiceProtocol,
+        loadsRemoteDetail: Bool = false
+    ) {
         self.record = record
         self.isSaveable = isSaveable
+        self.service = service
+        self.loadsRemoteDetail = loadsRemoteDetail
         self.progress = record.progress
         self.rating = record.rating ?? 0
         self.memo = record.memo ?? ""
@@ -38,7 +53,7 @@ final class BookRecordDetailViewModel {
     }
 
     func startEditing() {
-        guard isSaveable else { return }
+        guard isSaveable, !isLoading, !isSaving else { return }
         isEditing = true
     }
 
@@ -47,12 +62,80 @@ final class BookRecordDetailViewModel {
         rating = min(max(value, 0), 5)
     }
 
-    func saveRecord() {
+    func loadBookDetail() async {
+        guard
+            loadsRemoteDetail,
+            !hasLoadedDetail,
+            !isLoading,
+            let isbn = normalizedISBN
+        else { return }
+
+        isLoading = true
+        errorMessage = nil
+        defer { isLoading = false }
+
+        do {
+            let detail = try await service.fetchBookDetail(isbn: isbn)
+            record = detail.record
+            syncDraftWithRecord()
+            hasLoadedDetail = true
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    @discardableResult
+    func saveRecord() async -> UserBookRecord? {
+        guard
+            isEditing,
+            !isSaving,
+            let isbn = normalizedISBN
+        else { return nil }
+
         let trimmedMemo = memo.trimmingCharacters(in: .whitespacesAndNewlines)
-        record.progress = progress
-        record.rating = rating > 0 ? rating : nil
-        record.memo = trimmedMemo.isEmpty ? nil : trimmedMemo
+        let savedRating = rating > 0 ? rating : nil
+        let savedMemo = trimmedMemo.isEmpty ? nil : trimmedMemo
+
+        isSaving = true
+        errorMessage = nil
+        defer { isSaving = false }
+
+        do {
+            try await service.upsertMemberBook(
+                isbn: isbn,
+                progress: progress,
+                rating: savedRating,
+                memo: savedMemo
+            )
+
+            record.progress = progress
+            record.rating = savedRating
+            record.memo = savedMemo
+            memo = savedMemo ?? ""
+            isEditing = false
+            return record
+        } catch {
+            errorMessage = error.localizedDescription
+            return nil
+        }
+    }
+
+    private var normalizedISBN: String? {
+        guard isSaveable else { return nil }
+
+        let isbn = record.book.isbn?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard let isbn, !isbn.isEmpty else {
+            return nil
+        }
+
+        return isbn
+    }
+
+    private func syncDraftWithRecord() {
+        progress = record.progress
+        rating = record.rating ?? 0
         memo = record.memo ?? ""
-        isEditing = false
     }
 }

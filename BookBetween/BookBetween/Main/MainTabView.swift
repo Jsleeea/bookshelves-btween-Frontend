@@ -15,17 +15,21 @@ struct MainTabView: View {
     private let memberService: MemberServiceProtocol?
     private let bookService: BookServiceProtocol
     private let meetingService: (any MeetingServiceProtocol)?
+    private let notificationService: any NotificationServiceProtocol
     private let onLogout: () async throws -> Void
 
     init(
         memberService: MemberServiceProtocol? = nil,
         bookService: BookServiceProtocol = BookService.stubbed(),
         meetingService: (any MeetingServiceProtocol)? = nil,
+        notificationService: any NotificationServiceProtocol =
+            NotificationService.stubbed(),
         onLogout: @escaping () async throws -> Void = {}
     ) {
         self.memberService = memberService
         self.bookService = bookService
         self.meetingService = meetingService
+        self.notificationService = notificationService
         self.onLogout = onLogout
     }
 
@@ -35,11 +39,20 @@ struct MainTabView: View {
                 switch selectedTab {
                 case .home:
                     NavigationStack(path: $homeNavigationPath) {
-                        HomeView()
+                        HomeView(
+                            viewModel: HomeViewModel(
+                                service: HomeService.stubbed()
+                            ),
+                            bookService: bookService
+                        )
                             .navigationDestination(for: HomeRoute.self) { route in
                                 switch route {
                                 case .notificationInbox:
-                                    NotificationInboxView()
+                                    NotificationInboxView(
+                                        viewModel: NotificationInboxViewModel(
+                                            service: notificationService
+                                        )
+                                    )
                                 }
                             }
                     }
@@ -54,7 +67,9 @@ struct MainTabView: View {
                 case .bookClub:
                     NavigationStack { BookClubView(meetingService: meetingService, bookService: bookService) }
                 case .myLibrary:
-                    NavigationStack { MyLibraryView() }
+                    NavigationStack {
+                        MyLibraryView(bookService: bookService)
+                    }
                 case .profile:
                     NavigationStack {
                         ProfileView(

@@ -10,6 +10,12 @@ protocol BookServiceProtocol {
     func searchBooks(query: String, page: Int, size: Int) async throws -> BookSearchPage
     func fetchBookDetail(isbn: String) async throws -> BookDetail
     func fetchRecentSearches() async throws -> [RecentSearchItem]
+    func upsertMemberBook(
+        isbn: String,
+        progress: Int,
+        rating: Double?,
+        memo: String?
+    ) async throws
 }
 
 final class BookService: BookServiceProtocol {
@@ -97,6 +103,37 @@ final class BookService: BookServiceProtocol {
                 return try response.decodePayload(
                     RecentSearchResultDTO.self
                 ).toDomain()
+            } catch let error as MoyaError {
+                throw NetworkError.transport(error)
+            }
+        }
+    }
+
+    func upsertMemberBook(
+        isbn: String,
+        progress: Int,
+        rating: Double?,
+        memo: String?
+    ) async throws {
+        try await requestExecutor.execute {
+            do {
+                let request = MemberBookUpsertRequestDTO(
+                    progress: progress,
+                    rating: rating,
+                    memo: memo
+                )
+                let response = try await provider.requestAsync(
+                    BookTarget(
+                        baseURL: baseURL,
+                        endpoint: .upsertMemberBook(
+                            isbn: isbn,
+                            request: request
+                        )
+                    )
+                )
+                _ = try response.decodePayload(
+                    MemberBookUpsertResultDTO.self
+                )
             } catch let error as MoyaError {
                 throw NetworkError.transport(error)
             }

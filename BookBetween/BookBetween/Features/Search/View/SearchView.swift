@@ -48,7 +48,7 @@ struct SearchView: View {
                     }
                     .padding(.horizontal, 19)
                     //.padding(.top, 12)
-                    .padding(.bottom, 24)
+                    .padding(.bottom, 80)
                 }
             }
         }
@@ -171,7 +171,10 @@ struct SearchView: View {
                     .padding(.top, 24)
             } else {
                 ForEach(viewModel.searchResults, id: \.listID) { item in
-                    SearchBookResultCardView(item: item)
+                    SearchBookResultCardView(
+                        item: item,
+                        service: viewModel.bookService
+                    )
                         .task {
                             await viewModel.loadNextPageIfNeeded(currentItem: item)
                         }

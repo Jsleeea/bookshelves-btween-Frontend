@@ -9,6 +9,15 @@ import SwiftUI
 
 struct SearchBookResultCardView: View {
     let item: BookSearchItem
+    let service: any BookServiceProtocol
+
+    init(
+        item: BookSearchItem,
+        service: any BookServiceProtocol = BookService.stubbed()
+    ) {
+        self.item = item
+        self.service = service
+    }
 
     private var book: Book {
         item.book
@@ -16,7 +25,12 @@ struct SearchBookResultCardView: View {
 
     var body: some View {
         NavigationLink {
-            BookRecordDetailView(book: book, isSaveable: item.isSaveable)
+            BookRecordDetailView(
+                book: book,
+                isSaveable: item.isSaveable,
+                service: service,
+                loadsRemoteDetail: true
+            )
         } label: {
             cardContent
         }

@@ -25,6 +25,10 @@ final class SearchViewModel {
     private var hasNext = false
     private var submittedQuery = ""
 
+    var bookService: any BookServiceProtocol {
+        service
+    }
+
     init(
         service: any BookServiceProtocol,
         pageSize: Int = 15

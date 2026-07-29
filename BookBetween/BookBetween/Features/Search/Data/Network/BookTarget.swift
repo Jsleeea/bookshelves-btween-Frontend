@@ -12,6 +12,10 @@ struct BookTarget: TargetType {
         case search(query: String, page: Int, size: Int)
         case detail(isbn: String)
         case recentSearches
+        case upsertMemberBook(
+            isbn: String,
+            request: MemberBookUpsertRequestDTO
+        )
     }
 
     let baseURL: URL
@@ -25,11 +29,18 @@ struct BookTarget: TargetType {
             return "/api/v1/books/\(isbn)"
         case .recentSearches:
             return "/api/v1/books/search/recent"
+        case .upsertMemberBook(let isbn, _):
+            return "/api/v1/member-books/\(isbn)"
         }
     }
 
     var method: Moya.Method {
-        .get
+        switch endpoint {
+        case .search, .detail, .recentSearches:
+            return .get
+        case .upsertMemberBook:
+            return .put
+        }
     }
 
     var task: Moya.Task {
@@ -45,6 +56,8 @@ struct BookTarget: TargetType {
             )
         case .detail, .recentSearches:
             return .requestPlain
+        case .upsertMemberBook(_, let request):
+            return .requestJSONEncodable(request)
         }
     }
 

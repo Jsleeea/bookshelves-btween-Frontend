@@ -10,15 +10,21 @@ import SwiftUI
 @MainActor
 struct HomeView: View {
     @State private var viewModel: HomeViewModel
+    private let bookService: any BookServiceProtocol
 
     init() {
         _viewModel = State(
             initialValue: HomeViewModel(service: HomeService.stubbed())
         )
+        self.bookService = BookService.stubbed()
     }
     
-    init(viewModel: HomeViewModel) {
+    init(
+        viewModel: HomeViewModel,
+        bookService: any BookServiceProtocol
+    ) {
         _viewModel = State(initialValue: viewModel)
+        self.bookService = bookService
     }
     
     var body: some View {
@@ -131,7 +137,9 @@ struct HomeView: View {
                     NavigationLink {
                         BookRecordDetailView(
                             book: recommendation,
-                            isSaveable: recommendation.isbn != nil
+                            isSaveable: recommendation.isbn != nil,
+                            service: bookService,
+                            loadsRemoteDetail: true
                         )
                     } label: {
                         HStack{
@@ -189,7 +197,10 @@ struct HomeView: View {
                 Spacer()
             }
             NavigationLink {
-                BookRecordDetailView(record: record)
+                BookRecordDetailView(
+                    record: record,
+                    service: bookService
+                )
             } label: {
                 RecentBookCardView(record: record)
             }

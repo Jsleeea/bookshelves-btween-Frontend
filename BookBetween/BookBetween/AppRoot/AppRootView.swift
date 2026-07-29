@@ -17,19 +17,23 @@ struct AppRootView: View {
     private let memberService: MemberServiceProtocol?
     private let bookService: BookServiceProtocol
     private let meetingService: (any MeetingServiceProtocol)?
+    private let notificationService: any NotificationServiceProtocol
 
     init(
         loginViewModel: LoginViewModel,
         accountSetupViewModel: AccountSetupViewModel,
         memberService: MemberServiceProtocol? = nil,
         bookService: BookServiceProtocol = BookService.stubbed(),
-        meetingService: (any MeetingServiceProtocol)? = nil
+        meetingService: (any MeetingServiceProtocol)? = nil,
+        notificationService: any NotificationServiceProtocol =
+            NotificationService.stubbed()
     ) {
         _loginViewModel = State(initialValue: loginViewModel)
         _accountSetupViewModel = State(initialValue: accountSetupViewModel)
         self.memberService = memberService
         self.bookService = bookService
         self.meetingService = meetingService
+        self.notificationService = notificationService
     }
 
     var body: some View {
@@ -89,6 +93,7 @@ struct AppRootView: View {
                 memberService: memberService,
                 bookService: bookService,
                 meetingService: meetingService,
+                notificationService: notificationService,
                 onLogout: {
                     try await loginViewModel.logout()
                 }

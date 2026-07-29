@@ -2,6 +2,11 @@ import SwiftUI
 
 struct MyLibraryView: View {
 	@State private var viewModel = MyLibraryViewModel()
+    private let bookService: any BookServiceProtocol
+
+    init(bookService: any BookServiceProtocol) {
+        self.bookService = bookService
+    }
 
 	var body: some View {
 		VStack(spacing: 0) {
@@ -19,7 +24,11 @@ struct MyLibraryView: View {
 			ScrollView(showsIndicators: false) {
 				VStack(spacing: 16) {
 					ForEach(viewModel.filteredRecords, id: \.id) { record in
-						MyLibraryBookCardView(record: record)
+						MyLibraryBookCardView(
+                            record: record,
+                            bookService: bookService,
+                            onRecordSaved: viewModel.updateRecord
+                        )
 					}
 				}
                 .padding(.top, 14)
@@ -66,6 +75,6 @@ struct MyLibraryView: View {
 
 #Preview {
 	NavigationStack {
-		MyLibraryView()
+		MyLibraryView(bookService: BookService.stubbed())
 	}
 }
