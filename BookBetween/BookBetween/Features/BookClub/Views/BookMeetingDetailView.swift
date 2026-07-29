@@ -5,21 +5,23 @@ struct BookMeetingDetailView: View {
 
     private let service: (any MeetingServiceProtocol)?
     private let isParticipant: Bool
+    private let onParticipated: (() -> Void)?
     @State private var meeting: BookMeeting
     @State private var isParticipating = false
     @State private var participationError: String?
     @State private var meetingDismissed = false
 
-    init(meeting: BookMeeting, service: (any MeetingServiceProtocol)? = nil, isParticipant: Bool = false) {
+    init(meeting: BookMeeting, service: (any MeetingServiceProtocol)? = nil, isParticipant: Bool = false, onParticipated: (() -> Void)? = nil) {
         self._meeting = State(initialValue: meeting)
         self.service = service
         self.isParticipant = isParticipant
+        self.onParticipated = onParticipated
     }
 
 	var body: some View {
 		ZStack {
             Color.beige100.ignoresSafeArea()
-			if meeting.status != .upcoming {
+			if !isParticipant {
 				leafDecoration
 			}
 			VStack(spacing: 0) {
@@ -46,6 +48,7 @@ struct BookMeetingDetailView: View {
                                     do {
                                         _ = try await service?.participateMeeting(meetingId: meeting.id)
                                         dismiss()
+                                        onParticipated?()
                                     } catch {
                                         participationError = error.localizedDescription
                                         isParticipating = false
@@ -71,7 +74,8 @@ struct BookMeetingDetailView: View {
 			Text(participationError ?? "")
 		}
 		.task {
-			guard let service else { return }
+			// 이미 참여한 모임은 서버 status가 RECRUITING으로 내려와 클라이언트 변환을 덮어쓰므로 fetch 생략
+			guard let service, !isParticipant else { return }
 			do {
 				meeting = try await service.fetchMeetingDetail(meetingId: meeting.id)
 			} catch {
@@ -131,9 +135,9 @@ struct BookMeetingDetailView: View {
     // MARK: - Dynamic Header
 
     private var navigationSubtitle: String {
-        meeting.status == .recruiting
-            ? "참여하는 모임의 일정을 확인해주세요"
-            : "같이 읽을 책과 모임 정보를 확인해주세요"
+        isParticipant
+            ? "같이 읽을 책과 모임 정보를 확인해주세요"
+            : "참여하는 모임의 일정을 확인해주세요"
     }
 
 	// MARK: - Book Header

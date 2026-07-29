@@ -4,7 +4,6 @@ struct BookClubView: View {
 	@State private var viewModel: BookClubViewModel
 	@State private var currentMeetingPage = 0
 	@FocusState private var isSearchFocused: Bool
-	private let bookGridColumns = [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())]
 
 	init(meetingService: (any MeetingServiceProtocol)? = nil, bookService: (any BookServiceProtocol)? = nil) {
 		_viewModel = State(initialValue: BookClubViewModel(meetingService: meetingService, bookService: bookService))
@@ -237,7 +236,10 @@ struct BookClubView: View {
                 ZStack(alignment: .top) {
                     VStack(spacing: 12) {
                         ForEach(meetingPages[currentMeetingPage], id: \.id) { meeting in
-                            BookMeetingCardView(meeting: meeting, service: viewModel.meetingService)
+                            BookMeetingCardView(meeting: meeting, service: viewModel.meetingService, onParticipated: {
+                                viewModel.selectedTab = .myMeetings
+                                Task { await viewModel.fetchMyMeetings() }
+                            })
                         }
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -336,6 +338,7 @@ struct BookClubView: View {
 							}
 						}
 					}
+                    .padding(.horizontal, 27)
 					.padding(.bottom, 100)
 				}
 			}

@@ -4,11 +4,13 @@ struct BookMeetingCardView: View {
 	let meeting: BookMeeting
     let service: (any MeetingServiceProtocol)?
     let isParticipant: Bool
+    let onParticipated: (() -> Void)?
 
-    init(meeting: BookMeeting, service: (any MeetingServiceProtocol)? = nil, isParticipant: Bool = false) {
+    init(meeting: BookMeeting, service: (any MeetingServiceProtocol)? = nil, isParticipant: Bool = false, onParticipated: (() -> Void)? = nil) {
         self.meeting = meeting
         self.service = service
         self.isParticipant = isParticipant
+        self.onParticipated = onParticipated
     }
 
 	var body: some View {
@@ -37,15 +39,13 @@ struct BookMeetingCardView: View {
 				}
 				Spacer()
 			}
-            .padding(.top, 11)
-            .padding(.trailing, 19.86)
-            
+			.padding(.top, 11)
+			.padding(.trailing, 19.86)
 
 			NavigationLink {
 				destination
 			} label: {
 				Color.clear
-					.contentShape(Rectangle())
 			}
 		}
 		.padding(.leading, 22)
@@ -55,8 +55,8 @@ struct BookMeetingCardView: View {
 			RoundedRectangle(cornerRadius: 12)
 				.stroke(Color.gray200, lineWidth: 0.5)
 		}
-        .padding(.horizontal, 19)
-        .frame(height: 110)
+		.padding(.horizontal, 19)
+		.frame(height: 110)
 	}
 
     // MARK: - bookCover
@@ -178,7 +178,7 @@ struct BookMeetingCardView: View {
         case .inProgress:
             ChatView()
         default:
-            BookMeetingDetailView(meeting: meeting, service: service, isParticipant: isParticipant)
+            BookMeetingDetailView(meeting: meeting, service: service, isParticipant: isParticipant, onParticipated: onParticipated)
         }
     }
 
