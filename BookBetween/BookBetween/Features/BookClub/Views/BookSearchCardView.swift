@@ -10,7 +10,7 @@ struct BookSearchCardView: View {
 			VStack(alignment: .leading, spacing: 0) {
 				BookCoverImage(book: book, placeholderImageName: "book_cover_mock")
 					.aspectRatio(29.0/44.0, contentMode: .fit)
-                    .frame(width: 91)
+                    .frame(width: 102)
                     .clipShape(RoundedRectangle(cornerRadius: 9.12))
                     .overlay {
                         RoundedRectangle(cornerRadius: 9.12)
@@ -40,7 +40,6 @@ struct BookSearchCardView: View {
             RoundedRectangle(cornerRadius: 8)
                 .stroke(Color.gray200, lineWidth: 0.5)
         }
-        .padding(.leading, 27)
 	}
 }
 

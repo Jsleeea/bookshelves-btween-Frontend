@@ -38,6 +38,10 @@ struct BookMeetingCreateView: View {
 		return f
 	}()
 
+	private static let participantCapacity = 6
+	private static let participantsFloor = 3
+	private static let timerMinuteOptions = Array(stride(from: 5, through: 60, by: 5))
+
 	let book: Book
 	private let service: (any MeetingServiceProtocol)?
     private let onMeetingCreated: (() -> Void)?
@@ -311,7 +315,7 @@ struct BookMeetingCreateView: View {
 				},
 				picker: {
 					Picker("타이머 시간", selection: $timerMinutes) {
-						ForEach(Array(stride(from: 5, through: 60, by: 5)), id: \.self) { m in
+						ForEach(Self.timerMinuteOptions, id: \.self) { m in
 							Text("\(m)분").tag(m)
 						}
 					}
@@ -329,7 +333,7 @@ struct BookMeetingCreateView: View {
 			infoRow(
 				icon: { Image("icon_group") },
 				label: "참여자 수",
-				value: "\(maxParticipants)/6",
+				value: "\(maxParticipants)/\(Self.participantCapacity)",
 				isExpanded: showingParticipantsPicker,
 				onTap: {
 					withAnimation(.easeInOut(duration: 0.3)) {
@@ -341,7 +345,7 @@ struct BookMeetingCreateView: View {
 				},
 				picker: {
 					Picker("참여자", selection: $maxParticipants) {
-						ForEach(3...6, id: \.self) { count in
+						ForEach(Self.participantsFloor...Self.participantCapacity, id: \.self) { count in
 							Text("\(count)명").tag(count)
 						}
 					}
