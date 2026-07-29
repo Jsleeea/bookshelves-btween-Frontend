@@ -14,11 +14,10 @@ struct MeetingStartedModalView: View {
 
   var body: some View {
     VStack(spacing: 0) {
-      self.closeButton
-
       self.bellIcon
+        .padding(.top, 24.5)
 
-      VStack(spacing: 6) {
+      VStack(spacing: 4) {
         Text("독서모임이 시작되었습니다.")
           .head3Style
           .foregroundStyle(Color.green900)
@@ -29,16 +28,16 @@ struct MeetingStartedModalView: View {
           .foregroundStyle(Color.gray500)
           .multilineTextAlignment(.center)
       }
-      .padding(.top, 10)
+      .padding(.top, -7.681)
 
       self.meetingCard
         .padding(.top, 12)
 
       self.participateButton
-        .padding(.top, 10)
+        .padding(.top, 12)
     }
     .padding(.horizontal, 30)
-    .padding(.bottom, 12)
+    .padding(.bottom, 24.5)
     .frame(width: 300, height: 340)
     .background {
       LinearGradient(
@@ -64,6 +63,9 @@ struct MeetingStartedModalView: View {
           ),
           lineWidth: 1.5
         )
+    }
+    .overlay(alignment: .top) {
+      self.closeButton
     }
     .shadow(color: Color(hex: "2B2A28").opacity(0.16), radius: 24, x: 0, y: 20)
   }
@@ -111,13 +113,9 @@ struct MeetingStartedModalView: View {
   private var meetingCard: some View {
     HStack(alignment: .center, spacing: 12) {
       BookCoverImage(book: self.meeting.book, placeholderImageName: "book_cover_mock")
-        .aspectRatio(29.0 / 44.0, contentMode: .fit)
-        .frame(height: 53.059)
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-        .overlay {
-          RoundedRectangle(cornerRadius: 8)
-            .stroke(Color.gray200, lineWidth: 0.5)
-        }
+        .aspectRatio(40.476 / 59.389, contentMode: .fill)
+        .frame(width: 40.476, height: 59.389)
+        .clipShape(RoundedRectangle(cornerRadius: 5.569))
         .padding(.leading, 24)
         .padding(.top, 6.81)
         .padding(.bottom, 6.86)
@@ -127,11 +125,13 @@ struct MeetingStartedModalView: View {
           .body2SemiBoldStyle
           .foregroundStyle(Color.gray800)
           .lineLimit(1)
+          .padding(.top, 9)
 
         Text(self.meeting.book.author)
           .caption1RegularStyle
           .foregroundStyle(Color.gray500)
           .padding(.top, 4)
+          .padding(.bottom, 2)
 
         self.infoRow
           .padding(.top, 1.99)
@@ -186,10 +186,9 @@ struct MeetingStartedModalView: View {
     Button(action: self.onParticipate) {
       Text("참여하기")
         .body1SemiBoldStyle
-        .foregroundStyle(.white)
-        .frame(maxWidth: .infinity)
-        .frame(height: 53)
-        .background(Color.green800)
+        .foregroundStyle(Color.beige100)
+        .frame(width: 240, height: 40)
+        .background(Color.green600)
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
   }
