@@ -123,6 +123,9 @@ struct NotificationInboxView: View {
             .padding(.top, 28)
             .padding(.bottom, 40)
         }
+        .refreshable {
+            await viewModel.refreshNotifications()
+        }
     }
 
     private var emptyState: some View {

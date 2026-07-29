@@ -16,6 +16,8 @@ enum BookStubData {
             json = detailResponse
         case .recentSearches:
             json = recentSearchesResponse
+        case .upsertMemberBook:
+            json = upsertMemberBookResponse
         }
 
         return Data(json.utf8)
@@ -143,6 +145,17 @@ enum BookStubData {
             "searchedAt": "2026-07-19T12:00:00+09:00"
           }
         ]
+      }
+    }
+    """
+
+    private static let upsertMemberBookResponse = """
+    {
+      "isSuccess": true,
+      "code": "BOOK200_5",
+      "message": "독서 기록 수정에 성공했습니다.",
+      "result": {
+        "memberBookHistory": null
       }
     }
     """

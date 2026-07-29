@@ -11,12 +11,33 @@ struct BookRecordDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var viewModel: BookRecordDetailViewModel
     @FocusState private var isReviewFocused: Bool  // 키보드 내리기
+    private let onRecordSaved: ((UserBookRecord) -> Void)?
     
-    init(record: UserBookRecord, isSaveable: Bool = true) {
-        _viewModel = State(initialValue: BookRecordDetailViewModel(record: record, isSaveable: isSaveable))
+    init(
+        record: UserBookRecord,
+        isSaveable: Bool = true,
+        service: any BookServiceProtocol = BookService.stubbed(),
+        loadsRemoteDetail: Bool = false,
+        onRecordSaved: ((UserBookRecord) -> Void)? = nil
+    ) {
+        self.onRecordSaved = onRecordSaved
+        _viewModel = State(
+            initialValue: BookRecordDetailViewModel(
+                record: record,
+                isSaveable: isSaveable,
+                service: service,
+                loadsRemoteDetail: loadsRemoteDetail
+            )
+        )
     }
 
-    init(book: Book, isSaveable: Bool = true) {
+    init(
+        book: Book,
+        isSaveable: Bool = true,
+        service: any BookServiceProtocol = BookService.stubbed(),
+        loadsRemoteDetail: Bool = false,
+        onRecordSaved: ((UserBookRecord) -> Void)? = nil
+    ) {
         self.init(
             record: UserBookRecord(
                 book: book,
@@ -24,7 +45,10 @@ struct BookRecordDetailView: View {
                 rating: nil,
                 memo: nil
             ),
-            isSaveable: isSaveable
+            isSaveable: isSaveable,
+            service: service,
+            loadsRemoteDetail: loadsRemoteDetail,
+            onRecordSaved: onRecordSaved
         )
     }
 
@@ -56,6 +80,31 @@ struct BookRecordDetailView: View {
                 .allowsHitTesting(false)
             }
         .toolbar(.hidden, for: .navigationBar)
+        .overlay {
+            if viewModel.isLoading {
+                ProgressView()
+            }
+        }
+        .task {
+            await viewModel.loadBookDetail()
+        }
+        .alert(
+            "도서 정보를 처리하지 못했습니다.",
+            isPresented: Binding(
+                get: { viewModel.errorMessage != nil },
+                set: { isPresented in
+                    if !isPresented {
+                        viewModel.errorMessage = nil
+                    }
+                }
+            )
+        ) {
+            Button("확인", role: .cancel) {
+                viewModel.errorMessage = nil
+            }
+        } message: {
+            Text(viewModel.errorMessage ?? "")
+        }
     }
 
     // MARK: - 책정보, 수정하기
@@ -272,18 +321,30 @@ struct BookRecordDetailView: View {
 
     private var saveButton: some View {
         Button {
-            viewModel.saveRecord()
+            isReviewFocused = false
+            Task {
+                if let savedRecord = await viewModel.saveRecord() {
+                    onRecordSaved?(savedRecord)
+                }
+            }
         } label: {
-            Text("기록 저장하기")
-                .body1SemiBoldStyle
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 18)
-                .background(.green600)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+            Group {
+                if viewModel.isSaving {
+                    ProgressView()
+                        .tint(.white)
+                } else {
+                    Text("기록 저장하기")
+                        .body1SemiBoldStyle
+                        .foregroundStyle(.white)
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 56)
+            .background(.green600)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
         }
         .buttonStyle(.plain)
-        .disabled(!viewModel.isEditing)
+        .disabled(!viewModel.isEditing || viewModel.isSaving)
         .opacity(viewModel.isEditing ? 1 : 0)
         .padding(.top, 45.82)
     }

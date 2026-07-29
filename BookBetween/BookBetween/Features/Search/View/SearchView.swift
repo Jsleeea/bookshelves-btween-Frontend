@@ -171,7 +171,10 @@ struct SearchView: View {
                     .padding(.top, 24)
             } else {
                 ForEach(viewModel.searchResults, id: \.listID) { item in
-                    SearchBookResultCardView(item: item)
+                    SearchBookResultCardView(
+                        item: item,
+                        service: viewModel.bookService
+                    )
                         .task {
                             await viewModel.loadNextPageIfNeeded(currentItem: item)
                         }

@@ -5,6 +5,20 @@
 
 import Foundation
 
+struct MemberBookUpsertRequestDTO: Encodable {
+    let progress: Int
+    let rating: Double?
+    let memo: String?
+}
+
+struct MemberBookUpsertResultDTO: Decodable {
+    let memberBookHistory: MemberBookHistoryDTO?
+}
+
+struct MemberBookHistoryDTO: Decodable {
+    let id: Int
+}
+
 struct BookSearchResultDTO: Decodable {
     let books: [BookSearchItemDTO]
     let page: Int
