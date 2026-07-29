@@ -5,6 +5,30 @@
 
 import Foundation
 
+// MARK: - 회원 정보 수정 요청
+
+nonisolated struct MemberProfileUpdateRequestDTO: Encodable {
+    let nicknameNoun: String?
+    let nicknameModifier: String?
+    let nicknameAnimal: String?
+    let profileBackgroundColor: ProfileBackgroundColorCode?
+    let categoryIds: [Int]?
+
+    init(
+        nickname: GeneratedNickname? = nil,
+        profileBackgroundColor: ProfileBackgroundColorCode? = nil,
+        categoryIds: [Int]? = nil
+    ) {
+        self.nicknameNoun = nickname?.noun
+        self.nicknameModifier = nickname?.modifier
+        self.nicknameAnimal = nickname?.animal
+        self.profileBackgroundColor = profileBackgroundColor
+        self.categoryIds = categoryIds
+    }
+}
+
+// MARK: - 회원 정보 응답
+
 nonisolated struct MemberProfileResultDTO: Decodable {
     let id: Int
     let nickname: String

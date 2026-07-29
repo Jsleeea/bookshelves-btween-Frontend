@@ -190,7 +190,15 @@ struct ProfileView: View {
 
     private var editProfileButton: some View {
         NavigationLink {
-            ProfileEditView(onLogout: onLogout)
+            ProfileEditView(
+                profile: viewModel.profile,
+                onSave: { request in
+                    try await viewModel.updateMyProfile(
+                        request: request
+                    )
+                },
+                onLogout: onLogout
+            )
         } label: {
             HStack(spacing: 4) {
                 Image("icon_pencil")
