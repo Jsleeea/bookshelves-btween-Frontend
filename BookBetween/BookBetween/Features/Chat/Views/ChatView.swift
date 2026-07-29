@@ -262,7 +262,7 @@ struct ChatView: View {
         .clipShape(Capsule())
 
         HStack(spacing: Metric.badgeGroupSpacing) {
-          Image("time_icon")
+          Image("icon_clock")
             .resizable()
             .renderingMode(.template)
             .scaledToFit()
@@ -322,7 +322,7 @@ struct ChatView: View {
         .body2SemiBoldStyle
         .foregroundStyle(.green600)
       Spacer()
-      Image("open_button")
+      Image("icon_chevron_down")
         .resizable()
         .renderingMode(.template)
         .scaledToFit()
@@ -392,7 +392,7 @@ struct ChatView: View {
           .body2SemiBoldStyle
           .foregroundStyle(.green600)
         Spacer()
-        Image("open_button")
+        Image("icon_chevron_down")
           .resizable()
           .renderingMode(.template)
           .scaledToFit()
