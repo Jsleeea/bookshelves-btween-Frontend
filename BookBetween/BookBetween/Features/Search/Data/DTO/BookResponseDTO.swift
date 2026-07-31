@@ -103,6 +103,38 @@ struct BookDetailMemberBookDTO: Decodable {
     let memo: String?
 }
 
+struct MemberBooksListDTO: Decodable {
+    let memberBooks: [MemberBookItemDTO]
+    let page: Int
+    let size: Int
+    let hasNext: Bool
+}
+
+struct MemberBookItemDTO: Decodable {
+    let memberBook: MemberBookDetailDTO
+    let book: MemberBookBookDTO
+}
+
+struct MemberBookDetailDTO: Decodable {
+    let id: Int
+    let progress: Int
+    let status: String
+    let rating: Double?
+    let memo: String?
+    let updatedAt: String
+}
+
+struct MemberBookBookDTO: Decodable {
+    let id: Int
+    let isbn: String
+    let title: String
+    let author: String
+    let publisher: String
+    let coverImageUrl: String?
+    let kdcCode: String?
+    let kdcName: String?
+}
+
 struct RecentSearchResultDTO: Decodable {
     let recentSearches: [RecentSearchItemDTO]
 }
@@ -162,6 +194,29 @@ extension BookDetailResultDTO {
         }
 
         return BookDetail(book: domainBook, memberBook: record)
+    }
+}
+
+extension MemberBooksListDTO {
+    func toDomain() -> [UserBookRecord] {
+        memberBooks.map { item in
+            UserBookRecord(
+                id: item.memberBook.id,
+                book: Book(
+                    id: item.book.id,
+                    isbn: item.book.isbn,
+                    title: item.book.title,
+                    author: item.book.author,
+                    publisher: item.book.publisher,
+                    coverImageUrl: item.book.coverImageUrl,
+                    kdcCode: item.book.kdcCode,
+                    kdcName: item.book.kdcName
+                ),
+                progress: item.memberBook.progress,
+                rating: item.memberBook.rating,
+                memo: item.memberBook.memo
+            )
+        }
     }
 }
 

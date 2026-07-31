@@ -18,6 +18,10 @@ enum BookStubData {
             json = recentSearchesResponse
         case .upsertMemberBook:
             json = upsertMemberBookResponse
+        case .memberBooks:
+            json = memberBooksResponse
+        case .deleteMemberBook:
+            json = deleteMemberBookResponse
         }
 
         return Data(json.utf8)
@@ -157,6 +161,70 @@ enum BookStubData {
       "result": {
         "memberBookHistory": null
       }
+    }
+    """
+
+    private static let memberBooksResponse = """
+    {
+      "isSuccess": true,
+      "code": "BOOK200",
+      "message": "내 서재 조회에 성공했습니다.",
+      "result": {
+        "memberBooks": [
+          {
+            "memberBook": {
+              "id": 1,
+              "progress": 100,
+              "status": "FINISHED",
+              "rating": 4.5,
+              "memo": "강은 어디에나 있다.",
+              "updatedAt": "2026-07-14T04:30:00"
+            },
+            "book": {
+              "id": 1,
+              "isbn": "9788937460586",
+              "title": "싯다르타",
+              "author": "헤르만 헤세",
+              "publisher": "민음사",
+              "coverImageUrl": null,
+              "kdcCode": "850",
+              "kdcName": "인도철학"
+            }
+          },
+          {
+            "memberBook": {
+              "id": 2,
+              "progress": 70,
+              "status": "READING",
+              "rating": null,
+              "memo": null,
+              "updatedAt": "2026-07-20T10:00:00"
+            },
+            "book": {
+              "id": 2,
+              "isbn": "9788937460883",
+              "title": "오만과 편견",
+              "author": "제인 오스틴",
+              "publisher": "민음사",
+              "coverImageUrl": null,
+              "kdcCode": "823",
+              "kdcName": "영국소설"
+            }
+          }
+        ],
+        "page": 1,
+        "size": 50,
+        "hasNext": false
+      }
+    }
+    """
+
+    private static let deleteMemberBookResponse = """
+    {
+      "isSuccess": true,
+      "code": "BOOK200_9",
+      "message": "독서 기록 삭제에 성공했습니다.",
+      "result": null
     }
     """
 }

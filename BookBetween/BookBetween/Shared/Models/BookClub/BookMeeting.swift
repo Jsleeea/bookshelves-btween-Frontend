@@ -8,8 +8,8 @@
 import Foundation
 
 struct MeetingSummaryItem: Decodable {
-    let questionOrder: Int
-    let question: String
+    let order: Int
+    let title: String
     let summary: String
 }
 

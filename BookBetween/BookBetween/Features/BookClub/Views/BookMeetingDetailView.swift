@@ -41,7 +41,7 @@ struct BookMeetingDetailView: View {
                         noticeSection
                             .padding(.bottom, 24)
                         if meeting.status == .recruiting && !isParticipant {
-                            bottomButton(isParticipating ? "참여 중..." : "모임 참여하기") {
+                            BottomActionButton(title: isParticipating ? "참여 중..." : "모임 참여하기") {
                                 guard !isParticipating else { return }
                                 Task {
                                     isParticipating = true
@@ -74,7 +74,6 @@ struct BookMeetingDetailView: View {
 			Text(participationError ?? "")
 		}
 		.task {
-			// 이미 참여한 모임은 서버 status가 RECRUITING으로 내려와 클라이언트 변환을 덮어쓰므로 fetch 생략
 			guard let service, !isParticipant else { return }
 			do {
 				meeting = try await service.fetchMeetingDetail(meetingId: meeting.id)
@@ -323,20 +322,25 @@ struct BookMeetingDetailView: View {
 
 // MARK: - Shared Bottom Button
 
-func bottomButton(_ title: String, action: @escaping () -> Void) -> some View {
-	Button(action: action) {
-		Text(title)
-			.body1SemiBoldStyle
-			.foregroundStyle(.white)
-			.frame(maxWidth: .infinity)
-			.padding(.vertical, 14)
-			.background(Color.green600)
-			.clipShape(RoundedRectangle(cornerRadius: 10.3))
-            .padding(.horizontal, 29)
-	}
-	.background {
-		Color.white.ignoresSafeArea(edges: .bottom)
-	}
+struct BottomActionButton: View {
+    let title: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .body1SemiBoldStyle
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(Color.green600)
+                .clipShape(RoundedRectangle(cornerRadius: 10.3))
+                .padding(.horizontal, 29)
+        }
+        .background {
+            Color.white.ignoresSafeArea(edges: .bottom)
+        }
+    }
 }
 
 #Preview {

@@ -21,6 +21,8 @@ struct BookTarget: TargetType {
             isbn: String,
             request: MemberBookUpsertRequestDTO
         )
+        case memberBooks(status: String, page: Int, size: Int)
+        case deleteMemberBook(isbn: String)
     }
 
     let baseURL: URL
@@ -36,15 +38,21 @@ struct BookTarget: TargetType {
             return "/api/v1/books/search/recent"
         case .upsertMemberBook(let isbn, _):
             return "/api/v1/member-books/\(isbn)"
+        case .memberBooks:
+            return "/api/v1/member-books"
+        case .deleteMemberBook(let isbn):
+            return "/api/v1/member-books/\(isbn)"
         }
     }
 
     var method: Moya.Method {
         switch endpoint {
-        case .search, .detail, .recentSearches:
+        case .search, .detail, .recentSearches, .memberBooks:
             return .get
         case .upsertMemberBook:
             return .put
+        case .deleteMemberBook:
+            return .delete
         }
     }
 
@@ -60,8 +68,13 @@ struct BookTarget: TargetType {
                 ],
                 encoding: URLEncoding.queryString
             )
-        case .detail, .recentSearches:
+        case .detail, .recentSearches, .deleteMemberBook:
             return .requestPlain
+        case let .memberBooks(status, page, size):
+            return .requestParameters(
+                parameters: ["status": status, "page": page, "size": size],
+                encoding: URLEncoding.queryString
+            )
         case .upsertMemberBook(_, let request):
             return .requestJSONEncodable(request)
         }
