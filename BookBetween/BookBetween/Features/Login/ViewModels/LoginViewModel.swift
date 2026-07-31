@@ -32,6 +32,7 @@ final class LoginViewModel {
 
     private(set) var state: LoginViewState = .idle
     private(set) var isRecoveringAccount = false
+    private(set) var scheduledDeletionAt: String?
     var accountRecoveryErrorMessage: String?
 
     var isLoading: Bool {
@@ -48,6 +49,7 @@ final class LoginViewModel {
         self.authService = authService
         self.authTokenStore = authTokenStore
         self.authSessionStore = authSessionStore
+        self.scheduledDeletionAt = authSessionStore.scheduledDeletionAt()
     }
 
     func loginWithKakao() async {
@@ -154,6 +156,8 @@ final class LoginViewModel {
                 refreshToken: result.refreshToken
             )
             authSessionStore.saveMemberStatus(.active)
+            authSessionStore.saveScheduledDeletionAt(nil)
+            scheduledDeletionAt = nil
             printSessionTokenStorageStatus()
             state = .success(.main)
         } catch {
@@ -266,6 +270,8 @@ final class LoginViewModel {
                 refreshToken: tokens.refreshToken
             )
             authSessionStore.saveMemberStatus(.pendingOnboarding)
+            authSessionStore.saveScheduledDeletionAt(nil)
+            scheduledDeletionAt = nil
             printSessionTokenStorageStatus()
             return .success(.accountSetup)
 
@@ -276,6 +282,8 @@ final class LoginViewModel {
                 refreshToken: tokens.refreshToken
             )
             authSessionStore.saveMemberStatus(.active)
+            authSessionStore.saveScheduledDeletionAt(nil)
+            scheduledDeletionAt = nil
             printSessionTokenStorageStatus()
             return .success(.main)
 
@@ -286,6 +294,10 @@ final class LoginViewModel {
             }
             try authTokenStore.replaceWithRestoreToken(restoreToken)
             authSessionStore.saveMemberStatus(.withdrawn)
+            authSessionStore.saveScheduledDeletionAt(
+                result.scheduledDeletionAt
+            )
+            scheduledDeletionAt = result.scheduledDeletionAt
             return .success(.accountRecovery)
 
         case .suspended:
@@ -344,12 +356,14 @@ final class LoginViewModel {
             return
         }
 
+        scheduledDeletionAt = authSessionStore.scheduledDeletionAt()
         state = .success(.accountRecovery)
     }
 
     private func clearLocalSession() {
         try? authTokenStore.clearAll()
         authSessionStore.clear()
+        scheduledDeletionAt = nil
         accountRecoveryErrorMessage = nil
         state = .idle
     }
