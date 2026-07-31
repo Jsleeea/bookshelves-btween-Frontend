@@ -32,3 +32,17 @@ nonisolated struct SocialLoginResultDTO: Decodable {
     let memberStatus: MemberStatus
     let scheduledDeletionAt: String?
 }
+
+// MARK: - 계정 복구
+
+nonisolated struct AccountRestoreRequestDTO: Encodable {
+    let restoreToken: String
+}
+
+nonisolated struct AccountRestoreResultDTO: Decodable {
+    let accessToken: String
+    let refreshToken: String
+    let accessTokenExpiresIn: Int
+    let refreshTokenExpiresIn: Int
+    let memberStatus: MemberStatus
+}
