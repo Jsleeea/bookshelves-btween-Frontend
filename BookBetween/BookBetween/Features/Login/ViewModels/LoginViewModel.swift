@@ -31,6 +31,8 @@ final class LoginViewModel {
     private var reissueTask: Task<Void, Error>?
 
     private(set) var state: LoginViewState = .idle
+    private(set) var isRecoveringAccount = false
+    var accountRecoveryErrorMessage: String?
 
     var isLoading: Bool {
         state == .loading
@@ -87,6 +89,7 @@ final class LoginViewModel {
     }
 
     func resetState() {
+        accountRecoveryErrorMessage = nil
         state = .idle
     }
 
@@ -117,6 +120,50 @@ final class LoginViewModel {
 
         authSessionStore.saveMemberStatus(.active)
         state = .success(.main)
+    }
+
+    func restoreAccount() async {
+        guard !isRecoveringAccount else {
+            return
+        }
+
+        isRecoveringAccount = true
+        accountRecoveryErrorMessage = nil
+        defer { isRecoveringAccount = false }
+
+        do {
+            guard let restoreToken = try authTokenStore.restoreToken(),
+                  !restoreToken.isEmpty else {
+                throw LoginViewModelError.missingRestoreToken
+            }
+
+            let result = try await authService.restore(
+                restoreToken: restoreToken
+            )
+
+            guard result.memberStatus == .active else {
+                throw LoginViewModelError.unexpectedMemberStatus
+            }
+            guard !result.accessToken.isEmpty,
+                  !result.refreshToken.isEmpty else {
+                throw LoginViewModelError.missingServiceTokens
+            }
+
+            try authTokenStore.replaceWithSession(
+                accessToken: result.accessToken,
+                refreshToken: result.refreshToken
+            )
+            authSessionStore.saveMemberStatus(.active)
+            printSessionTokenStorageStatus()
+            state = .success(.main)
+        } catch {
+            accountRecoveryErrorMessage = error.localizedDescription
+        }
+    }
+
+    func cancelAccountRecovery() {
+        accountRecoveryErrorMessage = nil
+        clearLocalSession()
     }
 
     func logout() async throws {
@@ -303,6 +350,7 @@ final class LoginViewModel {
     private func clearLocalSession() {
         try? authTokenStore.clearAll()
         authSessionStore.clear()
+        accountRecoveryErrorMessage = nil
         state = .idle
     }
 
