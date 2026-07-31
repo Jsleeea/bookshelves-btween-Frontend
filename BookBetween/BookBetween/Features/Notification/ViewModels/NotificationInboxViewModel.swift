@@ -17,9 +17,12 @@ final class NotificationInboxViewModel {
     private let service: any NotificationServiceProtocol
     private let pageSize: Int
     private let automaticallyLoads: Bool
+    private let pollingInterval: Duration
     private var currentPage = 0
     private var hasNext = false
     private var hasLoaded = false
+    private var newestNotificationId = 0
+    private var isCheckingForNewNotifications = false
     private var readingNotificationIds: Set<Int> = []
 
     var isEmpty: Bool {
@@ -28,10 +31,12 @@ final class NotificationInboxViewModel {
 
     init(
         service: any NotificationServiceProtocol,
-        pageSize: Int = 20
+        pageSize: Int = 20,
+        pollingInterval: Duration = .seconds(30)
     ) {
         self.service = service
         self.pageSize = pageSize
+        self.pollingInterval = pollingInterval
         self.automaticallyLoads = true
     }
 
@@ -39,6 +44,7 @@ final class NotificationInboxViewModel {
         self.notifications = notifications
         self.service = NotificationService.stubbed()
         self.pageSize = 20
+        self.pollingInterval = .seconds(30)
         self.automaticallyLoads = false
     }
 
@@ -46,6 +52,16 @@ final class NotificationInboxViewModel {
         guard automaticallyLoads else { return }
 
         await loadNotifications()
+
+        while !Task.isCancelled {
+            do {
+                try await Task.sleep(for: pollingInterval)
+            } catch {
+                return
+            }
+
+            await loadNewNotifications()
+        }
     }
 
     func loadNotifications() async {
@@ -63,6 +79,7 @@ final class NotificationInboxViewModel {
             notifications = result.notifications
             currentPage = result.page
             hasNext = result.hasNext
+            newestNotificationId = result.notifications.map(\.id).max() ?? 0
             hasLoaded = true
         } catch {
             errorMessage = error.localizedDescription
@@ -127,6 +144,45 @@ final class NotificationInboxViewModel {
         }
     }
 
+    private func loadNewNotifications() async {
+        guard
+            hasLoaded,
+            !isLoading,
+            !isLoadingNextPage,
+            !isCheckingForNewNotifications
+        else { return }
+
+        isCheckingForNewNotifications = true
+        defer { isCheckingForNewNotifications = false }
+
+        do {
+            var cursor = newestNotificationId
+            var newNotifications: [NotificationItem] = []
+
+            while !Task.isCancelled {
+                let batch = try await service.fetchNewNotifications(
+                    afterId: cursor,
+                    size: pageSize
+                )
+                newNotifications.append(contentsOf: batch.notifications)
+
+                guard batch.hasNext, batch.nextCursor > cursor else {
+                    cursor = max(cursor, batch.nextCursor)
+                    break
+                }
+
+                cursor = batch.nextCursor
+            }
+
+            newestNotificationId = cursor
+            prependUnique(newNotifications)
+        } catch {
+            #if DEBUG
+            print("[Notification] 새 알림 조회 실패: \(error)")
+            #endif
+        }
+    }
+
     private func appendUnique(_ newNotifications: [NotificationItem]) {
         let existingIds = Set(notifications.map(\.id))
         notifications.append(
@@ -134,6 +190,15 @@ final class NotificationInboxViewModel {
                 !existingIds.contains($0.id)
             }
         )
+    }
+
+    private func prependUnique(_ newNotifications: [NotificationItem]) {
+        let existingIds = Set(notifications.map(\.id))
+        let uniqueNotifications = newNotifications
+            .filter { !existingIds.contains($0.id) }
+            .sorted { $0.id > $1.id }
+
+        notifications.insert(contentsOf: uniqueNotifications, at: 0)
     }
 
 }

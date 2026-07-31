@@ -12,11 +12,11 @@ struct RecentBookCardView: View {
 
     var body: some View {
         HStack(spacing: 0){
-            BookCoverImage(book: record.book, placeholderImageName: "book_cover_recent")
-                .clipShape(RoundedRectangle(cornerRadius: 8))
+            BookCoverImage(book: record.book, placeholderImageName: "book_cover_mock")
                 .frame(width: 71, height: 108)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
                 .overlay {
-                        RoundedRectangle(cornerRadius: 8)
+                    RoundedRectangle(cornerRadius: 8)
                         .strokeBorder(.gray200, lineWidth: 0.5)
                 }
 
@@ -29,7 +29,7 @@ struct RecentBookCardView: View {
                             .body1SemiBoldStyle
                             .foregroundStyle(.gray800)
 
-                        Text(record.book.author)
+                        Text(authorAndPublisherText)
                             .caption1RegularStyle
                             .foregroundStyle(.gray500)
                             .padding(.top,4)
@@ -54,7 +54,9 @@ struct RecentBookCardView: View {
             }
             .padding(.leading, 13.24)
         }
-        .padding(10)
+        .padding(.vertical, 10)
+        .padding(.trailing, 10)
+        .padding(.leading, 13)
         .frame(height: 129)
         .frame(maxWidth: .infinity)
         .background {
@@ -79,6 +81,18 @@ struct RecentBookCardView: View {
     private var ratingText: String {
         guard let rating = record.rating else { return "-" }
         return String(format: "%.1f", rating)
+    }
+
+    private var authorAndPublisherText: String {
+        guard
+            let publisher = record.book.publisher?
+                .trimmingCharacters(in: .whitespacesAndNewlines),
+            !publisher.isEmpty
+        else {
+            return record.book.author
+        }
+
+        return "\(record.book.author) | \(publisher)"
     }
 }
 

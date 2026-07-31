@@ -10,7 +10,7 @@ enum BookStubData {
         let json: String
 
         switch endpoint {
-        case let .search(_, page, size):
+        case let .search(_, page, size, _):
             json = searchResponse(page: page, size: size)
         case .detail:
             json = detailResponse

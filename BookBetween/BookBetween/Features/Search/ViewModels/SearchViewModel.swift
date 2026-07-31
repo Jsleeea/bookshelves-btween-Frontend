@@ -64,7 +64,8 @@ final class SearchViewModel {
             let result = try await service.searchBooks(
                 query: keyword,
                 page: 1,
-                size: pageSize
+                size: pageSize,
+                saveRecent: true
             )
 
             searchResults = result.books
@@ -103,7 +104,8 @@ final class SearchViewModel {
             let result = try await service.searchBooks(
                 query: submittedQuery,
                 page: currentPage + 1,
-                size: pageSize
+                size: pageSize,
+                saveRecent: true
             )
 
             searchResults.append(contentsOf: result.books)

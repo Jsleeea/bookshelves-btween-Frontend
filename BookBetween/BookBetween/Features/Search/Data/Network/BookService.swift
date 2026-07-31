@@ -8,6 +8,12 @@ import Moya
 
 protocol BookServiceProtocol {
     func searchBooks(query: String, page: Int, size: Int) async throws -> BookSearchPage
+    func searchBooks(
+        query: String,
+        page: Int,
+        size: Int,
+        saveRecent: Bool
+    ) async throws -> BookSearchPage
     func fetchBookDetail(isbn: String) async throws -> BookDetail
     func fetchRecentSearches() async throws -> [RecentSearchItem]
     func upsertMemberBook(
@@ -56,12 +62,31 @@ final class BookService: BookServiceProtocol {
         page: Int = 1,
         size: Int = 15
     ) async throws -> BookSearchPage {
+        try await searchBooks(
+            query: query,
+            page: page,
+            size: size,
+            saveRecent: true
+        )
+    }
+
+    func searchBooks(
+        query: String,
+        page: Int,
+        size: Int,
+        saveRecent: Bool
+    ) async throws -> BookSearchPage {
         try await requestExecutor.execute {
             do {
                 let response = try await provider.requestAsync(
                     BookTarget(
                         baseURL: baseURL,
-                        endpoint: .search(query: query, page: page, size: size)
+                        endpoint: .search(
+                            query: query,
+                            page: page,
+                            size: size,
+                            saveRecent: saveRecent
+                        )
                     )
                 )
                 return try response.decodePayload(

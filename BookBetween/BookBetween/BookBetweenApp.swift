@@ -15,6 +15,7 @@ struct BookBetweenApp: App {
     private let accountSetupViewModel: AccountSetupViewModel
     private let memberService: MemberServiceProtocol
     private let bookService: BookServiceProtocol
+    private let homeService: any HomeServiceProtocol
     private let meetingService: MeetingService
     private let notificationService: NotificationServiceProtocol
 
@@ -74,6 +75,9 @@ struct BookBetweenApp: App {
         self.bookService = BookService(
             configuration: authenticatedNetworkConfiguration
         )
+        self.homeService = HomeService(
+            configuration: authenticatedNetworkConfiguration
+        )
         self.meetingService = MeetingService(
             configuration: authenticatedNetworkConfiguration
         )
@@ -89,6 +93,7 @@ struct BookBetweenApp: App {
                 accountSetupViewModel: accountSetupViewModel,
                 memberService: memberService,
                 bookService: bookService,
+                homeService: homeService,
                 meetingService: meetingService,
                 notificationService: notificationService
             )

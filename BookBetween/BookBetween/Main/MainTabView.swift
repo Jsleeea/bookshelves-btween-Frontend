@@ -14,6 +14,7 @@ struct MainTabView: View {
 
     private let memberService: MemberServiceProtocol?
     private let bookService: BookServiceProtocol
+    private let homeService: any HomeServiceProtocol
     private let meetingService: (any MeetingServiceProtocol)?
     private let notificationService: any NotificationServiceProtocol
     private let onLogout: () async throws -> Void
@@ -21,6 +22,7 @@ struct MainTabView: View {
     init(
         memberService: MemberServiceProtocol? = nil,
         bookService: BookServiceProtocol = BookService.stubbed(),
+        homeService: any HomeServiceProtocol = HomeService.stubbed(),
         meetingService: (any MeetingServiceProtocol)? = nil,
         notificationService: any NotificationServiceProtocol =
             NotificationService.stubbed(),
@@ -28,6 +30,7 @@ struct MainTabView: View {
     ) {
         self.memberService = memberService
         self.bookService = bookService
+        self.homeService = homeService
         self.meetingService = meetingService
         self.notificationService = notificationService
         self.onLogout = onLogout
@@ -41,9 +44,10 @@ struct MainTabView: View {
                     NavigationStack(path: $homeNavigationPath) {
                         HomeView(
                             viewModel: HomeViewModel(
-                                service: HomeService.stubbed()
+                                service: homeService
                             ),
-                            bookService: bookService
+                            bookService: bookService,
+                            meetingService: meetingService
                         )
                             .navigationDestination(for: HomeRoute.self) { route in
                                 switch route {

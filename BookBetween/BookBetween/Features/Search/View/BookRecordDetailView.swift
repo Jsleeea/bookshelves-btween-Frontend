@@ -149,7 +149,7 @@ struct BookRecordDetailView: View {
     // MARK: - 책 이미지, 제목
     private var bookHeader: some View {
         HStack(alignment: .center, spacing: 16) {
-            BookCoverImage(book: viewModel.book, placeholderImageName: "book_cover_0")
+            BookCoverImage(book: viewModel.book, placeholderImageName: "book_cover_mock")
                 .scaledToFill()
                 .frame(width: 105.4, height: 160)
                 .clipShape(RoundedRectangle(cornerRadius: 9))
@@ -163,12 +163,12 @@ struct BookRecordDetailView: View {
                     .foregroundStyle(.gray800)
                     .lineLimit(1)
 
-                Text(viewModel.book.author)
+                Text(authorAndPublisherText)
                     .body1RegularStyle
                     .foregroundStyle(.gray500)
 
-                if let kdcName = viewModel.book.kdcName {
-                    Text(kdcName)
+                if let categoryText {
+                    Text(categoryText)
                         .body2SemiBoldStyle
                         .foregroundStyle(.white)
                         .padding(.horizontal, 10)
@@ -179,6 +179,30 @@ struct BookRecordDetailView: View {
             }
         }
         .padding(.top, 16)
+    }
+
+    private var authorAndPublisherText: String {
+        guard
+            let publisher = viewModel.book.publisher?
+                .trimmingCharacters(in: .whitespacesAndNewlines),
+            !publisher.isEmpty
+        else {
+            return viewModel.book.author
+        }
+
+        return "\(viewModel.book.author) | \(publisher)"
+    }
+
+    private var categoryText: String? {
+        guard
+            let kdcName = viewModel.book.kdcName?
+                .trimmingCharacters(in: .whitespacesAndNewlines),
+            !kdcName.isEmpty
+        else {
+            return nil
+        }
+
+        return kdcName.hasPrefix("#") ? kdcName : "#\(kdcName)"
     }
 
 

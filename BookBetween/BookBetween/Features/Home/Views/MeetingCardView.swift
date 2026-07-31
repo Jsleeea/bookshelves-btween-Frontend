@@ -10,13 +10,22 @@ import Foundation
 
 struct MeetingCardView: View {
     let meeting: HomeMeetingItem
+    let service: (any MeetingServiceProtocol)?
+
+    init(
+        meeting: HomeMeetingItem,
+        service: (any MeetingServiceProtocol)? = nil
+    ) {
+        self.meeting = meeting
+        self.service = service
+    }
     
     var body: some View {
         VStack(spacing: 0) {
             HStack {
                 BookCoverImage(
                     coverImageUrl: meeting.book.coverImageUrl,
-                    placeholderImageName: "book_cover_meeting_1"
+                    placeholderImageName: "book_cover_mock"
                 )
                 .frame(width: 71, height: 108)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
@@ -47,8 +56,14 @@ struct MeetingCardView: View {
                             .padding(3)
                             .background(.green50)
                             .clipShape(.circle)
-                        Text("\(meeting.meeting.currentParticipants)/\(meeting.meeting.maxParticipants)명 참여 중")
-                            .caption2RegularStyle
+                HStack(spacing: 0) {
+                    Text("\(meeting.meeting.currentParticipants)")
+                        .caption1SemiBoldStyle
+                        .foregroundStyle(.green700)
+
+                    Text("/\(meeting.meeting.maxParticipants)명 참여 중")
+                        .caption2RegularStyle
+                }
                     }
                     .foregroundStyle(.gray500)
                     .padding(.top, 6)
@@ -60,8 +75,11 @@ struct MeetingCardView: View {
             .padding(.top, 13)
             .padding(.bottom, 4)
             
-            Button {
-                
+            NavigationLink {
+                BookMeetingDetailView(
+                    meeting: bookMeeting,
+                    service: service
+                )
             } label: {
                 HStack(spacing: 6) {
                     Text("참여하기")
@@ -82,6 +100,7 @@ struct MeetingCardView: View {
                     )
                 )
             }
+            .buttonStyle(.plain)
         }
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .padding(.horizontal, 2) // 참여하기 버튼 밑 흰색 여백
@@ -99,6 +118,24 @@ struct MeetingCardView: View {
         formatter.locale = Locale(identifier: "ko_KR")
         formatter.dateFormat = "MM/dd (E) · HH:mm"
         return formatter.string(from: meeting.meeting.startDate)
+    }
+
+    private var bookMeeting: BookMeeting {
+        BookMeeting(
+            id: meeting.meeting.id,
+            book: Book(
+                id: meeting.book.id,
+                title: meeting.book.title,
+                author: "",
+                publisher: meeting.book.publisher,
+                coverImageUrl: meeting.book.coverImageUrl
+            ),
+            meetingDate: meeting.meeting.startDate,
+            timerMinutes: meeting.meeting.duration,
+            maxParticipants: meeting.meeting.maxParticipants,
+            currentParticipants: meeting.meeting.currentParticipants,
+            status: BookMeetingStatus(meeting.meeting.status)
+        )
     }
 }
 

@@ -11,6 +11,7 @@ struct NotificationTarget: TargetType {
     enum Endpoint {
         case registerFCMToken(String)
         case fetchNotifications(page: Int, size: Int)
+        case fetchNewNotifications(afterId: Int, size: Int)
         case markAsRead(notificationId: Int)
     }
 
@@ -23,6 +24,8 @@ struct NotificationTarget: TargetType {
             return "/api/v1/notifications/fcm/tokens"
         case .fetchNotifications:
             return "/api/v1/notifications"
+        case .fetchNewNotifications:
+            return "/api/v1/notifications/new"
         case .markAsRead(let notificationId):
             return "/api/v1/notifications/\(notificationId)/read"
         }
@@ -32,7 +35,7 @@ struct NotificationTarget: TargetType {
         switch endpoint {
         case .registerFCMToken:
             return .post
-        case .fetchNotifications:
+        case .fetchNotifications, .fetchNewNotifications:
             return .get
         case .markAsRead:
             return .patch
@@ -50,6 +53,14 @@ struct NotificationTarget: TargetType {
             return .requestParameters(
                 parameters: [
                     "page": page,
+                    "size": size
+                ],
+                encoding: URLEncoding.queryString
+            )
+        case let .fetchNewNotifications(afterId, size):
+            return .requestParameters(
+                parameters: [
+                    "afterId": afterId,
                     "size": size
                 ],
                 encoding: URLEncoding.queryString
