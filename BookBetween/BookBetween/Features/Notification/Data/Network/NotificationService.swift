@@ -9,6 +9,10 @@ import Moya
 protocol NotificationServiceProtocol {
     func registerFCMToken(_ token: String) async throws
     func fetchNotifications(page: Int, size: Int) async throws -> NotificationPage
+    func fetchNewNotifications(
+        afterId: Int,
+        size: Int
+    ) async throws -> NewNotificationBatch
     func markAsRead(notificationId: Int) async throws -> Int
 }
 
@@ -81,6 +85,30 @@ final class NotificationService: NotificationServiceProtocol {
                 )
                 return try response
                     .decodePayload(NotificationListResultDTO.self)
+                    .toDomain()
+            } catch let error as MoyaError {
+                throw NetworkError.transport(error)
+            }
+        }
+    }
+
+    func fetchNewNotifications(
+        afterId: Int,
+        size: Int = 20
+    ) async throws -> NewNotificationBatch {
+        try await requestExecutor.execute {
+            do {
+                let response = try await provider.requestAsync(
+                    NotificationTarget(
+                        baseURL: baseURL,
+                        endpoint: .fetchNewNotifications(
+                            afterId: afterId,
+                            size: size
+                        )
+                    )
+                )
+                return try response
+                    .decodePayload(NewNotificationResultDTO.self)
                     .toDomain()
             } catch let error as MoyaError {
                 throw NetworkError.transport(error)

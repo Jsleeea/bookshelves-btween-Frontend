@@ -39,7 +39,7 @@ struct SearchBookResultCardView: View {
 
     private var cardContent: some View {
         HStack(alignment: .top, spacing: 10) {
-            BookCoverImage(book: book, placeholderImageName: "book_cover_meeting_2")
+            BookCoverImage(book: book, placeholderImageName: "book_cover_mock")
                 .frame(width: 65, height: 95)
                 .clipped()
                 .shadow(color: .black.opacity(0.12), radius: 2, x: -1, y: 1)

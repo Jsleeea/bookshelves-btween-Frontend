@@ -14,6 +14,8 @@ enum NotificationStubData {
             json = registerFCMTokenResponse
         case let .fetchNotifications(page, size):
             json = notificationListResponse(page: page, size: size)
+        case let .fetchNewNotifications(afterId, size):
+            json = newNotificationResponse(afterId: afterId, size: size)
         case .markAsRead(let notificationId):
             json = markAsReadResponse(notificationId: notificationId)
         }
@@ -95,6 +97,47 @@ enum NotificationStubData {
           "message": "알림을 읽음 처리했습니다.",
           "result": {
             "id": \(notificationId)
+          }
+        }
+        """
+    }
+
+    private static func newNotificationResponse(
+        afterId: Int,
+        size: Int
+    ) -> String {
+        let notifications: String
+        let nextCursor: Int
+
+        if afterId < 104 && size > 0 {
+            notifications = """
+            [
+              {
+                "id": 104,
+                "type": "MEETING_STARTED",
+                "title": "아몬드 독서 모임이 시작되었어요",
+                "content": "지금 모임에 참여해보세요",
+                "isRead": false,
+                "targetId": 12,
+                "createdAt": "2026-07-29T20:00:00"
+              }
+            ]
+            """
+            nextCursor = 104
+        } else {
+            notifications = "[]"
+            nextCursor = afterId
+        }
+
+        return """
+        {
+          "isSuccess": true,
+          "code": "NOTI200_4",
+          "message": "새 알림 조회에 성공했습니다.",
+          "result": {
+            "notifications": \(notifications),
+            "nextCursor": \(nextCursor),
+            "hasNext": false
           }
         }
         """

@@ -16,6 +16,7 @@ struct AppRootView: View {
     @State private var accountSetupViewModel: AccountSetupViewModel
     private let memberService: MemberServiceProtocol?
     private let bookService: BookServiceProtocol
+    private let homeService: any HomeServiceProtocol
     private let meetingService: (any MeetingServiceProtocol)?
     private let notificationService: any NotificationServiceProtocol
 
@@ -24,6 +25,7 @@ struct AppRootView: View {
         accountSetupViewModel: AccountSetupViewModel,
         memberService: MemberServiceProtocol? = nil,
         bookService: BookServiceProtocol = BookService.stubbed(),
+        homeService: any HomeServiceProtocol = HomeService.stubbed(),
         meetingService: (any MeetingServiceProtocol)? = nil,
         notificationService: any NotificationServiceProtocol =
             NotificationService.stubbed()
@@ -32,6 +34,7 @@ struct AppRootView: View {
         _accountSetupViewModel = State(initialValue: accountSetupViewModel)
         self.memberService = memberService
         self.bookService = bookService
+        self.homeService = homeService
         self.meetingService = meetingService
         self.notificationService = notificationService
     }
@@ -92,6 +95,7 @@ struct AppRootView: View {
             MainTabView(
                 memberService: memberService,
                 bookService: bookService,
+                homeService: homeService,
                 meetingService: meetingService,
                 notificationService: notificationService,
                 onLogout: {

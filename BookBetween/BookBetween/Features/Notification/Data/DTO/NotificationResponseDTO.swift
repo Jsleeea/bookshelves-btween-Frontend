@@ -12,6 +12,12 @@ struct NotificationListResultDTO: Decodable {
     let hasNext: Bool
 }
 
+struct NewNotificationResultDTO: Decodable {
+    let notifications: [NotificationItemDTO]
+    let nextCursor: Int
+    let hasNext: Bool
+}
+
 struct NotificationItemDTO: Decodable {
     let id: Int
     let type: String
@@ -32,6 +38,16 @@ extension NotificationListResultDTO {
             notifications: try notifications.map { try $0.toDomain() },
             page: page,
             size: size,
+            hasNext: hasNext
+        )
+    }
+}
+
+extension NewNotificationResultDTO {
+    func toDomain() throws -> NewNotificationBatch {
+        NewNotificationBatch(
+            notifications: try notifications.map { try $0.toDomain() },
+            nextCursor: nextCursor,
             hasNext: hasNext
         )
     }

@@ -77,3 +77,9 @@ struct NotificationPage: Equatable {
     let size: Int
     let hasNext: Bool
 }
+
+struct NewNotificationBatch: Equatable {
+    let notifications: [NotificationItem]
+    let nextCursor: Int
+    let hasNext: Bool
+}

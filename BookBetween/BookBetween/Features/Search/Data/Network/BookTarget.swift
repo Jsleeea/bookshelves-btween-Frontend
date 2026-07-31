@@ -9,7 +9,12 @@ import Moya
 
 struct BookTarget: TargetType {
     enum Endpoint {
-        case search(query: String, page: Int, size: Int)
+        case search(
+            query: String,
+            page: Int,
+            size: Int,
+            saveRecent: Bool
+        )
         case detail(isbn: String)
         case recentSearches
         case upsertMemberBook(
@@ -45,12 +50,13 @@ struct BookTarget: TargetType {
 
     var task: Moya.Task {
         switch endpoint {
-        case let .search(query, page, size):
+        case let .search(query, page, size, saveRecent):
             return .requestParameters(
                 parameters: [
                     "query": query,
                     "page": page,
-                    "size": size
+                    "size": size,
+                    "saveRecent": saveRecent
                 ],
                 encoding: URLEncoding.queryString
             )

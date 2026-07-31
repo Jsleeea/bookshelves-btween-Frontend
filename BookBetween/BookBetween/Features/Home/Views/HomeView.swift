@@ -11,20 +11,24 @@ import SwiftUI
 struct HomeView: View {
     @State private var viewModel: HomeViewModel
     private let bookService: any BookServiceProtocol
+    private let meetingService: (any MeetingServiceProtocol)?
 
     init() {
         _viewModel = State(
             initialValue: HomeViewModel(service: HomeService.stubbed())
         )
         self.bookService = BookService.stubbed()
+        self.meetingService = nil
     }
     
     init(
         viewModel: HomeViewModel,
-        bookService: any BookServiceProtocol
+        bookService: any BookServiceProtocol,
+        meetingService: (any MeetingServiceProtocol)?
     ) {
         _viewModel = State(initialValue: viewModel)
         self.bookService = bookService
+        self.meetingService = meetingService
     }
     
     var body: some View {
@@ -32,11 +36,17 @@ struct HomeView: View {
             if let home = viewModel.home {
                 VStack{
                     UserTitleView(home: home)
-                    RecommendationSection(home: home)
+                    if let recommendedBook = home.recommendedBook {
+                        RecommendationSection(
+                            recommendedBook: recommendedBook
+                        )
+                    }
                     if let recentBook = home.recentBook {
                         RecentBookSection(record: recentBook.record)
                     }
-                    RecruitingMeetingSection(home: home)
+                    if !home.meetings.isEmpty {
+                        RecruitingMeetingSection(home: home)
+                    }
                 }
                 .padding(.horizontal, 19)
                 .padding(.bottom, 100)
@@ -85,8 +95,9 @@ struct HomeView: View {
     }
     
     // MARK: - 오늘의 AI 추천도서
-    private func RecommendationSection(home: Home) -> some View {
-        let recommendedBook = home.recommendedBook
+    private func RecommendationSection(
+        recommendedBook: HomeRecommendedBook
+    ) -> some View {
         let recommendation = recommendedBook.book
         let authorAndCategory = recommendation.kdcName.flatMap { kdcName in
             kdcName.isEmpty ? nil : "\(recommendation.author) | \(kdcName)"
@@ -162,7 +173,7 @@ struct HomeView: View {
 
                 BookCoverImage(
                     book: recommendation,
-                    placeholderImageName: "book_cover_recommend"
+                    placeholderImageName: "book_cover_mock"
                 )
                 .frame(width: 87, height: 132)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
@@ -199,7 +210,8 @@ struct HomeView: View {
             NavigationLink {
                 BookRecordDetailView(
                     record: record,
-                    service: bookService
+                    service: bookService,
+                    loadsRemoteDetail: true
                 )
             } label: {
                 RecentBookCardView(record: record)
@@ -215,7 +227,10 @@ struct HomeView: View {
                     .body1SemiBoldStyle
                 VStack{
                 ForEach(home.meetings, id: \.id) { meeting in
-                    MeetingCardView(meeting: meeting)
+                    MeetingCardView(
+                        meeting: meeting,
+                        service: meetingService
+                    )
                 }
             }
         }
