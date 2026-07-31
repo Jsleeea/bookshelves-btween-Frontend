@@ -12,6 +12,7 @@ nonisolated struct AuthTarget: TargetType, AuthorizationRequirement {
         case socialLogin(SocialLoginRequestDTO)
         case logout
         case reissue(TokenReissueRequestDTO)
+        case restore(AccountRestoreRequestDTO)
     }
 
     let baseURL: URL
@@ -25,12 +26,14 @@ nonisolated struct AuthTarget: TargetType, AuthorizationRequirement {
             return "/api/v1/auth/logout"
         case .reissue:
             return "/api/v1/auth/reissue"
+        case .restore:
+            return "/api/v1/auth/restore"
         }
     }
 
     var method: Moya.Method {
         switch endpoint {
-        case .socialLogin, .logout, .reissue:
+        case .socialLogin, .logout, .reissue, .restore:
             return .post
         }
     }
@@ -43,12 +46,14 @@ nonisolated struct AuthTarget: TargetType, AuthorizationRequirement {
             return .requestPlain
         case .reissue(let request):
             return .requestJSONEncodable(request)
+        case .restore(let request):
+            return .requestJSONEncodable(request)
         }
     }
 
     var requiresAuthorization: Bool {
         switch endpoint {
-        case .socialLogin, .reissue:
+        case .socialLogin, .reissue, .restore:
             return false
         case .logout:
             return true

@@ -13,6 +13,9 @@ protocol AuthServiceProtocol {
     ) async throws -> SocialLoginResultDTO
     func logout() async throws
     func reissue(refreshToken: String) async throws -> TokenReissueResultDTO
+    func restore(
+        restoreToken: String
+    ) async throws -> AccountRestoreResultDTO
 }
 
 final class AuthService: AuthServiceProtocol {
@@ -115,6 +118,39 @@ final class AuthService: AuthServiceProtocol {
             [TokenReissue]
             URL: \(response.request?.url?.absoluteString ?? "확인 불가")
             HTTP: \(response.statusCode)
+            """)
+            #endif
+
+            return result
+        } catch let error as MoyaError {
+            throw NetworkError.transport(error)
+        }
+    }
+
+    func restore(
+        restoreToken: String
+    ) async throws -> AccountRestoreResultDTO {
+        let request = AccountRestoreRequestDTO(
+            restoreToken: restoreToken
+        )
+
+        do {
+            let response = try await provider.requestAsync(
+                AuthTarget(
+                    baseURL: baseURL,
+                    endpoint: .restore(request)
+                )
+            )
+            let result = try response.decodePayload(
+                AccountRestoreResultDTO.self
+            )
+
+            #if DEBUG
+            print("""
+            [AccountRestore]
+            URL: \(response.request?.url?.absoluteString ?? "확인 불가")
+            HTTP: \(response.statusCode)
+            memberStatus: \(result.memberStatus.rawValue)
             """)
             #endif
 

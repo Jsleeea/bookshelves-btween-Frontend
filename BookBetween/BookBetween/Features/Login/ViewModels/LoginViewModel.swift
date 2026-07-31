@@ -31,6 +31,9 @@ final class LoginViewModel {
     private var reissueTask: Task<Void, Error>?
 
     private(set) var state: LoginViewState = .idle
+    private(set) var isRecoveringAccount = false
+    private(set) var scheduledDeletionAt: String?
+    var accountRecoveryErrorMessage: String?
 
     var isLoading: Bool {
         state == .loading
@@ -46,6 +49,7 @@ final class LoginViewModel {
         self.authService = authService
         self.authTokenStore = authTokenStore
         self.authSessionStore = authSessionStore
+        self.scheduledDeletionAt = authSessionStore.scheduledDeletionAt()
     }
 
     func loginWithKakao() async {
@@ -87,6 +91,7 @@ final class LoginViewModel {
     }
 
     func resetState() {
+        accountRecoveryErrorMessage = nil
         state = .idle
     }
 
@@ -117,6 +122,52 @@ final class LoginViewModel {
 
         authSessionStore.saveMemberStatus(.active)
         state = .success(.main)
+    }
+
+    func restoreAccount() async {
+        guard !isRecoveringAccount else {
+            return
+        }
+
+        isRecoveringAccount = true
+        accountRecoveryErrorMessage = nil
+        defer { isRecoveringAccount = false }
+
+        do {
+            guard let restoreToken = try authTokenStore.restoreToken(),
+                  !restoreToken.isEmpty else {
+                throw LoginViewModelError.missingRestoreToken
+            }
+
+            let result = try await authService.restore(
+                restoreToken: restoreToken
+            )
+
+            guard result.memberStatus == .active else {
+                throw LoginViewModelError.unexpectedMemberStatus
+            }
+            guard !result.accessToken.isEmpty,
+                  !result.refreshToken.isEmpty else {
+                throw LoginViewModelError.missingServiceTokens
+            }
+
+            try authTokenStore.replaceWithSession(
+                accessToken: result.accessToken,
+                refreshToken: result.refreshToken
+            )
+            authSessionStore.saveMemberStatus(.active)
+            authSessionStore.saveScheduledDeletionAt(nil)
+            scheduledDeletionAt = nil
+            printSessionTokenStorageStatus()
+            state = .success(.main)
+        } catch {
+            accountRecoveryErrorMessage = error.localizedDescription
+        }
+    }
+
+    func cancelAccountRecovery() {
+        accountRecoveryErrorMessage = nil
+        clearLocalSession()
     }
 
     func logout() async throws {
@@ -219,6 +270,8 @@ final class LoginViewModel {
                 refreshToken: tokens.refreshToken
             )
             authSessionStore.saveMemberStatus(.pendingOnboarding)
+            authSessionStore.saveScheduledDeletionAt(nil)
+            scheduledDeletionAt = nil
             printSessionTokenStorageStatus()
             return .success(.accountSetup)
 
@@ -229,6 +282,8 @@ final class LoginViewModel {
                 refreshToken: tokens.refreshToken
             )
             authSessionStore.saveMemberStatus(.active)
+            authSessionStore.saveScheduledDeletionAt(nil)
+            scheduledDeletionAt = nil
             printSessionTokenStorageStatus()
             return .success(.main)
 
@@ -239,6 +294,10 @@ final class LoginViewModel {
             }
             try authTokenStore.replaceWithRestoreToken(restoreToken)
             authSessionStore.saveMemberStatus(.withdrawn)
+            authSessionStore.saveScheduledDeletionAt(
+                result.scheduledDeletionAt
+            )
+            scheduledDeletionAt = result.scheduledDeletionAt
             return .success(.accountRecovery)
 
         case .suspended:
@@ -297,12 +356,15 @@ final class LoginViewModel {
             return
         }
 
+        scheduledDeletionAt = authSessionStore.scheduledDeletionAt()
         state = .success(.accountRecovery)
     }
 
     private func clearLocalSession() {
         try? authTokenStore.clearAll()
         authSessionStore.clear()
+        scheduledDeletionAt = nil
+        accountRecoveryErrorMessage = nil
         state = .idle
     }
 

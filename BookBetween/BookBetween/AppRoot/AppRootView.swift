@@ -100,7 +100,9 @@ struct AppRootView: View {
             )
 
         case .success(.accountRecovery):
-            AccountRecoveryPlaceholderView()
+            AccountRecoveryView(
+                viewModel: loginViewModel
+            )
 
         case .idle, .loading, .failure:
             LoginView(viewModel: loginViewModel)
@@ -113,12 +115,6 @@ private enum AppLaunchPhase: Equatable {
     case landing
     case onboarding
     case authentication
-}
-
-private struct AccountRecoveryPlaceholderView: View {
-    var body: some View {
-        Text("계정 복구 화면 준비 중입니다.")
-    }
 }
 
 #Preview {
