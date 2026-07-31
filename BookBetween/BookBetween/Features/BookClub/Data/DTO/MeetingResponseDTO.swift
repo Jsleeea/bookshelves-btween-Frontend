@@ -25,14 +25,15 @@ struct MeetingBookDTO: Decodable {
     let title: String
     let author: String
     let publisher: String?
+    let description: String?
     let coverImageUrl: String?
     let kdcCode: String?
     let kdcName: String?
 }
 
 struct MeetingSummaryItemDTO: Decodable {
-    let questionOrder: Int
-    let question: String
+    let order: Int
+    let title: String
     let summary: String
 }
 
@@ -53,6 +54,7 @@ extension MeetingResultDTO {
                 title: book.title,
                 author: book.author,
                 publisher: book.publisher,
+                description: book.description,
                 coverImageUrl: book.coverImageUrl,
                 kdcCode: book.kdcCode,
                 kdcName: book.kdcName
@@ -63,7 +65,7 @@ extension MeetingResultDTO {
             currentParticipants: currentParticipants,
             status: statusValue,
             meetingSummary: meetingSummary?.map {
-                MeetingSummaryItem(questionOrder: $0.questionOrder, question: $0.question, summary: $0.summary)
+                MeetingSummaryItem(order: $0.order, title: $0.title, summary: $0.summary)
             }
         )
     }

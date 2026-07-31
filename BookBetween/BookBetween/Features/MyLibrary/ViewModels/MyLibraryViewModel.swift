@@ -20,6 +20,15 @@ enum MyLibraryTab: CaseIterable {
 		case .toRead: return "읽기 전"
 		}
 	}
+
+    var apiStatus: String {
+        switch self {
+        case .all: return "ALL"
+        case .read: return "FINISHED"
+        case .reading: return "READING"
+        case .toRead: return "BEFORE_READING"
+        }
+    }
 }
 
 @Observable
@@ -29,8 +38,12 @@ final class MyLibraryViewModel {
 
 	var selectedTab: MyLibraryTab = .all
 	var records: [UserBookRecord] = []
+    var isLoading = false
+
+    private let bookService: (any BookServiceProtocol)?
 
 	var filteredRecords: [UserBookRecord] {
+        guard bookService == nil else { return records }
 		switch self.selectedTab {
 		case .all:
 			return self.records
@@ -45,7 +58,9 @@ final class MyLibraryViewModel {
 
 	// MARK: - Init
 
-	init() {
+	init(bookService: (any BookServiceProtocol)? = nil) {
+        self.bookService = bookService
+        guard bookService == nil else { return }
 		self.records = [
 			UserBookRecord(
 				id: 1,
@@ -91,6 +106,31 @@ final class MyLibraryViewModel {
 			)
 		]
 	}
+
+    // MARK: - Actions
+
+    func fetchRecords() async {
+        guard let bookService else { return }
+        isLoading = true
+        defer { isLoading = false }
+        do {
+            records = try await bookService.fetchMemberBooks(
+                status: selectedTab.apiStatus,
+                page: 1,
+                size: 50
+            )
+        } catch {
+            records = []
+        }
+    }
+
+    func deleteRecord(_ record: UserBookRecord) async {
+        guard let bookService, let isbn = record.book.isbn else { return }
+        do {
+            try await bookService.deleteMemberBook(isbn: isbn)
+            records.removeAll { $0.id == record.id }
+        } catch {}
+    }
 
     func updateRecord(_ updatedRecord: UserBookRecord) {
         guard let index = records.firstIndex(where: { record in

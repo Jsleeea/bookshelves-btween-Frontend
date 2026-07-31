@@ -72,7 +72,7 @@ struct BookMeetingCreateView: View {
                             .padding(.bottom, 40)
                         noticeSection
                             .padding(.bottom, 24)
-                        bottomButton(isCreating ? "생성 중..." : "+ 모임 생성하기") {
+                        BottomActionButton(title: isCreating ? "생성 중..." : "+ 모임 생성하기") {
                             guard !isCreating, let isbn = book.isbn else { return }
                             Task {
                                 isCreating = true

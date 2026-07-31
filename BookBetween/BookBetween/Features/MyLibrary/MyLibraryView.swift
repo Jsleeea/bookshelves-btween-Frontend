@@ -1,11 +1,12 @@
 import SwiftUI
 
 struct MyLibraryView: View {
-	@State private var viewModel = MyLibraryViewModel()
+	@State private var viewModel: MyLibraryViewModel
     private let bookService: any BookServiceProtocol
 
     init(bookService: any BookServiceProtocol) {
         self.bookService = bookService
+        _viewModel = State(initialValue: MyLibraryViewModel(bookService: bookService))
     }
 
 	var body: some View {
@@ -21,22 +22,35 @@ struct MyLibraryView: View {
 
 			tabSelector
 
-			ScrollView(showsIndicators: false) {
-				VStack(spacing: 16) {
-					ForEach(viewModel.filteredRecords, id: \.id) { record in
-						MyLibraryBookCardView(
-                            record: record,
-                            bookService: bookService,
-                            onRecordSaved: viewModel.updateRecord
-                        )
+			List {
+				ForEach(viewModel.filteredRecords, id: \.id) { record in
+					MyLibraryBookCardView(
+						record: record,
+						bookService: bookService,
+						onRecordSaved: viewModel.updateRecord
+					)
+					.listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+					.listRowSeparator(.hidden)
+					.listRowBackground(Color.clear)
+					.swipeActions(edge: .trailing, allowsFullSwipe: true) {
+						Button(role: .destructive) {
+							Task { await viewModel.deleteRecord(record) }
+						} label: {
+							Label("삭제", systemImage: "trash")
+						}
 					}
 				}
-                .padding(.top, 14)
-				.padding(.bottom, 100)
 			}
+			.listStyle(.plain)
+			.scrollContentBackground(.hidden)
 			.scrollBounceBehavior(.basedOnSize)
+			.contentMargins(.top, 6, for: .scrollContent)
+			.contentMargins(.bottom, 84, for: .scrollContent)
 		}
 		.toolbar(.hidden, for: .navigationBar)
+        .task(id: viewModel.selectedTab) {
+            await viewModel.fetchRecords()
+        }
 	}
 
 	// MARK: - Tab Selector
@@ -59,7 +73,7 @@ struct MyLibraryView: View {
 		} label: {
 			Text(tab.title)
 				.body2SemiBoldStyle
-				.foregroundStyle(viewModel.selectedTab == tab ? Color.green600 : Color.green600)
+				.foregroundStyle(Color.green600)
                 .frame(width: 70, height: 30)
 				.background(viewModel.selectedTab == tab ? Color.green50 : Color.white)
 				.clipShape(Capsule())

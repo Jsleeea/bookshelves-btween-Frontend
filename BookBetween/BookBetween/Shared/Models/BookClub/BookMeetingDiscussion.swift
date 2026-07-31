@@ -7,7 +7,7 @@ import Foundation
 
 struct DiscussionTopic: Identifiable {
 	let id: Int
-	let question: String
+	let title: String
 	let content: String
 	let quote: String?
 }

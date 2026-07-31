@@ -15,14 +15,14 @@ struct BookMeetingResultView: View {
 	private var effectiveTopics: [DiscussionTopic] {
 		if let summaries = meeting.meetingSummary, !summaries.isEmpty {
 			return summaries.map {
-				DiscussionTopic(id: $0.questionOrder, question: $0.question, content: $0.summary, quote: nil)
+				DiscussionTopic(id: $0.order, title: $0.title, content: $0.summary, quote: nil)
 			}
 		}
 		// Preview/fallback mock
 		return [
-			DiscussionTopic(id: 1, question: "왜 싯다르타는 계속 떠났을까?", content: "많은 참여자들은 싯다르타가 깨달음을 얻기 위해서가 아니라, 타인의 답을 자신의 답으로 받아들일 수 없었기 때문에 떠났다고 이야기했다.", quote: nil),
-			DiscussionTopic(id: 2, question: "가장 인상 깊었던 시기", content: "참여자들은 의외로 싯다르타가 성공과 쾌락을 경험하던 시기를 많이 언급했다참여자들은 의외로 싯다르타가 성공과 쾌락을 경험하던 시기를 많이 언급했다참여자들은 의외로 싯다르타가 성공과 쾌락을 경험하던 시기를 많이 언급했다.여자들은 의외로 싯다르타가 성공과 쾌락을 경험하던 시기를 많이 언급했다참여자들은 의외로 싯다르타가 성공과 쾌락을 경험하던 시기를 많이 언급했다참여자들은 의외로 싯다르타가 성공여자들은 의외로 싯다르타가 성공과 쾌락을 경험하던 시기를 많이 언급했다참여자들은 의외로 싯다르타가 성공과 쾌락을 경험하던 시기를 많이 언급했다참여자들은 의외로 싯다르타가 성공과 쾌락을 경험하던 시기를 많이 언급했다참여자들은 의외로 싯다르타가 성공여자들은 의외로 싯다르타가 성공과 쾌락을 경험하던 시기를 많이 언급했다참여자들은 의외로 싯다르타가 성공여자들은 의외로 싯다르타가 성공과 쾌락을 경험하던 시기를 많이 언급했다참여자들은 의외로 싯다르타가 성공과 쾌락을 경험하던 시기를 많이 언급했다참여자들은 의외로 싯다르타가 성공", quote: nil),
-			DiscussionTopic(id: 3, question: "현재의 나와 연결되는 부분", content: "많은 참여자들이 진로 고민, 인간관계, 미래에 대한 불안을 이야기하며 싯다르타의 방황과 자신의 삶을 연결 지었다.", quote: nil)
+			DiscussionTopic(id: 1, title: "왜 싯다르타는 계속 떠났을까?", content: "많은 참여자들은 싯다르타가 깨달음을 얻기 위해서가 아니라, 타인의 답을 자신의 답으로 받아들일 수 없었기 때문에 떠났다고 이야기했다.", quote: nil),
+			DiscussionTopic(id: 2, title: "가장 인상 깊었던 시기", content: "참여자들은 의외로 싯다르타가 성공과 쾌락을 경험하던 시기를 많이 언급했다참여자들은 의외로 싯다르타가 성공과 쾌락을 경험하던 시기를 많이 언급했다참여자들은 의외로 싯다르타가 성공과 쾌락을 경험하던 시기를 많이 언급했다.여자들은 의외로 싯다르타가 성공과 쾌락을 경험하던 시기를 많이 언급했다참여자들은 의외로 싯다르타가 성공과 쾌락을 경험하던 시기를 많이 언급했다참여자들은 의외로 싯다르타가 성공여자들은 의외로 싯다르타가 성공과 쾌락을 경험하던 시기를 많이 언급했다참여자들은 의외로 싯다르타가 성공과 쾌락을 경험하던 시기를 많이 언급했다참여자들은 의외로 싯다르타가 성공과 쾌락을 경험하던 시기를 많이 언급했다참여자들은 의외로 싯다르타가 성공여자들은 의외로 싯다르타가 성공과 쾌락을 경험하던 시기를 많이 언급했다참여자들은 의외로 싯다르타가 성공여자들은 의외로 싯다르타가 성공과 쾌락을 경험하던 시기를 많이 언급했다참여자들은 의외로 싯다르타가 성공과 쾌락을 경험하던 시기를 많이 언급했다참여자들은 의외로 싯다르타가 성공", quote: nil),
+			DiscussionTopic(id: 3, title: "현재의 나와 연결되는 부분", content: "많은 참여자들이 진로 고민, 인간관계, 미래에 대한 불안을 이야기하며 싯다르타의 방황과 자신의 삶을 연결 지었다.", quote: nil)
 		]
 	}
 
@@ -303,7 +303,7 @@ struct BookMeetingResultView: View {
                 .padding(.horizontal, 10)
 
 			VStack(alignment: .leading, spacing: 0) {
-				Text(topic.question)
+				Text(topic.title)
 					.body2SemiBoldStyle
 					.foregroundStyle(Color.gray800)
                     .padding(.bottom, 8)

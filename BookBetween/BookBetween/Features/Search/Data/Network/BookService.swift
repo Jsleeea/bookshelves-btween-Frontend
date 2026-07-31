@@ -22,6 +22,8 @@ protocol BookServiceProtocol {
         rating: Double?,
         memo: String?
     ) async throws
+    func fetchMemberBooks(status: String, page: Int, size: Int) async throws -> [UserBookRecord]
+    func deleteMemberBook(isbn: String) async throws
 }
 
 final class BookService: BookServiceProtocol {
@@ -159,6 +161,38 @@ final class BookService: BookServiceProtocol {
                 _ = try response.decodePayload(
                     MemberBookUpsertResultDTO.self
                 )
+            } catch let error as MoyaError {
+                throw NetworkError.transport(error)
+            }
+        }
+    }
+
+    func fetchMemberBooks(status: String, page: Int, size: Int) async throws -> [UserBookRecord] {
+        try await requestExecutor.execute {
+            do {
+                let response = try await provider.requestAsync(
+                    BookTarget(
+                        baseURL: baseURL,
+                        endpoint: .memberBooks(status: status, page: page, size: size)
+                    )
+                )
+                return try response.decodePayload(MemberBooksListDTO.self).toDomain()
+            } catch let error as MoyaError {
+                throw NetworkError.transport(error)
+            }
+        }
+    }
+
+    func deleteMemberBook(isbn: String) async throws {
+        try await requestExecutor.execute {
+            do {
+                let response = try await provider.requestAsync(
+                    BookTarget(
+                        baseURL: baseURL,
+                        endpoint: .deleteMemberBook(isbn: isbn)
+                    )
+                )
+                try response.validateAPIResponse()
             } catch let error as MoyaError {
                 throw NetworkError.transport(error)
             }
