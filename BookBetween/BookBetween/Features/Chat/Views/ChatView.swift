@@ -21,13 +21,13 @@ struct ChatView: View {
     static let messageListTopPadding: CGFloat = 32
     static let messageListBottomPadding: CGFloat = 16
 
-    static let chatBottomTopPadding: CGFloat = 44
     static let chatBottomBottomPadding: CGFloat = 12
     static let backgroundTopColorHex: String = "F0F7FD"
 
     static let downButtonSize: CGFloat = 30
     static let downButtonCornerRadius: CGFloat = 20
     static let downButtonTrailingPadding: CGFloat = 28
+    static let downButtonBottomPadding: CGFloat = 20
     static let downButtonShadowRadius: CGFloat = 24
     static let downButtonShadowYOffset: CGFloat = 20
     static let downButtonShadowOpacity: CGFloat = 0.16
@@ -90,6 +90,8 @@ struct ChatView: View {
 
   @State private var messageText: String = ""
   @State private var isQuestionExpanded: Bool = false
+  @State private var showsScrollToBottomButton: Bool = false
+  @FocusState private var isMessageFieldFocused: Bool
   private let currentQuestionCount: Int = 2
   private let maxQuestionCount: Int = 5
 
@@ -130,74 +132,90 @@ struct ChatView: View {
     VStack(spacing: 0) {
       self.headerView
 
-      ScrollView(showsIndicators: false) {
-        ZStack(alignment: .top) {
-          VStack(spacing: 0) {
-            self.questionView
+      VStack(spacing: 0) {
+        self.questionView
 
-            VStack(spacing: Metric.messageListSpacing) {
-              ForEach(self.messages) { message in
-                ChatMessageView(
-                  nickname: message.nickname,
-                  message: message.message,
-                  time: message.time,
-                  isMyMessage: message.isMyMessage,
-                  profileImageName: message.profileImageName
-                )
-              }
+        ScrollView(showsIndicators: false) {
+          VStack(spacing: Metric.messageListSpacing) {
+            ForEach(self.messages) { message in
+              ChatMessageView(
+                nickname: message.nickname,
+                message: message.message,
+                time: message.time,
+                isMyMessage: message.isMyMessage,
+                profileImageName: message.profileImageName
+              )
             }
-            .padding(.top, Metric.messageListTopPadding)
-            .padding(.horizontal, Metric.wideHorizontalPadding)
-            .padding(.bottom, Metric.messageListBottomPadding)
           }
-
-          // ZStack의 나중 자식이라 항상 채팅 목록 위에 그려짐이 보장됨
-          if self.isQuestionExpanded {
-            self.expandedQuestionView
-              .padding(.horizontal, Metric.horizontalPadding)
-              .padding(.top, Metric.horizontalPadding)
+          .padding(.top, Metric.messageListTopPadding)
+          .padding(.horizontal, Metric.wideHorizontalPadding)
+          .padding(.bottom, Metric.messageListBottomPadding)
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+          self.isMessageFieldFocused = false
+        }
+        .safeAreaInset(edge: .bottom) {
+          Color.clear
+            .frame(height: Metric.downButtonSize + Metric.downButtonBottomPadding)
+        }
+        .onScrollGeometryChange(for: Bool.self) { geometry in
+          let distanceFromBottom = geometry.contentSize.height
+            - geometry.containerSize.height
+            - geometry.contentOffset.y
+          return distanceFromBottom > geometry.containerSize.height / 2
+        } action: { _, newValue in
+          self.showsScrollToBottomButton = newValue
+        }
+        .overlay(alignment: .bottomTrailing) {
+          if self.showsScrollToBottomButton {
+            Image("down_button")
+              .resizable()
+              .scaledToFit()
+              .frame(width: Metric.downButtonSize, height: Metric.downButtonSize)
+              .background(
+                LinearGradient(
+                  stops: [
+                    Gradient.Stop(color: .white, location: Metric.softGradientStartLocation),
+                    Gradient.Stop(
+                      color: .white.opacity(0.2),
+                      location: Metric.softGradientEndLocation
+                    )
+                  ],
+                  startPoint: .bottom,
+                  endPoint: .top
+                )
+              )
+              .clipShape(RoundedRectangle(cornerRadius: Metric.downButtonCornerRadius))
+              .shadow(
+                color: Color(hex: Metric.downButtonShadowColorHex)
+                  .opacity(Metric.downButtonShadowOpacity),
+                radius: Metric.downButtonShadowRadius,
+                x: 0,
+                y: Metric.downButtonShadowYOffset
+              )
+              .padding(.trailing, Metric.horizontalPadding + Metric.downButtonTrailingPadding)
+              .padding(.bottom, Metric.downButtonBottomPadding)
           }
+        }
+      }
+      .overlay(alignment: .top) {
+        if self.isQuestionExpanded {
+          self.expandedQuestionView
+            .padding(.horizontal, Metric.horizontalPadding)
+            .padding(.top, Metric.horizontalPadding)
         }
       }
 
       ChatBottomView(
         messageText: self.$messageText,
+        isFocused: self.$isMessageFieldFocused,
         currentQuestionCount: self.currentQuestionCount,
         maxQuestionCount: self.maxQuestionCount,
         onRequestQuestionTap: {},
         onSendTap: {}
       )
-      .overlay(alignment: .topTrailing) {
-        Image("down_button")
-          .resizable()
-          .scaledToFit()
-          .frame(width: Metric.downButtonSize, height: Metric.downButtonSize)
-          .background(
-            LinearGradient(
-              stops: [
-                Gradient.Stop(color: .white, location: Metric.softGradientStartLocation),
-                Gradient.Stop(
-                  color: .white.opacity(0.2),
-                  location: Metric.softGradientEndLocation
-                )
-              ],
-              startPoint: .bottom,
-              endPoint: .top
-            )
-          )
-          .clipShape(RoundedRectangle(cornerRadius: Metric.downButtonCornerRadius))
-          .shadow(
-            color: Color(hex: Metric.downButtonShadowColorHex)
-              .opacity(Metric.downButtonShadowOpacity),
-            radius: Metric.downButtonShadowRadius,
-            x: 0,
-            y: Metric.downButtonShadowYOffset
-          )
-          .padding(.trailing, Metric.downButtonTrailingPadding)
-          .offset(y: -(Metric.downButtonSize + Metric.chatBottomBottomPadding))
-      }
       .padding(.horizontal, Metric.horizontalPadding)
-      .padding(.top, Metric.chatBottomTopPadding)
       .padding(.bottom, Metric.chatBottomBottomPadding)
     }
     .background(

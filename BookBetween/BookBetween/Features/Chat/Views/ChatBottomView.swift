@@ -49,6 +49,7 @@ struct ChatBottomView: View {
   // MARK: - Properties
 
   @Binding var messageText: String
+  var isFocused: FocusState<Bool>.Binding
   let currentQuestionCount: Int
   let maxQuestionCount: Int
   let onRequestQuestionTap: () -> Void
@@ -138,6 +139,7 @@ struct ChatBottomView: View {
         RoundedRectangle(cornerRadius: Metric.cornerRadius)
           .stroke(.blue50, lineWidth: Metric.thinBorderWidth)
       }
+      .compositingGroup()
     }
     .buttonStyle(.plain)
   }
@@ -152,6 +154,7 @@ struct ChatBottomView: View {
         .lineSpacing(Metric.smallCaptionLineSpacing) // 행간 20pt (12pt 기준 +8)
         .foregroundStyle(.gray300)
         .padding(.vertical, Metric.textFieldVerticalPadding)
+        .focused(self.isFocused)
 
       Button(action: self.onSendTap) {
         Image("direct_icon")
@@ -173,8 +176,11 @@ struct ChatBottomView: View {
 }
 
 #Preview {
+  @Previewable @FocusState var isFocused: Bool
+
   ChatBottomView(
     messageText: .constant(""),
+    isFocused: $isFocused,
     currentQuestionCount: 2,
     maxQuestionCount: 5,
     onRequestQuestionTap: {},
