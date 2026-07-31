@@ -12,6 +12,10 @@ import Observation
 @MainActor
 final class ChatViewModel {
 
+  // MARK: - Constant
+
+  static let messageMaxLength = 500
+
   // MARK: - State
 
   private(set) var chatRoom: ChatRoom?
@@ -71,11 +75,19 @@ final class ChatViewModel {
     }
   }
 
+  // MARK: - Reconnect
+
+  func reconnect() async {
+    guard !self.isLoading else { return }
+    await self.socketService.disconnect()
+    await self.enterChatRoom()
+  }
+
   // MARK: - Actions
 
   func sendMessage(_ content: String) async {
     let trimmed = content.trimmingCharacters(in: .whitespacesAndNewlines)
-    guard !trimmed.isEmpty else { return }
+    guard !trimmed.isEmpty, trimmed.count <= Self.messageMaxLength else { return }
 
     do {
       try await self.socketService.send(chatroomId: self.chatroomId, content: trimmed)

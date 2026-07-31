@@ -92,6 +92,7 @@ struct ChatView: View {
   @State private var showsScrollToBottomButton: Bool = false
   @FocusState private var isMessageFieldFocused: Bool
   @Environment(\.dismiss) private var dismiss
+  @Environment(\.scenePhase) private var scenePhase
 
   // MARK: - Init
 
@@ -235,6 +236,17 @@ struct ChatView: View {
     .onChange(of: self.viewModel.questionUpdateTrigger) { _, _ in
       withAnimation {
         self.isQuestionExpanded = true
+      }
+    }
+    .onChange(of: self.scenePhase) { _, newPhase in
+      guard newPhase == .active else { return }
+      Task {
+        await self.viewModel.reconnect()
+      }
+    }
+    .onChange(of: self.messageText) { _, newValue in
+      if newValue.count > ChatViewModel.messageMaxLength {
+        self.messageText = String(newValue.prefix(ChatViewModel.messageMaxLength))
       }
     }
     .alert(
