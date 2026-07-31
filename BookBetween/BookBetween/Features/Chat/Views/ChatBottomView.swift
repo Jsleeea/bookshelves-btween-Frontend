@@ -139,6 +139,7 @@ struct ChatBottomView: View {
         RoundedRectangle(cornerRadius: Metric.cornerRadius)
           .stroke(.blue50, lineWidth: Metric.thinBorderWidth)
       }
+      .compositingGroup()
     }
     .buttonStyle(.plain)
   }
