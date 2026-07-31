@@ -21,7 +21,6 @@ struct ChatView: View {
     static let messageListTopPadding: CGFloat = 32
     static let messageListBottomPadding: CGFloat = 16
 
-    static let chatBottomTopPadding: CGFloat = 44
     static let chatBottomBottomPadding: CGFloat = 12
     static let backgroundTopColorHex: String = "F0F7FD"
 
@@ -91,6 +90,7 @@ struct ChatView: View {
 
   @State private var messageText: String = ""
   @State private var isQuestionExpanded: Bool = false
+  @State private var showsScrollToBottomButton: Bool = false
   @FocusState private var isMessageFieldFocused: Bool
   private let currentQuestionCount: Int = 2
   private let maxQuestionCount: Int = 5
@@ -132,10 +132,74 @@ struct ChatView: View {
     VStack(spacing: 0) {
       self.headerView
 
-      ZStack(alignment: .top) {
+      VStack(spacing: 0) {
         self.questionView
 
-        // ZStack의 나중 자식이라 항상 첫번째 질문 보기 카드 위에 그려짐이 보장됨
+        ScrollView(showsIndicators: false) {
+          VStack(spacing: Metric.messageListSpacing) {
+            ForEach(self.messages) { message in
+              ChatMessageView(
+                nickname: message.nickname,
+                message: message.message,
+                time: message.time,
+                isMyMessage: message.isMyMessage,
+                profileImageName: message.profileImageName
+              )
+            }
+          }
+          .padding(.top, Metric.messageListTopPadding)
+          .padding(.horizontal, Metric.wideHorizontalPadding)
+          .padding(.bottom, Metric.messageListBottomPadding)
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+          self.isMessageFieldFocused = false
+        }
+        .safeAreaInset(edge: .bottom) {
+          Color.clear
+            .frame(height: Metric.downButtonSize + Metric.downButtonBottomPadding)
+        }
+        .onScrollGeometryChange(for: Bool.self) { geometry in
+          let distanceFromBottom = geometry.contentSize.height
+            - geometry.containerSize.height
+            - geometry.contentOffset.y
+          return distanceFromBottom > geometry.containerSize.height / 2
+        } action: { _, newValue in
+          self.showsScrollToBottomButton = newValue
+        }
+        .overlay(alignment: .bottomTrailing) {
+          if self.showsScrollToBottomButton {
+            Image("down_button")
+              .resizable()
+              .scaledToFit()
+              .frame(width: Metric.downButtonSize, height: Metric.downButtonSize)
+              .background(
+                LinearGradient(
+                  stops: [
+                    Gradient.Stop(color: .white, location: Metric.softGradientStartLocation),
+                    Gradient.Stop(
+                      color: .white.opacity(0.2),
+                      location: Metric.softGradientEndLocation
+                    )
+                  ],
+                  startPoint: .bottom,
+                  endPoint: .top
+                )
+              )
+              .clipShape(RoundedRectangle(cornerRadius: Metric.downButtonCornerRadius))
+              .shadow(
+                color: Color(hex: Metric.downButtonShadowColorHex)
+                  .opacity(Metric.downButtonShadowOpacity),
+                radius: Metric.downButtonShadowRadius,
+                x: 0,
+                y: Metric.downButtonShadowYOffset
+              )
+              .padding(.trailing, Metric.horizontalPadding + Metric.downButtonTrailingPadding)
+              .padding(.bottom, Metric.downButtonBottomPadding)
+          }
+        }
+      }
+      .overlay(alignment: .top) {
         if self.isQuestionExpanded {
           self.expandedQuestionView
             .padding(.horizontal, Metric.horizontalPadding)
@@ -143,71 +207,15 @@ struct ChatView: View {
         }
       }
 
-      ScrollView(showsIndicators: false) {
-        VStack(spacing: Metric.messageListSpacing) {
-          ForEach(self.messages) { message in
-            ChatMessageView(
-              nickname: message.nickname,
-              message: message.message,
-              time: message.time,
-              isMyMessage: message.isMyMessage,
-              profileImageName: message.profileImageName
-            )
-          }
-        }
-        .padding(.top, Metric.messageListTopPadding)
-        .padding(.horizontal, Metric.wideHorizontalPadding)
-        .padding(.bottom, Metric.messageListBottomPadding)
-      }
-      .contentShape(Rectangle())
-      .onTapGesture {
-        self.isMessageFieldFocused = false
-      }
-
-      VStack(spacing: 0) {
-        HStack {
-          Spacer()
-
-          Image("down_button")
-            .resizable()
-            .scaledToFit()
-            .frame(width: Metric.downButtonSize, height: Metric.downButtonSize)
-            .background(
-              LinearGradient(
-                stops: [
-                  Gradient.Stop(color: .white, location: Metric.softGradientStartLocation),
-                  Gradient.Stop(
-                    color: .white.opacity(0.2),
-                    location: Metric.softGradientEndLocation
-                  )
-                ],
-                startPoint: .bottom,
-                endPoint: .top
-              )
-            )
-            .clipShape(RoundedRectangle(cornerRadius: Metric.downButtonCornerRadius))
-            .shadow(
-              color: Color(hex: Metric.downButtonShadowColorHex)
-                .opacity(Metric.downButtonShadowOpacity),
-              radius: Metric.downButtonShadowRadius,
-              x: 0,
-              y: Metric.downButtonShadowYOffset
-            )
-        }
-        .padding(.trailing, Metric.downButtonTrailingPadding)
-        .padding(.bottom, Metric.downButtonBottomPadding)
-
-        ChatBottomView(
-          messageText: self.$messageText,
-          isFocused: self.$isMessageFieldFocused,
-          currentQuestionCount: self.currentQuestionCount,
-          maxQuestionCount: self.maxQuestionCount,
-          onRequestQuestionTap: {},
-          onSendTap: {}
-        )
-      }
+      ChatBottomView(
+        messageText: self.$messageText,
+        isFocused: self.$isMessageFieldFocused,
+        currentQuestionCount: self.currentQuestionCount,
+        maxQuestionCount: self.maxQuestionCount,
+        onRequestQuestionTap: {},
+        onSendTap: {}
+      )
       .padding(.horizontal, Metric.horizontalPadding)
-      .padding(.top, Metric.chatBottomTopPadding)
       .padding(.bottom, Metric.chatBottomBottomPadding)
     }
     .background(
