@@ -28,6 +28,7 @@ struct ChatView: View {
     static let downButtonSize: CGFloat = 30
     static let downButtonCornerRadius: CGFloat = 20
     static let downButtonTrailingPadding: CGFloat = 28
+    static let downButtonBottomPadding: CGFloat = 20
     static let downButtonShadowRadius: CGFloat = 24
     static let downButtonShadowYOffset: CGFloat = 20
     static let downButtonShadowOpacity: CGFloat = 0.16
@@ -90,6 +91,7 @@ struct ChatView: View {
 
   @State private var messageText: String = ""
   @State private var isQuestionExpanded: Bool = false
+  @FocusState private var isMessageFieldFocused: Bool
   private let currentQuestionCount: Int = 2
   private let maxQuestionCount: Int = 5
 
@@ -158,10 +160,15 @@ struct ChatView: View {
               .padding(.top, Metric.horizontalPadding)
           }
         }
+        .contentShape(Rectangle())
+        .onTapGesture {
+          self.isMessageFieldFocused = false
+        }
       }
 
       ChatBottomView(
         messageText: self.$messageText,
+        isFocused: self.$isMessageFieldFocused,
         currentQuestionCount: self.currentQuestionCount,
         maxQuestionCount: self.maxQuestionCount,
         onRequestQuestionTap: {},
@@ -194,7 +201,7 @@ struct ChatView: View {
             y: Metric.downButtonShadowYOffset
           )
           .padding(.trailing, Metric.downButtonTrailingPadding)
-          .offset(y: -(Metric.downButtonSize + Metric.chatBottomBottomPadding))
+          .offset(y: -(Metric.downButtonSize + Metric.downButtonBottomPadding))
       }
       .padding(.horizontal, Metric.horizontalPadding)
       .padding(.top, Metric.chatBottomTopPadding)
