@@ -16,6 +16,7 @@ struct ProfileEditView: View {
     @State private var saveErrorMessage: String?
     @State private var isLoggingOut = false
     @State private var logoutErrorMessage: String?
+    @State private var activeModal: ProfileEditModal?
 
     private let onSave: (MemberProfileUpdateRequestDTO) async throws -> Void
     private let onLogout: () async throws -> Void
@@ -106,18 +107,68 @@ struct ProfileEditView: View {
                         },
                         isSaving: isSaving,
                         onLogout: {
-                            Task {
-                                await logout()
-                            }
+                            activeModal = .logoutConfirmation
                         },
                         onWithdraw: {
-                            // 회원 탈퇴 기능 연결 시 동작 추가
+                            activeModal = .withdrawalConfirmation
                         }
                     )
                 }
                 .padding(.bottom, 40)
             }
+
+            if let activeModal {
+                Color.black.opacity(0.3)
+                    .ignoresSafeArea()
+
+                Group {
+                    switch activeModal {
+                    case .saveCompleted:
+                        SuccessModalView(
+                            title: "저장되었습니다"
+                        ) {
+                            self.activeModal = nil
+                            dismiss()
+                        }
+
+                    case .logoutConfirmation:
+                        AccountActionModalView(
+                            title: "로그아웃 하시겠습니까?",
+                            description: "해당 기기에서 로그아웃 됩니다.",
+                            confirmTitle: "로그아웃",
+                            onCancel: {
+                                guard !isLoggingOut else {
+                                    return
+                                }
+
+                                self.activeModal = nil
+                            },
+                            onConfirm: {
+                                Task {
+                                    await logout()
+                                }
+                            }
+                        )
+
+                    case .withdrawalConfirmation:
+                        AccountActionModalView(
+                            title: "탈퇴하시겠습니까?",
+                            description: "탈퇴하기 클릭 후 30일이 지나면\n계정 복구가 불가능합니다.",
+                            confirmTitle: "탈퇴하기",
+                            onCancel: {
+                                self.activeModal = nil
+                            },
+                            onConfirm: {
+                                // 회원 탈퇴 API 연결 시 동작 추가
+                            }
+                        )
+                    }
+                }
+                .transition(.scale.combined(with: .opacity))
+                .zIndex(1)
+            }
         }
+        .animation(.easeInOut(duration: 0.2), value: activeModal)
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
         .alert(
@@ -175,7 +226,7 @@ struct ProfileEditView: View {
 
         do {
             try await onSave(request)
-            dismiss()
+            activeModal = .saveCompleted
         } catch {
             saveErrorMessage = error.localizedDescription
         }
@@ -191,10 +242,18 @@ struct ProfileEditView: View {
 
         do {
             try await onLogout()
+            activeModal = nil
         } catch {
+            activeModal = nil
             logoutErrorMessage = error.localizedDescription
         }
     }
+}
+
+private enum ProfileEditModal: Equatable {
+    case saveCompleted
+    case logoutConfirmation
+    case withdrawalConfirmation
 }
 
 // MARK: - 상단 헤더
