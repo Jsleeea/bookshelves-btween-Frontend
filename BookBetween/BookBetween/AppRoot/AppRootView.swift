@@ -165,6 +165,15 @@ struct AppRootView: View {
             )
         }
     }
+
+    private func withdrawAccount() async throws {
+        guard let memberService else {
+            throw NetworkError.emptyResult
+        }
+
+        _ = try await memberService.withdrawMyAccount()
+        loginViewModel.completeAccountWithdrawal()
+    }
 }
 
 private enum AppLaunchPhase: Equatable {
