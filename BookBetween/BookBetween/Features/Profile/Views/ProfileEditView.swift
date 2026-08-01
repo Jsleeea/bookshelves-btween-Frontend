@@ -110,7 +110,7 @@ struct ProfileEditView: View {
                             activeModal = .logoutConfirmation
                         },
                         onWithdraw: {
-                            // 회원 탈퇴 기능 연결 시 동작 추가
+                            activeModal = .withdrawalConfirmation
                         }
                     )
                 }
@@ -147,6 +147,19 @@ struct ProfileEditView: View {
                                 Task {
                                     await logout()
                                 }
+                            }
+                        )
+
+                    case .withdrawalConfirmation:
+                        AccountActionModalView(
+                            title: "탈퇴하시겠습니까?",
+                            description: "탈퇴하기 클릭 후 30일이 지나면\n계정 복구가 불가능합니다.",
+                            confirmTitle: "탈퇴하기",
+                            onCancel: {
+                                self.activeModal = nil
+                            },
+                            onConfirm: {
+                                // 회원 탈퇴 API 연결 시 동작 추가
                             }
                         )
                     }
@@ -240,6 +253,7 @@ struct ProfileEditView: View {
 private enum ProfileEditModal: Equatable {
     case saveCompleted
     case logoutConfirmation
+    case withdrawalConfirmation
 }
 
 // MARK: - 상단 헤더
