@@ -75,6 +75,10 @@ struct ChatView: View {
     static let expandedParagraphBottomPadding: CGFloat = 20
   }
 
+  private enum Identifier {
+    static let bottomAnchor = "chat-bottom-anchor"
+  }
+
   // MARK: - Formatter
 
   private static let timeFormatter: DateFormatter = {
@@ -124,63 +128,85 @@ struct ChatView: View {
       VStack(spacing: 0) {
         self.questionView
 
-        ScrollView(showsIndicators: false) {
-          VStack(spacing: Metric.messageListSpacing) {
-            ForEach(self.viewModel.messages) { message in
-              ChatMessageView(
-                nickname: message.senderNickname,
-                message: message.content,
-                time: Self.timeFormatter.string(from: message.createdAt),
-                isMyMessage: message.senderMemberId == self.viewModel.myMemberId,
-                profileImageName: nil
-              )
-            }
-          }
-          .padding(.top, Metric.messageListTopPadding)
-          .padding(.horizontal, Metric.wideHorizontalPadding)
-          .padding(.bottom, Metric.messageListBottomPadding)
-        }
-        .safeAreaInset(edge: .bottom) {
-          Color.clear
-            .frame(height: Metric.downButtonSize + Metric.downButtonBottomPadding)
-        }
-        .onScrollGeometryChange(for: Bool.self) { geometry in
-          let distanceFromBottom = geometry.contentSize.height
-            - geometry.containerSize.height
-            - geometry.contentOffset.y
-          return distanceFromBottom > geometry.containerSize.height / 2
-        } action: { _, newValue in
-          self.showsScrollToBottomButton = newValue
-        }
-        .overlay(alignment: .bottomTrailing) {
-          if self.showsScrollToBottomButton {
-            Image("down_button")
-              .resizable()
-              .scaledToFit()
-              .frame(width: Metric.downButtonSize, height: Metric.downButtonSize)
-              .background(
-                LinearGradient(
-                  stops: [
-                    Gradient.Stop(color: .white, location: Metric.softGradientStartLocation),
-                    Gradient.Stop(
-                      color: .white.opacity(0.2),
-                      location: Metric.softGradientEndLocation
-                    )
-                  ],
-                  startPoint: .bottom,
-                  endPoint: .top
+        ScrollViewReader { proxy in
+          ScrollView(showsIndicators: false) {
+            VStack(spacing: Metric.messageListSpacing) {
+              ForEach(self.viewModel.messages) { message in
+                ChatMessageView(
+                  nickname: message.senderNickname,
+                  message: message.content,
+                  time: Self.timeFormatter.string(from: message.createdAt),
+                  isMyMessage: message.senderMemberId == self.viewModel.myMemberId,
+                  profileImageName: nil
                 )
-              )
-              .clipShape(RoundedRectangle(cornerRadius: Metric.downButtonCornerRadius))
-              .shadow(
-                color: Color(hex: Metric.downButtonShadowColorHex)
-                  .opacity(Metric.downButtonShadowOpacity),
-                radius: Metric.downButtonShadowRadius,
-                x: 0,
-                y: Metric.downButtonShadowYOffset
-              )
+              }
+
+              Color.clear
+                .frame(height: 1)
+                .id(Identifier.bottomAnchor)
+            }
+            .padding(.top, Metric.messageListTopPadding)
+            .padding(.horizontal, Metric.wideHorizontalPadding)
+            .padding(.bottom, Metric.messageListBottomPadding)
+          }
+          .safeAreaInset(edge: .bottom) {
+            Color.clear
+              .frame(height: Metric.downButtonSize + Metric.downButtonBottomPadding)
+          }
+          .onScrollGeometryChange(for: Bool.self) { geometry in
+            let distanceFromBottom = geometry.contentSize.height
+              - geometry.containerSize.height
+              - geometry.contentOffset.y
+            return distanceFromBottom > geometry.containerSize.height / 2
+          } action: { _, newValue in
+            self.showsScrollToBottomButton = newValue
+          }
+          .overlay(alignment: .bottomTrailing) {
+            if self.showsScrollToBottomButton {
+              Button {
+                withAnimation {
+                  proxy.scrollTo(Identifier.bottomAnchor, anchor: .bottom)
+                }
+              } label: {
+                Image("down_button")
+                  .resizable()
+                  .scaledToFit()
+                  .frame(width: Metric.downButtonSize, height: Metric.downButtonSize)
+                  .background(
+                    LinearGradient(
+                      stops: [
+                        Gradient.Stop(
+                          color: .white,
+                          location: Metric.softGradientStartLocation
+                        ),
+                        Gradient.Stop(
+                          color: .white.opacity(0.2),
+                          location: Metric.softGradientEndLocation
+                        )
+                      ],
+                      startPoint: .bottom,
+                      endPoint: .top
+                    )
+                  )
+                  .clipShape(RoundedRectangle(cornerRadius: Metric.downButtonCornerRadius))
+                  .shadow(
+                    color: Color(hex: Metric.downButtonShadowColorHex)
+                      .opacity(Metric.downButtonShadowOpacity),
+                    radius: Metric.downButtonShadowRadius,
+                    x: 0,
+                    y: Metric.downButtonShadowYOffset
+                  )
+              }
+              .buttonStyle(.plain)
               .padding(.trailing, Metric.horizontalPadding + Metric.downButtonTrailingPadding)
               .padding(.bottom, Metric.downButtonBottomPadding)
+            }
+          }
+          .onChange(of: self.viewModel.messages.count) { _, _ in
+            guard !self.showsScrollToBottomButton else { return }
+            withAnimation {
+              proxy.scrollTo(Identifier.bottomAnchor, anchor: .bottom)
+            }
           }
         }
       }
