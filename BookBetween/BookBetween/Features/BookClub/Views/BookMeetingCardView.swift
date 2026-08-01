@@ -176,7 +176,7 @@ struct BookMeetingCardView: View {
         case .completed:
             BookMeetingResultView(meeting: meeting, service: service)
         case .inProgress:
-            ChatView()
+            ChatView(chatroomId: meeting.chatroomId, meetingId: meeting.id)
         default:
             BookMeetingDetailView(meeting: meeting, service: service, isParticipant: isParticipant, onParticipated: onParticipated)
         }

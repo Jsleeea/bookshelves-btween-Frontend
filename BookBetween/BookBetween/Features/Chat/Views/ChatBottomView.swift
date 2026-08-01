@@ -54,6 +54,7 @@ struct ChatBottomView: View {
   let maxQuestionCount: Int
   let onRequestQuestionTap: () -> Void
   let onSendTap: () -> Void
+  let isRequestQuestionDisabled: Bool
 
   // MARK: - Body
 
@@ -142,6 +143,7 @@ struct ChatBottomView: View {
       .compositingGroup()
     }
     .buttonStyle(.plain)
+    .disabled(self.isRequestQuestionDisabled)
   }
 
   // MARK: - Message Input
@@ -184,7 +186,8 @@ struct ChatBottomView: View {
     currentQuestionCount: 2,
     maxQuestionCount: 5,
     onRequestQuestionTap: {},
-    onSendTap: {}
+    onSendTap: {},
+    isRequestQuestionDisabled: false
   )
   .padding()
   .background(.gray50)
