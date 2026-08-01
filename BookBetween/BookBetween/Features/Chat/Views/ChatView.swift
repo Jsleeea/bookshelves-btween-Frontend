@@ -140,10 +140,6 @@ struct ChatView: View {
           .padding(.horizontal, Metric.wideHorizontalPadding)
           .padding(.bottom, Metric.messageListBottomPadding)
         }
-        .contentShape(Rectangle())
-        .onTapGesture {
-          self.isMessageFieldFocused = false
-        }
         .safeAreaInset(edge: .bottom) {
           Color.clear
             .frame(height: Metric.downButtonSize + Metric.downButtonBottomPadding)
@@ -220,6 +216,10 @@ struct ChatView: View {
       .padding(.bottom, Metric.chatBottomBottomPadding)
       .disabled(self.viewModel.isMeetingEnded)
     }
+    .contentShape(Rectangle())
+    .onTapGesture {
+      self.isMessageFieldFocused = false
+    }
     .background(
       LinearGradient(
         colors: [Color(hex: Metric.backgroundTopColorHex), .white],
@@ -250,7 +250,7 @@ struct ChatView: View {
       }
     }
     .alert(
-      "채팅방을 불러오지 못했습니다.",
+      "오류가 발생했습니다.",
       isPresented: Binding(
         get: { self.viewModel.errorMessage != nil },
         set: { isPresented in

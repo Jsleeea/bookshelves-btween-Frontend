@@ -17,6 +17,8 @@ struct MainTabView: View {
     private let homeService: any HomeServiceProtocol
     private let meetingService: (any MeetingServiceProtocol)?
     private let notificationService: any NotificationServiceProtocol
+    private let chatService: any ChatServiceProtocol
+    private let chatSocketService: (any ChatSocketServiceProtocol)?
     private let onLogout: () async throws -> Void
 
     init(
@@ -26,6 +28,8 @@ struct MainTabView: View {
         meetingService: (any MeetingServiceProtocol)? = nil,
         notificationService: any NotificationServiceProtocol =
             NotificationService.stubbed(),
+        chatService: any ChatServiceProtocol = ChatService.stubbed(),
+        chatSocketService: (any ChatSocketServiceProtocol)? = nil,
         onLogout: @escaping () async throws -> Void = {}
     ) {
         self.memberService = memberService
@@ -33,6 +37,8 @@ struct MainTabView: View {
         self.homeService = homeService
         self.meetingService = meetingService
         self.notificationService = notificationService
+        self.chatService = chatService
+        self.chatSocketService = chatSocketService
         self.onLogout = onLogout
     }
 
@@ -69,7 +75,14 @@ struct MainTabView: View {
                         )
                     }
                 case .bookClub:
-                    NavigationStack { BookClubView(meetingService: meetingService, bookService: bookService) }
+                    NavigationStack {
+                        BookClubView(
+                            meetingService: meetingService,
+                            bookService: bookService,
+                            chatService: chatService,
+                            chatSocketService: chatSocketService
+                        )
+                    }
                 case .myLibrary:
                     NavigationStack {
                         MyLibraryView(bookService: bookService)

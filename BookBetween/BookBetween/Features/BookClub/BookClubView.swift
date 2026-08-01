@@ -5,8 +5,20 @@ struct BookClubView: View {
 	@State private var currentMeetingPage = 0
 	@FocusState private var isSearchFocused: Bool
 
-	init(meetingService: (any MeetingServiceProtocol)? = nil, bookService: (any BookServiceProtocol)? = nil) {
-		_viewModel = State(initialValue: BookClubViewModel(meetingService: meetingService, bookService: bookService))
+	init(
+		meetingService: (any MeetingServiceProtocol)? = nil,
+		bookService: (any BookServiceProtocol)? = nil,
+		chatService: (any ChatServiceProtocol)? = nil,
+		chatSocketService: (any ChatSocketServiceProtocol)? = nil
+	) {
+		_viewModel = State(
+			initialValue: BookClubViewModel(
+				meetingService: meetingService,
+				bookService: bookService,
+				chatService: chatService,
+				chatSocketService: chatSocketService
+			)
+		)
 	}
 
 	var body: some View {
@@ -96,7 +108,13 @@ struct BookClubView: View {
 	@ViewBuilder
 	private func meetingList(_ meetings: [BookMeeting]) -> some View {
 		ForEach(meetings, id: \.id) { meeting in
-			BookMeetingCardView(meeting: meeting, service: viewModel.meetingService, isParticipant: true)
+			BookMeetingCardView(
+				meeting: meeting,
+				service: viewModel.meetingService,
+				isParticipant: true,
+				chatService: viewModel.chatService,
+				chatSocketService: viewModel.chatSocketService
+			)
 		}
 	}
 
@@ -223,10 +241,16 @@ struct BookClubView: View {
                 ZStack(alignment: .top) {
                     VStack(spacing: 12) {
                         ForEach(meetingPages[currentMeetingPage], id: \.id) { meeting in
-                            BookMeetingCardView(meeting: meeting, service: viewModel.meetingService, onParticipated: {
-                                viewModel.selectedTab = .myMeetings
-                                Task { await viewModel.fetchMyMeetings() }
-                            })
+                            BookMeetingCardView(
+                                meeting: meeting,
+                                service: viewModel.meetingService,
+                                chatService: viewModel.chatService,
+                                chatSocketService: viewModel.chatSocketService,
+                                onParticipated: {
+                                    viewModel.selectedTab = .myMeetings
+                                    Task { await viewModel.fetchMyMeetings() }
+                                }
+                            )
                         }
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
