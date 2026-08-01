@@ -31,6 +31,8 @@ final class BookClubViewModel {
 	var selectedTab: BookClubTab = .myMeetings
 	var meetingService: (any MeetingServiceProtocol)?
     private let bookService: (any BookServiceProtocol)?
+    var chatService: (any ChatServiceProtocol)?
+    var chatSocketService: (any ChatSocketServiceProtocol)?
 	var searchText: String = ""
 	var participatingMeetings: [BookMeeting] = []
 	var createdMeetings: [BookMeeting] = []
@@ -119,9 +121,16 @@ final class BookClubViewModel {
 
 	// MARK: - Init
 
-	init(meetingService: (any MeetingServiceProtocol)? = nil, bookService: (any BookServiceProtocol)? = nil) {
+	init(
+		meetingService: (any MeetingServiceProtocol)? = nil,
+		bookService: (any BookServiceProtocol)? = nil,
+		chatService: (any ChatServiceProtocol)? = nil,
+		chatSocketService: (any ChatSocketServiceProtocol)? = nil
+	) {
 		self.meetingService = meetingService
         self.bookService = bookService
+        self.chatService = chatService
+        self.chatSocketService = chatSocketService
 
         guard meetingService == nil else { return }
 

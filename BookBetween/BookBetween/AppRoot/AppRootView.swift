@@ -19,6 +19,8 @@ struct AppRootView: View {
     private let homeService: any HomeServiceProtocol
     private let meetingService: (any MeetingServiceProtocol)?
     private let notificationService: any NotificationServiceProtocol
+    private let chatService: any ChatServiceProtocol
+    private let chatSocketService: (any ChatSocketServiceProtocol)?
 
     init(
         loginViewModel: LoginViewModel,
@@ -28,7 +30,9 @@ struct AppRootView: View {
         homeService: any HomeServiceProtocol = HomeService.stubbed(),
         meetingService: (any MeetingServiceProtocol)? = nil,
         notificationService: any NotificationServiceProtocol =
-            NotificationService.stubbed()
+            NotificationService.stubbed(),
+        chatService: any ChatServiceProtocol = ChatService.stubbed(),
+        chatSocketService: (any ChatSocketServiceProtocol)? = nil
     ) {
         _loginViewModel = State(initialValue: loginViewModel)
         _accountSetupViewModel = State(initialValue: accountSetupViewModel)
@@ -37,6 +41,8 @@ struct AppRootView: View {
         self.homeService = homeService
         self.meetingService = meetingService
         self.notificationService = notificationService
+        self.chatService = chatService
+        self.chatSocketService = chatSocketService
     }
 
     var body: some View {
@@ -98,6 +104,8 @@ struct AppRootView: View {
                 homeService: homeService,
                 meetingService: meetingService,
                 notificationService: notificationService,
+                chatService: chatService,
+                chatSocketService: chatSocketService,
                 onLogout: {
                     try await loginViewModel.logout()
                 }
