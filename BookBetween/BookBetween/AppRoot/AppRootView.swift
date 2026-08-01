@@ -112,12 +112,57 @@ struct AppRootView: View {
             )
 
         case .success(.accountRecovery):
-            AccountRecoveryView(
-                viewModel: loginViewModel
-            )
+            accountRecoveryContent
 
         case .idle, .loading, .failure:
             LoginView(viewModel: loginViewModel)
+        }
+    }
+
+    private var accountRecoveryContent: some View {
+        ZStack {
+            LoginView(viewModel: loginViewModel)
+                .allowsHitTesting(false)
+
+            Color.black.opacity(0.3)
+                .ignoresSafeArea()
+
+            AccountRecoveryModalView(
+                onCancel: {
+                    guard !loginViewModel.isRecoveringAccount else {
+                        return
+                    }
+
+                    loginViewModel.cancelAccountRecovery()
+                },
+                onConfirm: {
+                    Task {
+                        await loginViewModel.restoreAccount()
+                    }
+                }
+            )
+        }
+        .alert(
+            "계정을 복구하지 못했습니다.",
+            isPresented: Binding(
+                get: {
+                    loginViewModel.accountRecoveryErrorMessage != nil
+                },
+                set: { isPresented in
+                    if !isPresented {
+                        loginViewModel.accountRecoveryErrorMessage = nil
+                    }
+                }
+            )
+        ) {
+            Button("확인", role: .cancel) {
+                loginViewModel.accountRecoveryErrorMessage = nil
+            }
+        } message: {
+            Text(
+                loginViewModel.accountRecoveryErrorMessage
+                    ?? "다시 시도해주세요."
+            )
         }
     }
 }
