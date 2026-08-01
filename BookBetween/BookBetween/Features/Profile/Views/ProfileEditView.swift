@@ -107,9 +107,7 @@ struct ProfileEditView: View {
                         },
                         isSaving: isSaving,
                         onLogout: {
-                            Task {
-                                await logout()
-                            }
+                            activeModal = .logoutConfirmation
                         },
                         onWithdraw: {
                             // 회원 탈퇴 기능 연결 시 동작 추가
@@ -119,15 +117,39 @@ struct ProfileEditView: View {
                 .padding(.bottom, 40)
             }
 
-            if activeModal == .saveCompleted {
+            if let activeModal {
                 Color.black.opacity(0.3)
                     .ignoresSafeArea()
 
-                SuccessModalView(
-                    title: "저장되었습니다"
-                ) {
-                    activeModal = nil
-                    dismiss()
+                Group {
+                    switch activeModal {
+                    case .saveCompleted:
+                        SuccessModalView(
+                            title: "저장되었습니다"
+                        ) {
+                            self.activeModal = nil
+                            dismiss()
+                        }
+
+                    case .logoutConfirmation:
+                        AccountActionModalView(
+                            title: "로그아웃 하시겠습니까?",
+                            description: "해당 기기에서 로그아웃 됩니다.",
+                            confirmTitle: "로그아웃",
+                            onCancel: {
+                                guard !isLoggingOut else {
+                                    return
+                                }
+
+                                self.activeModal = nil
+                            },
+                            onConfirm: {
+                                Task {
+                                    await logout()
+                                }
+                            }
+                        )
+                    }
                 }
                 .transition(.scale.combined(with: .opacity))
                 .zIndex(1)
@@ -207,7 +229,9 @@ struct ProfileEditView: View {
 
         do {
             try await onLogout()
+            activeModal = nil
         } catch {
+            activeModal = nil
             logoutErrorMessage = error.localizedDescription
         }
     }
@@ -215,6 +239,7 @@ struct ProfileEditView: View {
 
 private enum ProfileEditModal: Equatable {
     case saveCompleted
+    case logoutConfirmation
 }
 
 // MARK: - 상단 헤더
