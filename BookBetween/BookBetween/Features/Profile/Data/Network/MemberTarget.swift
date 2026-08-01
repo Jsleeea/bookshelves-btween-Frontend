@@ -11,6 +11,7 @@ nonisolated struct MemberTarget: TargetType, AuthorizationRequirement {
     enum Endpoint {
         case me
         case updateMe(MemberProfileUpdateRequestDTO)
+        case withdraw
     }
 
     let baseURL: URL
@@ -18,7 +19,7 @@ nonisolated struct MemberTarget: TargetType, AuthorizationRequirement {
 
     var path: String {
         switch endpoint {
-        case .me, .updateMe:
+        case .me, .updateMe, .withdraw:
             return "/api/v1/members/me"
         }
     }
@@ -29,12 +30,14 @@ nonisolated struct MemberTarget: TargetType, AuthorizationRequirement {
             return .get
         case .updateMe:
             return .patch
+        case .withdraw:
+            return .delete
         }
     }
 
     var task: Moya.Task {
         switch endpoint {
-        case .me:
+        case .me, .withdraw:
             return .requestPlain
         case .updateMe(let request):
             return .requestJSONEncodable(request)
