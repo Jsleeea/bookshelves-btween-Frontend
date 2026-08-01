@@ -16,6 +16,7 @@ struct ProfileEditView: View {
     @State private var saveErrorMessage: String?
     @State private var isLoggingOut = false
     @State private var logoutErrorMessage: String?
+    @State private var activeModal: ProfileEditModal?
 
     private let onSave: (MemberProfileUpdateRequestDTO) async throws -> Void
     private let onLogout: () async throws -> Void
@@ -117,7 +118,22 @@ struct ProfileEditView: View {
                 }
                 .padding(.bottom, 40)
             }
+
+            if activeModal == .saveCompleted {
+                Color.black.opacity(0.3)
+                    .ignoresSafeArea()
+
+                SuccessModalView(
+                    title: "저장되었습니다"
+                ) {
+                    activeModal = nil
+                    dismiss()
+                }
+                .transition(.scale.combined(with: .opacity))
+                .zIndex(1)
+            }
         }
+        .animation(.easeInOut(duration: 0.2), value: activeModal)
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
         .alert(
@@ -175,7 +191,7 @@ struct ProfileEditView: View {
 
         do {
             try await onSave(request)
-            dismiss()
+            activeModal = .saveCompleted
         } catch {
             saveErrorMessage = error.localizedDescription
         }
@@ -195,6 +211,10 @@ struct ProfileEditView: View {
             logoutErrorMessage = error.localizedDescription
         }
     }
+}
+
+private enum ProfileEditModal: Equatable {
+    case saveCompleted
 }
 
 // MARK: - 상단 헤더
