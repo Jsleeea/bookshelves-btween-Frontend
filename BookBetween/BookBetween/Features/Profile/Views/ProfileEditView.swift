@@ -16,10 +16,13 @@ struct ProfileEditView: View {
     @State private var saveErrorMessage: String?
     @State private var isLoggingOut = false
     @State private var logoutErrorMessage: String?
+    @State private var isWithdrawing = false
+    @State private var withdrawalErrorMessage: String?
     @State private var activeModal: ProfileEditModal?
 
     private let onSave: (MemberProfileUpdateRequestDTO) async throws -> Void
     private let onLogout: () async throws -> Void
+    private let onWithdraw: () async throws -> Void
     private let genreCategoryIDs: [String: Int] = [
         "총류": 1,
         "철학": 2,
@@ -38,7 +41,8 @@ struct ProfileEditView: View {
         onSave: @escaping (
             MemberProfileUpdateRequestDTO
         ) async throws -> Void = { _ in },
-        onLogout: @escaping () async throws -> Void = {}
+        onLogout: @escaping () async throws -> Void = {},
+        onWithdraw: @escaping () async throws -> Void = {}
     ) {
         let backgroundColorCode = ProfileBackgroundColorCode(
             rawValue: profile?.profileBackgroundColor ?? ""
@@ -68,6 +72,7 @@ struct ProfileEditView: View {
         )
         self.onSave = onSave
         self.onLogout = onLogout
+        self.onWithdraw = onWithdraw
     }
 
     var body: some View {
@@ -156,10 +161,16 @@ struct ProfileEditView: View {
                             description: "탈퇴하기 클릭 후 30일이 지나면\n계정 복구가 불가능합니다.",
                             confirmTitle: "탈퇴하기",
                             onCancel: {
+                                guard !isWithdrawing else {
+                                    return
+                                }
+
                                 self.activeModal = nil
                             },
                             onConfirm: {
-                                // 회원 탈퇴 API 연결 시 동작 추가
+                                Task {
+                                    await withdrawAccount()
+                                }
                             }
                         )
                     }
@@ -205,6 +216,23 @@ struct ProfileEditView: View {
         } message: {
             Text(logoutErrorMessage ?? "")
         }
+        .alert(
+            "회원 탈퇴에 실패했습니다.",
+            isPresented: Binding(
+                get: { withdrawalErrorMessage != nil },
+                set: { isPresented in
+                    if !isPresented {
+                        withdrawalErrorMessage = nil
+                    }
+                }
+            )
+        ) {
+            Button("확인", role: .cancel) {
+                withdrawalErrorMessage = nil
+            }
+        } message: {
+            Text(withdrawalErrorMessage ?? "")
+        }
     }
 
     private func saveProfile() async {
@@ -246,6 +274,23 @@ struct ProfileEditView: View {
         } catch {
             activeModal = nil
             logoutErrorMessage = error.localizedDescription
+        }
+    }
+
+    private func withdrawAccount() async {
+        guard !isWithdrawing else {
+            return
+        }
+
+        isWithdrawing = true
+        defer { isWithdrawing = false }
+
+        do {
+            try await onWithdraw()
+            activeModal = nil
+        } catch {
+            activeModal = nil
+            withdrawalErrorMessage = error.localizedDescription
         }
     }
 }

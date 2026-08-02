@@ -108,6 +108,9 @@ struct AppRootView: View {
                 chatSocketService: chatSocketService,
                 onLogout: {
                     try await loginViewModel.logout()
+                },
+                onWithdraw: {
+                    try await withdrawAccount()
                 }
             )
 
