@@ -98,6 +98,7 @@ final class PreviewOnboardingService: OnboardingServiceProtocol {
                 id: 1,
                 title: "이용약관",
                 content: "",
+                type: .service,
                 version: "1.0",
                 isRequired: true
             ),
@@ -105,6 +106,7 @@ final class PreviewOnboardingService: OnboardingServiceProtocol {
                 id: 2,
                 title: "개인정보 처리방침",
                 content: "",
+                type: .privacy,
                 version: "1.0",
                 isRequired: true
             )

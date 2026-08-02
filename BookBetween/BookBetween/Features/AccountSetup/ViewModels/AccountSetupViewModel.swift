@@ -19,6 +19,7 @@ final class AccountSetupViewModel {
     private let onboardingService: OnboardingServiceProtocol
 
     private(set) var state: AccountSetupViewState = .idle
+    private(set) var terms: [OnboardingTermDTO] = []
     private(set) var requiredTermsIds: [Int] = []
     private(set) var hasLoadedTerms = false
     private(set) var isLoadingTerms = false
@@ -36,6 +37,14 @@ final class AccountSetupViewModel {
         return message
     }
 
+    var serviceTerm: OnboardingTermDTO? {
+        terms.first { $0.type == .service }
+    }
+
+    var privacyTerm: OnboardingTermDTO? {
+        terms.first { $0.type == .privacy }
+    }
+
     init(onboardingService: OnboardingServiceProtocol) {
         self.onboardingService = onboardingService
     }
@@ -51,7 +60,7 @@ final class AccountSetupViewModel {
         defer { isLoadingTerms = false }
 
         do {
-            let terms = try await onboardingService.fetchTerms()
+            terms = try await onboardingService.fetchTerms()
             requiredTermsIds = terms
                 .filter(\.isRequired)
                 .map(\.id)
