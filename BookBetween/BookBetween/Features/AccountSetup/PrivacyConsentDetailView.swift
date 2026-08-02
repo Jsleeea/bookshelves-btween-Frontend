@@ -38,10 +38,14 @@ struct PrivacyConsentDetailView: View {
         .foregroundStyle(Color.gray200)
 
       ScrollView {
-        Text(self.content)
-          .body1RegularStyle
-          .foregroundStyle(Color.gray800)
-          .fixedSize(horizontal: false, vertical: true)
+        LazyVStack(alignment: .leading, spacing: 0) {
+          ForEach(
+            Array(self.content.components(separatedBy: "\n").enumerated()),
+            id: \.offset
+          ) { _, line in
+            PrivacyTermsContentLineView(line: line)
+          }
+        }
           .frame(maxWidth: .infinity, alignment: .leading)
           .padding(.horizontal, 24)
           .padding(.top, 16)
@@ -106,6 +110,85 @@ private struct PrivacyConsentNavigationBar: View {
     .padding(.horizontal, 24)
     .padding(.bottom, 22)
     .background(Color.beige100)
+  }
+}
+
+// MARK: - 개인정보 약관 본문
+
+private struct PrivacyTermsContentLineView: View {
+  let line: String
+
+  private var trimmedLine: String {
+    self.line.trimmingCharacters(in: .whitespaces)
+  }
+
+  private var isSectionTitle: Bool {
+    guard let separatorIndex = self.trimmedLine.firstIndex(of: ".") else {
+      return false
+    }
+
+    return Int(self.trimmedLine[..<separatorIndex]) != nil
+  }
+
+  private var bulletContent: String? {
+    guard self.trimmedLine.hasPrefix("-") else { return nil }
+
+    return self.trimmedLine.dropFirst()
+      .trimmingCharacters(in: .whitespaces)
+  }
+
+  private var isAdditionalInformationNotice: Bool {
+    self.trimmedLine.hasPrefix("서비스 이용 과정에서")
+  }
+
+  @ViewBuilder
+  var body: some View {
+    if self.trimmedLine.isEmpty {
+      Color.clear
+        .frame(height: 16)
+    } else if self.isSectionTitle {
+      Text(self.trimmedLine)
+        .head2Style
+        .foregroundStyle(Color.green700)
+        .fixedSize(horizontal: false, vertical: true)
+        .padding(.top, 8)
+        .padding(.bottom, 12)
+    } else if let bulletContent = self.bulletContent {
+      HStack(alignment: .top, spacing: 6) {
+        Text("·")
+          .body1RegularStyle
+
+        Text(bulletContent)
+          .body1RegularStyle
+          .fixedSize(horizontal: false, vertical: true)
+      }
+      .foregroundStyle(Color.gray800)
+      .padding(.bottom, 10)
+    } else if self.isAdditionalInformationNotice {
+      HStack(alignment: .top, spacing: 6) {
+        Text("·")
+          .body2RegularStyle
+
+        Text(self.trimmedLine)
+          .body2RegularStyle
+          .fixedSize(horizontal: false, vertical: true)
+      }
+      .foregroundStyle(Color.green800)
+      .padding(.horizontal, 14)
+      .padding(.vertical, 10)
+      .frame(maxWidth: .infinity, alignment: .leading)
+      .background(
+        Color(red: 0.91, green: 0.94, blue: 0.92),
+        in: RoundedRectangle(cornerRadius: 8)
+      )
+      .padding(.vertical, 4)
+    } else {
+      Text(self.trimmedLine)
+        .body1RegularStyle
+        .foregroundStyle(Color.gray800)
+        .fixedSize(horizontal: false, vertical: true)
+        .padding(.bottom, 10)
+    }
   }
 }
 
