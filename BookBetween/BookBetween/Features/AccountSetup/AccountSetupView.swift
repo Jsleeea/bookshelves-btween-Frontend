@@ -86,11 +86,18 @@ private struct AccountSetupContentView: View {
     self.generatedNickname?.text ?? ""
   }
 
+  private var agreedTermsIDs: [Int] {
+    self.viewModel.agreedTermsIds(
+      isServiceTermAgreed: self.isServiceTermsAgreed,
+      isPrivacyTermAgreed: self.isPrivacyTermsAgreed
+    )
+  }
+
   private var isStartButtonEnabled: Bool {
     !self.nickname.isEmpty
-      && self.isServiceTermsAgreed
-      && self.isPrivacyTermsAgreed
-      && self.viewModel.hasLoadedTerms
+      && self.viewModel.hasAgreedToAllRequiredTerms(
+        agreedTermsIds: self.agreedTermsIDs
+      )
       && !self.viewModel.isLoadingTerms
   }
 
@@ -120,9 +127,11 @@ private struct AccountSetupContentView: View {
         isServiceTermsAgreed: self.$isServiceTermsAgreed,
         isPrivacyTermsAgreed: self.$isPrivacyTermsAgreed,
         serviceTermsDetailButtonAction: {
+          guard self.viewModel.serviceTerm != nil else { return }
           self.isShowingServiceTerms = true
         },
         privacyTermsDetailButtonAction: {
+          guard self.viewModel.privacyTerm != nil else { return }
           self.isShowingPrivacyTerms = true
         }
       )
@@ -183,13 +192,23 @@ private struct AccountSetupContentView: View {
       Text(self.viewModel.termsErrorMessage ?? "다시 시도해주세요.")
     }
     .fullScreenCover(isPresented: self.$isShowingServiceTerms) {
-      ServiceTermsDetailView {
-        self.isServiceTermsAgreed = true
+      if let term = self.viewModel.serviceTerm {
+        ServiceTermsDetailView(
+          title: term.title,
+          content: term.content
+        ) {
+          self.isServiceTermsAgreed = true
+        }
       }
     }
     .fullScreenCover(isPresented: self.$isShowingPrivacyTerms) {
-      PrivacyConsentDetailView {
-        self.isPrivacyTermsAgreed = true
+      if let term = self.viewModel.privacyTerm {
+        PrivacyConsentDetailView(
+          title: term.title,
+          content: term.content
+        ) {
+          self.isPrivacyTermsAgreed = true
+        }
       }
     }
   }
@@ -203,7 +222,7 @@ private struct AccountSetupContentView: View {
       await self.viewModel.completeOnboarding(
         nickname: generatedNickname,
         categoryIds: self.selectedCategoryIDs.sorted(),
-        agreedTermsIds: self.viewModel.requiredTermsIds
+        agreedTermsIds: self.agreedTermsIDs
       )
 
       guard self.viewModel.state == .success else {

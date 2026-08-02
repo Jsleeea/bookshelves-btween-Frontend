@@ -19,6 +19,7 @@ final class AccountSetupViewModel {
     private let onboardingService: OnboardingServiceProtocol
 
     private(set) var state: AccountSetupViewState = .idle
+    private(set) var terms: [OnboardingTermDTO] = []
     private(set) var requiredTermsIds: [Int] = []
     private(set) var hasLoadedTerms = false
     private(set) var isLoadingTerms = false
@@ -36,6 +37,44 @@ final class AccountSetupViewModel {
         return message
     }
 
+    var serviceTerm: OnboardingTermDTO? {
+        terms.first { $0.type == .service }
+    }
+
+    var privacyTerm: OnboardingTermDTO? {
+        terms.first { $0.type == .privacy }
+    }
+
+    func agreedTermsIds(
+        isServiceTermAgreed: Bool,
+        isPrivacyTermAgreed: Bool
+    ) -> [Int] {
+        var agreedTermsIds: [Int] = []
+
+        if isServiceTermAgreed,
+           let serviceTerm {
+            agreedTermsIds.append(serviceTerm.id)
+        }
+
+        if isPrivacyTermAgreed,
+           let privacyTerm {
+            agreedTermsIds.append(privacyTerm.id)
+        }
+
+        return agreedTermsIds.sorted()
+    }
+
+    func hasAgreedToAllRequiredTerms(
+        agreedTermsIds: [Int]
+    ) -> Bool {
+        guard hasLoadedTerms,
+              !requiredTermsIds.isEmpty else {
+            return false
+        }
+
+        return Set(requiredTermsIds).isSubset(of: Set(agreedTermsIds))
+    }
+
     init(onboardingService: OnboardingServiceProtocol) {
         self.onboardingService = onboardingService
     }
@@ -51,7 +90,7 @@ final class AccountSetupViewModel {
         defer { isLoadingTerms = false }
 
         do {
-            let terms = try await onboardingService.fetchTerms()
+            terms = try await onboardingService.fetchTerms()
             requiredTermsIds = terms
                 .filter(\.isRequired)
                 .map(\.id)
@@ -68,6 +107,16 @@ final class AccountSetupViewModel {
         agreedTermsIds: [Int]
     ) async {
         guard !isLoading else {
+            return
+        }
+
+        guard hasAgreedToAllRequiredTerms(
+            agreedTermsIds: agreedTermsIds
+        ) else {
+            state = .failure(
+                AccountSetupViewModelError.missingRequiredTerms
+                    .localizedDescription
+            )
             return
         }
 
@@ -108,11 +157,14 @@ final class AccountSetupViewModel {
 
 private enum AccountSetupViewModelError: LocalizedError {
     case invalidMemberStatus
+    case missingRequiredTerms
 
     var errorDescription: String? {
         switch self {
         case .invalidMemberStatus:
             return "온보딩 완료 상태를 확인할 수 없습니다."
+        case .missingRequiredTerms:
+            return "필수 약관에 모두 동의해주세요."
         }
     }
 }

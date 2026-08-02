@@ -36,6 +36,13 @@ nonisolated struct OnboardingTermDTO: Decodable {
     let id: Int
     let title: String
     let content: String
+    let type: OnboardingTermType
     let version: String
     let isRequired: Bool
+}
+
+nonisolated enum OnboardingTermType: String, Decodable {
+    case service = "SERVICE"
+    case privacy = "PRIVACY"
+    case marketing = "MARKETING"
 }
