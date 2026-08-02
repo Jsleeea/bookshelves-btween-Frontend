@@ -27,6 +27,12 @@ nonisolated struct MemberProfileUpdateRequestDTO: Encodable {
     }
 }
 
+// MARK: - 회원 탈퇴 응답
+
+nonisolated struct MemberWithdrawalResultDTO: Decodable {
+    let scheduledDeletionAt: String
+}
+
 // MARK: - 회원 정보 응답
 
 nonisolated struct MemberProfileResultDTO: Decodable {

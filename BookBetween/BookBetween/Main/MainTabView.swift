@@ -20,6 +20,7 @@ struct MainTabView: View {
     private let chatService: any ChatServiceProtocol
     private let chatSocketService: (any ChatSocketServiceProtocol)?
     private let onLogout: () async throws -> Void
+    private let onWithdraw: () async throws -> Void
 
     init(
         memberService: MemberServiceProtocol? = nil,
@@ -30,7 +31,8 @@ struct MainTabView: View {
             NotificationService.stubbed(),
         chatService: any ChatServiceProtocol = ChatService.stubbed(),
         chatSocketService: (any ChatSocketServiceProtocol)? = nil,
-        onLogout: @escaping () async throws -> Void = {}
+        onLogout: @escaping () async throws -> Void = {},
+        onWithdraw: @escaping () async throws -> Void = {}
     ) {
         self.memberService = memberService
         self.bookService = bookService
@@ -40,6 +42,7 @@ struct MainTabView: View {
         self.chatService = chatService
         self.chatSocketService = chatSocketService
         self.onLogout = onLogout
+        self.onWithdraw = onWithdraw
     }
 
     var body: some View {
@@ -93,7 +96,8 @@ struct MainTabView: View {
                             viewModel: ProfileViewModel(
                                 memberService: memberService
                             ),
-                            onLogout: onLogout
+                            onLogout: onLogout,
+                            onWithdraw: onWithdraw
                         )
                     }
                 }

@@ -108,6 +108,9 @@ struct AppRootView: View {
                 chatSocketService: chatSocketService,
                 onLogout: {
                     try await loginViewModel.logout()
+                },
+                onWithdraw: {
+                    try await withdrawAccount()
                 }
             )
 
@@ -164,6 +167,15 @@ struct AppRootView: View {
                     ?? "다시 시도해주세요."
             )
         }
+    }
+
+    private func withdrawAccount() async throws {
+        guard let memberService else {
+            throw NetworkError.emptyResult
+        }
+
+        _ = try await memberService.withdrawMyAccount()
+        loginViewModel.completeAccountWithdrawal()
     }
 }
 

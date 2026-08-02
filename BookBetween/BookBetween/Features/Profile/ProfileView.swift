@@ -12,22 +12,27 @@ struct ProfileView: View {
 
     @State private var viewModel: ProfileViewModel
     private let onLogout: () async throws -> Void
+    private let onWithdraw: () async throws -> Void
 
     private let weekdays = ["일", "월", "화", "수", "목", "금", "토"]
 
     init(
-        onLogout: @escaping () async throws -> Void = {}
+        onLogout: @escaping () async throws -> Void = {},
+        onWithdraw: @escaping () async throws -> Void = {}
     ) {
         _viewModel = State(initialValue: ProfileViewModel())
         self.onLogout = onLogout
+        self.onWithdraw = onWithdraw
     }
 
     init(
         viewModel: ProfileViewModel,
-        onLogout: @escaping () async throws -> Void
+        onLogout: @escaping () async throws -> Void,
+        onWithdraw: @escaping () async throws -> Void
     ) {
         _viewModel = State(initialValue: viewModel)
         self.onLogout = onLogout
+        self.onWithdraw = onWithdraw
     }
 
     private var displayedMonthTitle: String {
@@ -197,7 +202,8 @@ struct ProfileView: View {
                         request: request
                     )
                 },
-                onLogout: onLogout
+                onLogout: onLogout,
+                onWithdraw: onWithdraw
             )
         } label: {
             HStack(spacing: 4) {
