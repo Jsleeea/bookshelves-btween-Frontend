@@ -86,11 +86,18 @@ private struct AccountSetupContentView: View {
     self.generatedNickname?.text ?? ""
   }
 
+  private var agreedTermsIDs: [Int] {
+    self.viewModel.agreedTermsIds(
+      isServiceTermAgreed: self.isServiceTermsAgreed,
+      isPrivacyTermAgreed: self.isPrivacyTermsAgreed
+    )
+  }
+
   private var isStartButtonEnabled: Bool {
     !self.nickname.isEmpty
-      && self.isServiceTermsAgreed
-      && self.isPrivacyTermsAgreed
-      && self.viewModel.hasLoadedTerms
+      && self.viewModel.hasAgreedToAllRequiredTerms(
+        agreedTermsIds: self.agreedTermsIDs
+      )
       && !self.viewModel.isLoadingTerms
   }
 
@@ -215,7 +222,7 @@ private struct AccountSetupContentView: View {
       await self.viewModel.completeOnboarding(
         nickname: generatedNickname,
         categoryIds: self.selectedCategoryIDs.sorted(),
-        agreedTermsIds: self.viewModel.requiredTermsIds
+        agreedTermsIds: self.agreedTermsIDs
       )
 
       guard self.viewModel.state == .success else {
