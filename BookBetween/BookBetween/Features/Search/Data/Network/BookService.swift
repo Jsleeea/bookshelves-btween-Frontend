@@ -24,6 +24,10 @@ protocol BookServiceProtocol {
     ) async throws
     func fetchMemberBooks(status: String, page: Int, size: Int) async throws -> [UserBookRecord]
     func deleteMemberBook(isbn: String) async throws
+    func fetchReadingStatistics(
+        year: Int?,
+        month: Int?
+    ) async throws -> ReadingStatisticsResultDTO
 }
 
 final class BookService: BookServiceProtocol {
@@ -193,6 +197,41 @@ final class BookService: BookServiceProtocol {
                     )
                 )
                 try response.validateAPIResponse()
+            } catch let error as MoyaError {
+                throw NetworkError.transport(error)
+            }
+        }
+    }
+
+    func fetchReadingStatistics(
+        year: Int? = nil,
+        month: Int? = nil
+    ) async throws -> ReadingStatisticsResultDTO {
+        try await requestExecutor.execute {
+            do {
+                let response = try await provider.requestAsync(
+                    BookTarget(
+                        baseURL: baseURL,
+                        endpoint: .readingStatistics(
+                            year: year,
+                            month: month
+                        )
+                    )
+                )
+                let result = try response.decodePayload(
+                    ReadingStatisticsResultDTO.self
+                )
+
+                #if DEBUG
+                print("""
+                [ReadingStatistics]
+                URL: \(response.request?.url?.absoluteString ?? "확인 불가")
+                HTTP: \(response.statusCode)
+                year: \(result.year), month: \(result.month)
+                """)
+                #endif
+
+                return result
             } catch let error as MoyaError {
                 throw NetworkError.transport(error)
             }

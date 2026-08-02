@@ -23,6 +23,7 @@ struct BookTarget: TargetType {
         )
         case memberBooks(status: String, page: Int, size: Int)
         case deleteMemberBook(isbn: String)
+        case readingStatistics(year: Int?, month: Int?)
     }
 
     let baseURL: URL
@@ -42,12 +43,15 @@ struct BookTarget: TargetType {
             return "/api/v1/member-books"
         case .deleteMemberBook(let isbn):
             return "/api/v1/member-books/\(isbn)"
+        case .readingStatistics:
+            return "/api/v1/member-books/statistics"
         }
     }
 
     var method: Moya.Method {
         switch endpoint {
-        case .search, .detail, .recentSearches, .memberBooks:
+        case .search, .detail, .recentSearches, .memberBooks,
+             .readingStatistics:
             return .get
         case .upsertMemberBook:
             return .put
@@ -73,6 +77,19 @@ struct BookTarget: TargetType {
         case let .memberBooks(status, page, size):
             return .requestParameters(
                 parameters: ["status": status, "page": page, "size": size],
+                encoding: URLEncoding.queryString
+            )
+        case let .readingStatistics(year, month):
+            var parameters: [String: Int] = [:]
+            parameters["year"] = year
+            parameters["month"] = month
+
+            guard !parameters.isEmpty else {
+                return .requestPlain
+            }
+
+            return .requestParameters(
+                parameters: parameters,
                 encoding: URLEncoding.queryString
             )
         case .upsertMemberBook(_, let request):
