@@ -8,20 +8,35 @@ import SwiftUI
 
 // MARK: - 독서 통계 상세 화면
 
+@MainActor
 struct ReadingStatisticsView: View {
     // MARK: - 속성
 
     @Environment(\.dismiss) private var dismiss
+    @State private var viewModel: ReadingStatisticsViewModel
 
     let joinedAt: Date
 
     // MARK: - 초기화
 
     init(
+        viewModel: ReadingStatisticsViewModel,
+        joinedAt: Date
+    ) {
+        _viewModel = State(initialValue: viewModel)
+        self.joinedAt = joinedAt
+    }
+
+    init(
         joinedAt: Date = Calendar.current.date(
             from: DateComponents(year: 2026, month: 3, day: 1)
         ) ?? .now
     ) {
+        _viewModel = State(
+            initialValue: ReadingStatisticsViewModel(
+                bookService: BookService.stubbed()
+            )
+        )
         self.joinedAt = joinedAt
     }
 
@@ -39,9 +54,9 @@ struct ReadingStatisticsView: View {
                     }
 
                     ReadingStatisticsSummaryView(
-                        readBookCount: 24,
-                        reviewCount: 17,
-                        averageRating: 4.0
+                        readBookCount: viewModel.completedBookCount,
+                        reviewCount: viewModel.reviewCount,
+                        averageRating: viewModel.averageRating
                     )
                     .padding(.horizontal, 20)
 
@@ -53,6 +68,13 @@ struct ReadingStatisticsView: View {
         }
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
+        .task {
+            guard viewModel.statistics == nil else {
+                return
+            }
+
+            await viewModel.fetchStatistics()
+        }
     }
 }
 
