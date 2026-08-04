@@ -94,7 +94,8 @@ struct MainTabView: View {
                     NavigationStack {
                         ProfileView(
                             viewModel: ProfileViewModel(
-                                memberService: memberService
+                                memberService: memberService,
+                                bookService: bookService
                             ),
                             statisticsViewModel: ReadingStatisticsViewModel(
                                 bookService: bookService

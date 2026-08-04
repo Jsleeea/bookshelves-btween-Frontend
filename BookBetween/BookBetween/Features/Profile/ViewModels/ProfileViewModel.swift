@@ -15,11 +15,17 @@ final class ProfileViewModel {
 
     private let calendar: Calendar
     private let memberService: MemberServiceProtocol?
+    private let bookService: BookServiceProtocol?
 
     var displayedMonth: Date
     private(set) var profile: MemberProfile?
+    private(set) var readingCalendarDaysByDate: [String: ReadingCalendarDayDTO] = [:]
     private(set) var isLoading = false
+    private(set) var isCalendarLoading = false
     var errorMessage: String?
+    var calendarErrorMessage: String?
+
+    private var latestCalendarRequestID = UUID()
 
     var calendarDays: [CalendarDay] {
         makeCalendarDays(for: displayedMonth)
@@ -29,6 +35,7 @@ final class ProfileViewModel {
 
     init(
         memberService: MemberServiceProtocol? = nil,
+        bookService: BookServiceProtocol? = nil,
         calendar: Calendar = .current,
         displayedMonth: Date = Date()
     ) {
@@ -37,6 +44,7 @@ final class ProfileViewModel {
 
         self.calendar = sundayFirstCalendar
         self.memberService = memberService
+        self.bookService = bookService
         self.displayedMonth = sundayFirstCalendar.date(
             from: sundayFirstCalendar.dateComponents([.year, .month], from: displayedMonth)
         ) ?? displayedMonth
@@ -71,6 +79,58 @@ final class ProfileViewModel {
         )
     }
 
+    // MARK: - 독서 캘린더 조회
+
+    func fetchReadingCalendar() async {
+        guard let bookService else {
+            return
+        }
+
+        let components = calendar.dateComponents(
+            [.year, .month],
+            from: displayedMonth
+        )
+
+        guard let year = components.year,
+              let month = components.month else {
+            calendarErrorMessage = "조회할 연도와 월을 확인해주세요."
+            return
+        }
+
+        let requestID = UUID()
+        latestCalendarRequestID = requestID
+        isCalendarLoading = true
+        calendarErrorMessage = nil
+
+        do {
+            let result = try await bookService.fetchReadingCalendar(
+                year: year,
+                month: month
+            )
+
+            guard latestCalendarRequestID == requestID else {
+                return
+            }
+
+            readingCalendarDaysByDate = result.days.reduce(into: [:]) {
+                $0[$1.date] = $1
+            }
+            isCalendarLoading = false
+        } catch {
+            guard latestCalendarRequestID == requestID else {
+                return
+            }
+
+            readingCalendarDaysByDate = [:]
+            calendarErrorMessage = error.localizedDescription
+            isCalendarLoading = false
+        }
+    }
+
+    func readingCalendarDay(for date: Date) -> ReadingCalendarDayDTO? {
+        readingCalendarDaysByDate[calendarDateKey(for: date)]
+    }
+
     // MARK: - 월 이동
 
     func moveToPreviousMonth() {
@@ -91,6 +151,24 @@ final class ProfileViewModel {
         }
 
         displayedMonth = newMonth
+
+        Task {
+            await fetchReadingCalendar()
+        }
+    }
+
+    private func calendarDateKey(for date: Date) -> String {
+        let components = calendar.dateComponents(
+            [.year, .month, .day],
+            from: date
+        )
+
+        return String(
+            format: "%04d-%02d-%02d",
+            components.year ?? 0,
+            components.month ?? 0,
+            components.day ?? 0
+        )
     }
 
     // MARK: - 캘린더 날짜 생성
