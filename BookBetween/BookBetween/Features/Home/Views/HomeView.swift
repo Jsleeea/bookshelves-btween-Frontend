@@ -49,11 +49,15 @@ struct HomeView: View {
                     }
                 }
                 .padding(.horizontal, 19)
+                .padding(.top, 8)
                 .padding(.bottom, 100)
             }
         }
+        .refreshable {
+            await viewModel.fetchHome()
+        }
         .overlay {
-            if viewModel.isLoading {
+            if viewModel.isLoading && viewModel.home == nil {
                 ProgressView()
             }
         }

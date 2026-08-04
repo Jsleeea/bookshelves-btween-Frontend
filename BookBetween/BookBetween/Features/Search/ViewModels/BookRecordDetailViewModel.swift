@@ -16,10 +16,18 @@ final class BookRecordDetailViewModel {
     var isEditing: Bool = false
     var progress: Int
     var rating: Double
-    var memo: String
+    var memo: String {
+            didSet {
+                if memo.count > Self.maxMemoLength {
+                    memo = String(memo.prefix(Self.maxMemoLength))
+                }
+            }
+        }
     private(set) var isLoading = false
     private(set) var isSaving = false
     var errorMessage: String?
+
+    static let maxMemoLength = 200
 
     private let service: any BookServiceProtocol
     private let loadsRemoteDetail: Bool

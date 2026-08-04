@@ -43,7 +43,7 @@ enum NotificationStubData {
             [
               {
                 "id": 103,
-                "type": "MEETING_CANCELLED",
+                "type": "MEETING_CANCELED",
                 "title": "최소 인원 미달로 모임이 취소되었어요",
                 "content": "혼모노 | 7/15 (수) · 18:30 | 2/6",
                 "isRead": false,
