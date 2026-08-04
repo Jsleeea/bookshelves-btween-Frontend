@@ -96,15 +96,22 @@ struct ProfileView: View {
         .background(Color.beige100)
         .toolbar(.hidden, for: .navigationBar)
         .overlay {
-            if viewModel.isLoading || statisticsViewModel.isLoading {
+            if viewModel.isLoading
+                || viewModel.isCalendarLoading
+                || statisticsViewModel.isLoading {
                 ProgressView()
             }
         }
         .task {
             async let profileRequest: Void = viewModel.fetchMyProfile()
             async let statisticsRequest: Void = statisticsViewModel.fetchStatistics()
+            async let calendarRequest: Void = viewModel.fetchReadingCalendar()
 
-            _ = await (profileRequest, statisticsRequest)
+            _ = await (
+                profileRequest,
+                statisticsRequest,
+                calendarRequest
+            )
         }
         .navigationDestination(isPresented: $isReadingStatisticsPresented) {
             ReadingStatisticsView(
@@ -117,11 +124,13 @@ struct ProfileView: View {
             isPresented: Binding(
                 get: {
                     viewModel.errorMessage != nil
+                        || viewModel.calendarErrorMessage != nil
                         || statisticsViewModel.errorMessage != nil
                 },
                 set: { isPresented in
                     if !isPresented {
                         viewModel.errorMessage = nil
+                        viewModel.calendarErrorMessage = nil
                         statisticsViewModel.errorMessage = nil
                     }
                 }
@@ -129,11 +138,13 @@ struct ProfileView: View {
         ) {
             Button("확인", role: .cancel) {
                 viewModel.errorMessage = nil
+                viewModel.calendarErrorMessage = nil
                 statisticsViewModel.errorMessage = nil
             }
         } message: {
             Text(
                 viewModel.errorMessage
+                    ?? viewModel.calendarErrorMessage
                     ?? statisticsViewModel.errorMessage
                     ?? ""
             )
@@ -319,20 +330,45 @@ struct ProfileView: View {
 
         return LazyVGrid(columns: columns, spacing: 0) {
             ForEach(viewModel.calendarDays) { calendarDay in
-                Text("\(calendarDay.day)")
-                    .body2SemiBoldStyle
-                    .foregroundStyle(
-                        calendarDay.isCurrentMonth ? Color.gray800 : Color.gray300
-                    )
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                    .padding(.top, 5)
-                    .padding(.leading, 8)
-                    .frame(height: 60)
-                    .overlay {
-                        Rectangle()
-                            .stroke(Color.gray300, lineWidth: 0.5)
-                    }
+                calendarCell(for: calendarDay)
             }
+        }
+    }
+
+    private func calendarCell(for calendarDay: CalendarDay) -> some View {
+        let readingDay = viewModel.readingCalendarDay(
+            for: calendarDay.date
+        )
+
+        return ZStack(alignment: .topLeading) {
+            Text("\(calendarDay.day)")
+                .caption2RegularStyle
+                .foregroundStyle(
+                    calendarDay.isCurrentMonth
+                        ? Color.gray800
+                        : Color.gray300
+                )
+                .padding(.top, 5)
+                .padding(.leading, 8)
+
+            if calendarDay.isCurrentMonth,
+               let readingDay {
+                BookCoverImage(
+                    coverImageUrl: readingDay.coverImageUrl,
+                    placeholderImageName: "book_cover_mock"
+                )
+                .frame(width: 45, height: 55)
+                .clipShape(RoundedRectangle(cornerRadius: 2))
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.top, 21)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .frame(height: 80)
+        .clipped()
+        .overlay {
+            Rectangle()
+                .stroke(Color.gray300, lineWidth: 0.5)
         }
     }
 }

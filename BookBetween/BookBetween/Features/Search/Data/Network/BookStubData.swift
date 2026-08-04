@@ -24,6 +24,8 @@ enum BookStubData {
             json = deleteMemberBookResponse
         case .readingStatistics:
             json = readingStatisticsResponse
+        case .readingCalendar:
+            json = readingCalendarResponse
         }
 
         return Data(json.utf8)
@@ -256,6 +258,28 @@ enum BookStubData {
             "name": "심리학",
             "count": 4,
             "percentage": 17
+          }
+        ]
+      }
+    }
+    """
+
+    private static let readingCalendarResponse = """
+    {
+      "isSuccess": true,
+      "code": "BOOK200_7",
+      "message": "독서 캘린더 조회에 성공했습니다.",
+      "result": {
+        "year": 2026,
+        "month": 8,
+        "days": [
+          {
+            "date": "2026-08-04",
+            "coverImageUrl": "https://image.example.com/book-cover.jpg"
+          },
+          {
+            "date": "2026-08-17",
+            "coverImageUrl": null
           }
         ]
       }
