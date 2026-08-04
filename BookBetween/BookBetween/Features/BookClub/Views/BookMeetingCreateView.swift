@@ -285,13 +285,25 @@ struct BookMeetingCreateView: View {
 					}
 				},
 				picker: {
-					DatePicker("", selection: $meetingDate, displayedComponents: [.hourAndMinute])
-						.datePickerStyle(.wheel)
-						.labelsHidden()
-						.environment(\.locale, Locale(identifier: "en_GB"))
-                        .frame(width: 300)
-						.frame(height: 150)
-						.clipped()
+					HStack(spacing: 0) {
+						Picker("시", selection: hourBinding) {
+							ForEach(0...23, id: \.self) { h in
+								Text(String(format: "%02d시", h)).tag(h)
+							}
+						}
+						.pickerStyle(.wheel)
+						.frame(maxWidth: .infinity)
+
+						Picker("분", selection: minuteBinding) {
+							ForEach(0...59, id: \.self) { m in
+								Text(String(format: "%02d분", m)).tag(m)
+							}
+						}
+						.pickerStyle(.wheel)
+						.frame(maxWidth: .infinity)
+					}
+					.frame(height: 150)
+					.padding(.horizontal, 8)
 				}
 			)
             .padding(.top, 24)
@@ -403,7 +415,7 @@ struct BookMeetingCreateView: View {
 
 			if isExpanded {
 				picker()
-					.transition(.opacity.combined(with: .move(edge: .top)))
+					.transition(.opacity)
 			}
 		}
 	}
@@ -428,6 +440,28 @@ struct BookMeetingCreateView: View {
 			set: { newDay in
 				var comps = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: meetingDate)
 				comps.day = newDay
+				meetingDate = Calendar.current.date(from: comps) ?? meetingDate
+			}
+		)
+	}
+
+	private var hourBinding: Binding<Int> {
+		Binding(
+			get: { Calendar.current.component(.hour, from: meetingDate) },
+			set: { newHour in
+				var comps = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: meetingDate)
+				comps.hour = newHour
+				meetingDate = Calendar.current.date(from: comps) ?? meetingDate
+			}
+		)
+	}
+
+	private var minuteBinding: Binding<Int> {
+		Binding(
+			get: { Calendar.current.component(.minute, from: meetingDate) },
+			set: { newMinute in
+				var comps = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: meetingDate)
+				comps.minute = newMinute
 				meetingDate = Calendar.current.date(from: comps) ?? meetingDate
 			}
 		)

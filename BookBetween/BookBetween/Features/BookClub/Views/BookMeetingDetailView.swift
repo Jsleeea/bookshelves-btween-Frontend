@@ -74,7 +74,7 @@ struct BookMeetingDetailView: View {
 			Text(participationError ?? "")
 		}
 		.task {
-			guard let service, !isParticipant else { return }
+			guard let service else { return }
 			do {
 				meeting = try await service.fetchMeetingDetail(meetingId: meeting.id)
 			} catch {
