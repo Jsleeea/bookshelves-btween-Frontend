@@ -57,7 +57,7 @@ enum NotificationType: Equatable {
 
     init(apiValue: String) {
         switch apiValue {
-        case "MEETING_CANCELLED":
+        case "MEETING_CANCELED", "MEETING_CANCELLED":
             self = .meetingCancelled
         case "MEETING_SUMMARY_DONE":
             self = .aiSummaryReady
@@ -67,6 +67,42 @@ enum NotificationType: Equatable {
             self = .system
         default:
             self = .system
+        }
+    }
+}
+
+extension NotificationItem {
+    var displayTitle: String {
+        let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        switch type {
+        case .meetingCancelled:
+            return "최소 인원 미달로 모임이 취소되었어요"
+        case .aiSummaryReady:
+            return "AI 요약이 완료되었어요"
+        case .meetingStarted:
+            let genericTitles = [
+                "",
+                "모임이 곧 시작됩니다.",
+                "모임이 시작되었습니다.",
+                "모임이 시작되었어요"
+            ]
+            return genericTitles.contains(trimmedTitle)
+                ? "독서 모임이 시작되었어요"
+                : trimmedTitle
+        case .system:
+            return trimmedTitle
+        }
+    }
+
+    var displayMessage: String {
+        switch type {
+        case .aiSummaryReady:
+            return "지금 확인해보세요"
+        case .meetingStarted:
+            return "지금 모임에 참여해보세요"
+        case .meetingCancelled, .system:
+            return message.trimmingCharacters(in: .whitespacesAndNewlines)
         }
     }
 }

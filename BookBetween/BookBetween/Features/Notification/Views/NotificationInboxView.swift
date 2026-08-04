@@ -10,14 +10,6 @@ struct NotificationInboxView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var viewModel: NotificationInboxViewModel
 
-    init() {
-        _viewModel = State(
-            initialValue: NotificationInboxViewModel(
-                service: NotificationService.stubbed()
-            )
-        )
-    }
-
     init(viewModel: NotificationInboxViewModel) {
         _viewModel = State(initialValue: viewModel)
     }
@@ -39,6 +31,7 @@ struct NotificationInboxView: View {
                     notificationList
                 }
             }
+            .padding(.top, 8)
 
             leafDecoration
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
@@ -174,7 +167,11 @@ struct NotificationInboxView: View {
 }
 
 #Preview("알림 목록") {
-    NotificationInboxView()
+    NotificationInboxView(
+        viewModel: NotificationInboxViewModel(
+            service: NotificationService.stubbed()
+        )
+    )
 }
 
 #Preview("빈 알림함") {

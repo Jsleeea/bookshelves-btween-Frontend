@@ -13,13 +13,13 @@ struct NotificationCardView: View {
             notificationIcon
 
             VStack(alignment: .leading, spacing: 5) {
-                Text(item.title)
+                Text(item.displayTitle)
                     .body1SemiBoldStyle
                     .foregroundStyle(.gray800)
                     .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
 
-                Text(item.message)
+                Text(item.displayMessage)
                     .caption1RegularStyle
                     .foregroundStyle(.gray500)
                     .lineLimit(2)

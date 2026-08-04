@@ -50,7 +50,12 @@ struct SearchView: View {
                     //.padding(.top, 12)
                     .padding(.bottom, 80)
                 }
+                .refreshable {
+                    isSearchFocused = false
+                    await viewModel.refresh()
+                }
             }
+            .padding(.top, 8)
         }
         .toolbar(.hidden, for: .navigationBar)
         .ignoresSafeArea(.keyboard, edges: .bottom)
@@ -251,8 +256,10 @@ private struct RecentKeywordRow: View {
                     .body2RegularStyle
                     .foregroundStyle(Color.gray600)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .frame(maxWidth: .infinity, alignment: .leading)
 
             Button(action: onDelete) {
                 Image(systemName: "xmark")

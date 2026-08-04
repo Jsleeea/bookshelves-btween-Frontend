@@ -10,6 +10,7 @@ import SwiftUI
 struct BookRecordDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var viewModel: BookRecordDetailViewModel
+    @State private var isShowingSaveSuccess = false
     @FocusState private var isReviewFocused: Bool  // 키보드 내리기
     private let onRecordSaved: ((UserBookRecord) -> Void)?
     
@@ -54,18 +55,23 @@ struct BookRecordDetailView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            topBar
+                .padding(.horizontal, 30)
+                .padding(.bottom, 13)
+                .zIndex(1)
+
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
-                    topBar
                     bookHeader
                     bookDescription
                     readingRecordForm
                 }
                 .padding(.horizontal, 30)
-                .padding(.bottom, 40)
+                .padding(.bottom, 140)// 기록 저장하기 잘림 수정 140 - 40
             }
             .scrollDismissesKeyboard(.interactively)
         }
+        .padding(.top, 8)
         .contentShape(Rectangle())
         .onTapGesture {
             isReviewFocused = false
@@ -81,8 +87,19 @@ struct BookRecordDetailView: View {
             }
         .toolbar(.hidden, for: .navigationBar)
         .overlay {
-            if viewModel.isLoading {
-                ProgressView()
+            ZStack {
+                if viewModel.isLoading {
+                    ProgressView()
+                }
+
+                if isShowingSaveSuccess {
+                    Color.black.opacity(0.4)
+                        .ignoresSafeArea()
+
+                    SuccessModalView(title: "저장되었습니다.") {
+                        isShowingSaveSuccess = false
+                    }
+                }
             }
         }
         .task {
@@ -296,38 +313,46 @@ struct BookRecordDetailView: View {
     }
 
     private var reviewCard: some View {
-        recordCard (borderColor: viewModel.isEditing ? .green500 : .gray200,
-                    borderWidth: viewModel.isEditing ? 1.5 : 0.5
-        
-        ){
+        recordCard(
+            borderColor: viewModel.isEditing ? .green500 : .gray200,
+            borderWidth: viewModel.isEditing ? 1.5 : 0.5
+        ) {
             VStack(alignment: .leading, spacing: 5) {
                 Text("한줄평")
                     .body1SemiBoldStyle
                     .foregroundStyle(.gray800)
 
-                if viewModel.isEditing {
-                    ZStack(alignment: .topLeading) {
-                        if viewModel.memo.isEmpty {
-                            Text("이 책에 대한 짧은 감상을 남겨주세요.")
-                                .caption1RegularStyle
-                                .foregroundStyle(.gray800)
-                                .allowsHitTesting(false)
-                        }
-
-                        TextEditor(text: $viewModel.memo)
-                            .font(.caption1Regular)
-                            .foregroundStyle(.gray800)
-                            .frame(minHeight: 76)
-                            .scrollContentBackground(.hidden)
-                            .focused($isReviewFocused)  // 키보드 내리기
-                            .padding(.leading, -5)// UIKit의 기본 padding 제거
-                            .padding(.top, -8)
-                    }
-                } else {
-                    Text(viewModel.reviewPlaceholderText)
-                        .caption1RegularStyle
-                        .foregroundStyle(viewModel.hasReview ? .gray700 : .gray500)
+                ZStack(alignment: .topLeading) {
+                    TextEditor(text: $viewModel.memo)
+                        .font(.caption1Regular)
+                        .foregroundStyle(viewModel.isEditing ? Color.gray800 : Color.gray700)
                         .frame(maxWidth: .infinity, minHeight: 76, alignment: .topLeading)
+                        .padding(.horizontal, -5)
+                        .scrollContentBackground(.hidden)
+                        .focused($isReviewFocused)
+                        .allowsHitTesting(viewModel.isEditing)
+                        .accessibilityLabel("한줄평")
+
+                    if !viewModel.hasReview {
+                        Text(viewModel.reviewPlaceholderText)
+                            .font(.caption1Regular)
+                            .foregroundStyle(viewModel.isEditing ? Color.gray800 : Color.gray500)
+                            .padding(.vertical, 8)
+                            .allowsHitTesting(false)
+                    }
+                }
+
+                if viewModel.isEditing {
+                    HStack {
+                        Spacer()
+                        Text("\(viewModel.memo.count) / \(BookRecordDetailViewModel.maxMemoLength)")
+                            .caption2RegularStyle
+                            .foregroundStyle(
+                                viewModel.memo.count >= BookRecordDetailViewModel.maxMemoLength
+                                    ? Color.red
+                                    : Color.gray500
+                            )
+                    }
                 }
             }
             .background (alignment: .bottomTrailing){
@@ -342,13 +367,14 @@ struct BookRecordDetailView: View {
         }
         .padding(.top, 8)
     }
-
+    
     private var saveButton: some View {
         Button {
             isReviewFocused = false
             Task {
                 if let savedRecord = await viewModel.saveRecord() {
                     onRecordSaved?(savedRecord)
+                    isShowingSaveSuccess = true
                 }
             }
         } label: {
