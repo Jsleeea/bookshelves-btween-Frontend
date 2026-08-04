@@ -11,6 +11,8 @@ struct ProfileView: View {
     // MARK: - 속성
 
     @State private var viewModel: ProfileViewModel
+    @State private var statisticsViewModel: ReadingStatisticsViewModel
+    @State private var isReadingStatisticsPresented = false
     private let onLogout: () async throws -> Void
     private let onWithdraw: () async throws -> Void
 
@@ -21,16 +23,23 @@ struct ProfileView: View {
         onWithdraw: @escaping () async throws -> Void = {}
     ) {
         _viewModel = State(initialValue: ProfileViewModel())
+        _statisticsViewModel = State(
+            initialValue: ReadingStatisticsViewModel(
+                bookService: BookService.stubbed()
+            )
+        )
         self.onLogout = onLogout
         self.onWithdraw = onWithdraw
     }
 
     init(
         viewModel: ProfileViewModel,
+        statisticsViewModel: ReadingStatisticsViewModel,
         onLogout: @escaping () async throws -> Void,
         onWithdraw: @escaping () async throws -> Void
     ) {
         _viewModel = State(initialValue: viewModel)
+        _statisticsViewModel = State(initialValue: statisticsViewModel)
         self.onLogout = onLogout
         self.onWithdraw = onWithdraw
     }
@@ -42,6 +51,14 @@ struct ProfileView: View {
                 .year()
                 .month(.wide)
         )
+    }
+
+    private var joinedAt: Date {
+        Calendar.current.date(
+            byAdding: .day,
+            value: -max((viewModel.profile?.joinedDays ?? 1) - 1, 0),
+            to: .now
+        ) ?? .now
     }
 
     // MARK: - 화면 구성
@@ -57,11 +74,11 @@ struct ProfileView: View {
                     .padding(.bottom, 50)
 
                 ReadingStatisticsSummaryView(
-                    readBookCount: 24,
-                    reviewCount: 17,
-                    averageRating: 4.0
+                    readBookCount: statisticsViewModel.completedBookCount,
+                    reviewCount: statisticsViewModel.reviewCount,
+                    averageRating: statisticsViewModel.averageRating
                 ) {
-                    // 독서 통계 상세 화면 연결 시 동작 추가해야함
+                    isReadingStatisticsPresented = true
                 }
                     .padding(.bottom, 16)
 
@@ -79,29 +96,47 @@ struct ProfileView: View {
         .background(Color.beige100)
         .toolbar(.hidden, for: .navigationBar)
         .overlay {
-            if viewModel.isLoading {
+            if viewModel.isLoading || statisticsViewModel.isLoading {
                 ProgressView()
             }
         }
         .task {
-            await viewModel.fetchMyProfile()
+            async let profileRequest: Void = viewModel.fetchMyProfile()
+            async let statisticsRequest: Void = statisticsViewModel.fetchStatistics()
+
+            _ = await (profileRequest, statisticsRequest)
+        }
+        .navigationDestination(isPresented: $isReadingStatisticsPresented) {
+            ReadingStatisticsView(
+                viewModel: statisticsViewModel,
+                joinedAt: joinedAt
+            )
         }
         .alert(
-            "내 정보를 불러오지 못했습니다.",
+            "마이페이지 정보를 불러오지 못했습니다.",
             isPresented: Binding(
-                get: { viewModel.errorMessage != nil },
+                get: {
+                    viewModel.errorMessage != nil
+                        || statisticsViewModel.errorMessage != nil
+                },
                 set: { isPresented in
                     if !isPresented {
                         viewModel.errorMessage = nil
+                        statisticsViewModel.errorMessage = nil
                     }
                 }
             )
         ) {
             Button("확인", role: .cancel) {
                 viewModel.errorMessage = nil
+                statisticsViewModel.errorMessage = nil
             }
         } message: {
-            Text(viewModel.errorMessage ?? "")
+            Text(
+                viewModel.errorMessage
+                    ?? statisticsViewModel.errorMessage
+                    ?? ""
+            )
         }
     }
 

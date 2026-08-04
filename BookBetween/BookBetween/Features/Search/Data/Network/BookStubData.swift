@@ -22,6 +22,8 @@ enum BookStubData {
             json = memberBooksResponse
         case .deleteMemberBook:
             json = deleteMemberBookResponse
+        case .readingStatistics:
+            json = readingStatisticsResponse
         }
 
         return Data(json.utf8)
@@ -225,6 +227,38 @@ enum BookStubData {
       "code": "BOOK200_9",
       "message": "독서 기록 삭제에 성공했습니다.",
       "result": null
+    }
+    """
+
+    private static let readingStatisticsResponse = """
+    {
+      "isSuccess": true,
+      "code": "BOOK200_8",
+      "message": "독서 통계 조회에 성공했습니다.",
+      "result": {
+        "year": 2026,
+        "month": 8,
+        "completedBookCount": 24,
+        "reviewCount": 17,
+        "averageRating": 4.0,
+        "categoryStatistics": [
+          {
+            "name": "한국 문학",
+            "count": 14,
+            "percentage": 58
+          },
+          {
+            "name": "영미문학",
+            "count": 6,
+            "percentage": 25
+          },
+          {
+            "name": "심리학",
+            "count": 4,
+            "percentage": 17
+          }
+        ]
+      }
     }
     """
 }

@@ -5,17 +5,30 @@ struct MonthYearPickerView: View {
     @Binding var selectedMonth: Int
     @State private var showPicker = false
 
+    private let availableYears: [Int]
+    private let includesAllOption: Bool
+
+    init(
+        selectedYear: Binding<Int>,
+        selectedMonth: Binding<Int>,
+        availableYears: [Int]? = nil,
+        includesAllOption: Bool = true
+    ) {
+        let currentYear = Calendar.current.component(.year, from: Date())
+
+        _selectedYear = selectedYear
+        _selectedMonth = selectedMonth
+        self.availableYears = availableYears
+            ?? Array(currentYear...(currentYear + 3))
+        self.includesAllOption = includesAllOption
+    }
+
     private var label: String {
         switch (selectedYear, selectedMonth) {
         case (0, _): return "전체"
         case (let y, 0): return "\(y)년"
         case (let y, let m): return "\(y)년 \(m)월"
         }
-    }
-
-    private var availableYears: [Int] {
-        let currentYear = Calendar.current.component(.year, from: Date())
-        return Array((currentYear - 0)...(currentYear + 3))
     }
 
     var body: some View {
@@ -46,7 +59,10 @@ struct MonthYearPickerView: View {
     private var pickerContent: some View {
         HStack(spacing: 0) {
             Picker("년도", selection: $selectedYear) {
-                Text("전체").tag(0)
+                if includesAllOption {
+                    Text("전체").tag(0)
+                }
+
                 ForEach(availableYears, id: \.self) { year in
                     Text(verbatim: "\(year)년").tag(year)
                 }
@@ -54,19 +70,24 @@ struct MonthYearPickerView: View {
             .pickerStyle(.wheel)
             .frame(width: 130)
             .onChange(of: selectedYear) { _, newYear in
-                if newYear == 0 { selectedMonth = 0 }
+                if includesAllOption, newYear == 0 {
+                    selectedMonth = 0
+                }
             }
 
             Picker("월", selection: $selectedMonth) {
-                Text("전체").tag(0)
+                if includesAllOption {
+                    Text("전체").tag(0)
+                }
+
                 ForEach(1...12, id: \.self) { month in
                     Text("\(month)월").tag(month)
                 }
             }
             .pickerStyle(.wheel)
             .frame(width: 90)
-            .disabled(selectedYear == 0)
-            .opacity(selectedYear == 0 ? 0.4 : 1)
+            .disabled(includesAllOption && selectedYear == 0)
+            .opacity(includesAllOption && selectedYear == 0 ? 0.4 : 1)
         }
         .padding(.horizontal, 8)
         .frame(height: 180)

@@ -96,6 +96,9 @@ struct MainTabView: View {
                             viewModel: ProfileViewModel(
                                 memberService: memberService
                             ),
+                            statisticsViewModel: ReadingStatisticsViewModel(
+                                bookService: bookService
+                            ),
                             onLogout: onLogout,
                             onWithdraw: onWithdraw
                         )
