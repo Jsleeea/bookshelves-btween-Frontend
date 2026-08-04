@@ -52,8 +52,12 @@ struct OnboardingView: View {
 
           if !self.viewModel.isLastPage {
             OnboardingSkipButton {
-              self.viewModel.skipButtonDidTap()
+              self.onComplete()
             }
+          } else {
+            OnboardingSkipButton {}
+              .hidden()
+              .allowsHitTesting(false)
           }
         }
         .frame(width: geometry.size.width, height: geometry.size.height)
