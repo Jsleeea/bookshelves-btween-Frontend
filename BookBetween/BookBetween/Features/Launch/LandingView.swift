@@ -119,8 +119,6 @@ private struct LandingTitleSectionView: View {
 private struct LandingStartGuideView: View {
   var body: some View {
     VStack(spacing: 4) {
-      ProgressView()
-
       Text("화면을 터치하여 시작하세요")
         .body2RegularStyle
         .foregroundStyle(Color.gray500)

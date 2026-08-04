@@ -67,7 +67,4 @@ final class OnboardingViewModel: ObservableObject {
     self.currentPageIndex += 1
   }
 
-  func skipButtonDidTap() {
-    self.currentPageIndex = self.pages.count - 1
-  }
 }
