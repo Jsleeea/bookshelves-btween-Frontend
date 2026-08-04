@@ -40,7 +40,7 @@ enum BookMeetingStatus: Decodable {
         case .recruiting: return "모집중"
         case .upcoming: return "참여예정"
         case .inProgress: return "참여중"
-        case .completed: return "참여완료"
+        case .completed: return "모임완료"
         }
     }
 }

@@ -7,10 +7,14 @@ struct MonthYearPickerView: View {
 
     private let availableYears: [Int]
     private let includesAllOption: Bool
+    private let startYear: Int
+    private let startMonth: Int
 
     init(
         selectedYear: Binding<Int>,
         selectedMonth: Binding<Int>,
+        startYear: Int? = nil,
+        startMonth: Int = 1,
         availableYears: [Int]? = nil,
         includesAllOption: Bool = true
     ) {
@@ -18,9 +22,19 @@ struct MonthYearPickerView: View {
 
         _selectedYear = selectedYear
         _selectedMonth = selectedMonth
-        self.availableYears = availableYears
-            ?? Array(currentYear...(currentYear + 3))
         self.includesAllOption = includesAllOption
+        self.startMonth = startMonth
+
+        let resolvedStartYear: Int
+        if let startYear {
+            resolvedStartYear = startYear
+        } else if let availableYears {
+            resolvedStartYear = availableYears.min() ?? currentYear
+        } else {
+            resolvedStartYear = currentYear - 3
+        }
+        self.startYear = resolvedStartYear
+        self.availableYears = availableYears.map { Array($0.reversed()) } ?? Array((resolvedStartYear...currentYear).reversed())
     }
 
     private var label: String {
@@ -29,6 +43,11 @@ struct MonthYearPickerView: View {
         case (let y, 0): return "\(y)년"
         case (let y, let m): return "\(y)년 \(m)월"
         }
+    }
+
+    private var availableMonths: [Int] {
+        guard selectedYear == startYear else { return Array(1...12) }
+        return Array(startMonth...12)
     }
 
     var body: some View {
@@ -72,6 +91,11 @@ struct MonthYearPickerView: View {
             .onChange(of: selectedYear) { _, newYear in
                 if includesAllOption, newYear == 0 {
                     selectedMonth = 0
+                    return
+                }
+                // 시작 연도 선택 시 시작 월 이전이면 시작 월로 보정
+                if newYear == startYear, selectedMonth != 0, selectedMonth < startMonth {
+                    selectedMonth = startMonth
                 }
             }
 
@@ -80,7 +104,7 @@ struct MonthYearPickerView: View {
                     Text("전체").tag(0)
                 }
 
-                ForEach(1...12, id: \.self) { month in
+                ForEach(availableMonths, id: \.self) { month in
                     Text("\(month)월").tag(month)
                 }
             }
@@ -95,7 +119,7 @@ struct MonthYearPickerView: View {
 }
 
 #Preview {
-    @Previewable @State var year = 2026
-    @Previewable @State var month = 7
+    @Previewable @State var year = 0
+    @Previewable @State var month = 0
     MonthYearPickerView(selectedYear: $year, selectedMonth: $month)
 }

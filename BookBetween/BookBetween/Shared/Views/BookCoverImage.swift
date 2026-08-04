@@ -1,8 +1,3 @@
-//
-//  BookCoverImage.swift
-//  BookBetween
-//
-
 import SwiftUI
 
 struct BookCoverImage: View {
@@ -29,7 +24,7 @@ struct BookCoverImage: View {
             AsyncImage(url: coverURL) { phase in
                 switch phase {
                 case .empty:
-                    placeholderImage
+                    Color.clear
                 case .success(let image):
                     image
                         .resizable()
@@ -45,15 +40,11 @@ struct BookCoverImage: View {
         }
     }
 
-    private var placeholderImage: some View {
-        Image(placeholderImageName)
-            .resizable()
-            .scaledToFill()
-    }
-
     private var fallbackImage: some View {
         Image("book_cover_mock")
             .resizable()
             .scaledToFill()
     }
 }
+
+
