@@ -60,7 +60,10 @@ struct ReadingStatisticsView: View {
                     )
                     .padding(.horizontal, 20)
 
-                    ReadingRatioCardView(joinedAt: joinedAt)
+                    ReadingRatioCardView(
+                        viewModel: viewModel,
+                        joinedAt: joinedAt
+                    )
                         .padding(.horizontal, 30)
                         .padding(.top, 16)
                 }
@@ -112,58 +115,18 @@ private struct ReadingStatisticsHeaderView: View {
 private struct ReadingRatioCardView: View {
     // MARK: - 속성
 
+    let viewModel: ReadingStatisticsViewModel
     let joinedAt: Date
 
-    @State private var selectedMonth: Date
     @State private var isInfoVisible = false
 
-    // MARK: - 목업 데이터
-
-    private let readingRatios = [
-        ReadingRatio(
-            name: "한국 문학",
-            bookCount: 14,
-            percentage: 60,
-            color: Color(red: 0.24, green: 0.4, blue: 0.29),
-            gradientEndColor: Color(red: 0.64, green: 0.77, blue: 0.69),
-            labelColor: .white
-        ),
-        ReadingRatio(
-            name: "영미문학",
-            bookCount: 6,
-            percentage: 25,
-            color: Color(red: 0.69, green: 0.79, blue: 0.7),
-            gradientEndColor: Color(red: 0.85, green: 0.9, blue: 0.86),
-            labelColor: Color.gray700
-        ),
-        ReadingRatio(
-            name: "심리학",
-            bookCount: 4,
-            percentage: 15,
-            color: Color(red: 0.87, green: 0.92, blue: 0.99),
-            gradientEndColor: Color(red: 0.96, green: 0.98, blue: 1),
-            labelColor: Color.gray700
-        ),
-        ReadingRatio(
-            name: "기타",
-            bookCount: 0,
-            percentage: 0,
-            color: Color(red: 0.93, green: 0.92, blue: 0.9),
-            gradientEndColor: Color(red: 0.98, green: 0.97, blue: 0.96),
-            labelColor: Color.gray700
-        )
-    ]
-
-    // MARK: - 초기화
-
-    init(joinedAt: Date) {
-        self.joinedAt = joinedAt
-        _selectedMonth = State(
-            initialValue: Calendar.current.dateInterval(
-                of: .month,
-                for: joinedAt
-            )?.start ?? joinedAt
-        )
+    private var readingRatios: [ReadingRatio] {
+        viewModel.categoryStatistics.enumerated().map { index, statistics in
+            ReadingRatio(
+                statistics: statistics,
+                colorIndex: index
+            )
+        }
     }
 
     // MARK: - 화면 구성
@@ -265,11 +228,17 @@ private struct ReadingRatioCardView: View {
                 Menu {
                     ForEach(months(in: year), id: \.self) { date in
                         Button {
-                            selectedMonth = date
+                            Task {
+                                await viewModel.selectMonth(date)
+                            }
                         } label: {
                             let month = Calendar.current.component(.month, from: date)
 
-                            if Calendar.current.isDate(date, equalTo: selectedMonth, toGranularity: .month) {
+                            if Calendar.current.isDate(
+                                date,
+                                equalTo: viewModel.selectedMonth,
+                                toGranularity: .month
+                            ) {
                                 Label("\(month)월", systemImage: "checkmark")
                             } else {
                                 Text("\(month)월")
@@ -384,7 +353,7 @@ private struct ReadingRatioCardView: View {
     private var selectedMonthTitle: String {
         let components = Calendar.current.dateComponents(
             [.year, .month],
-            from: selectedMonth
+            from: viewModel.selectedMonth
         )
 
         return "\(components.year ?? 0)년 \(components.month ?? 0)월"
@@ -439,6 +408,34 @@ private struct ReadingRatio: Identifiable {
     let color: Color
     let gradientEndColor: Color
     let labelColor: Color
+
+    init(
+        statistics: ReadingCategoryStatisticsDTO,
+        colorIndex: Int
+    ) {
+        self.name = statistics.name
+        self.bookCount = statistics.count
+        self.percentage = statistics.percentage
+
+        switch colorIndex % 4 {
+        case 0:
+            self.color = Color(red: 0.24, green: 0.4, blue: 0.29)
+            self.gradientEndColor = Color(red: 0.64, green: 0.77, blue: 0.69)
+            self.labelColor = .white
+        case 1:
+            self.color = Color(red: 0.69, green: 0.79, blue: 0.7)
+            self.gradientEndColor = Color(red: 0.85, green: 0.9, blue: 0.86)
+            self.labelColor = Color.gray700
+        case 2:
+            self.color = Color(red: 0.87, green: 0.92, blue: 0.99)
+            self.gradientEndColor = Color(red: 0.96, green: 0.98, blue: 1)
+            self.labelColor = Color.gray700
+        default:
+            self.color = Color(red: 0.93, green: 0.92, blue: 0.9)
+            self.gradientEndColor = Color(red: 0.98, green: 0.97, blue: 0.96)
+            self.labelColor = Color.gray700
+        }
+    }
 
     var id: String { name }
 
