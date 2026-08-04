@@ -26,10 +26,6 @@ enum BookClubTab: CaseIterable {
 @Observable
 final class BookClubViewModel {
 
-	// MARK: - Constants
-
-	static let minimumParticipants = 3
-
 	// MARK: - Properties
 
 	var selectedTab: BookClubTab = .myMeetings
@@ -52,15 +48,8 @@ final class BookClubViewModel {
 				return yearMatch && monthMatch
 			}
 		} else {
-			let now = Date()
 			var seen = Set<Int>()
-			meetings = (participatingMeetings
-				.filter { meeting in
-					// 모임 시간이 지났고 최소 인원 미달이면 폭파된 것으로 간주하여 제거
-					!(meeting.meetingDate <= now && meeting.currentParticipants < Self.minimumParticipants)
-				}
-				.map(withParticipantStatus)
-				+ createdMeetings.map(withParticipantStatus))
+			meetings = (participatingMeetings + createdMeetings)
 				.filter { seen.insert($0.id).inserted }
 		}
 		return sortedMeetings(meetings)
@@ -76,34 +65,9 @@ final class BookClubViewModel {
 				return yearMatch && monthMatch
 			}
 		} else {
-			meetings = createdMeetings.map(withParticipantStatus)
+			meetings = createdMeetings
 		}
 		return sortedMeetings(meetings)
-	}
-
-	private func withParticipantStatus(_ meeting: BookMeeting) -> BookMeeting {
-		guard meeting.status == .recruiting || meeting.status == .upcoming else { return meeting }
-		let now = Date()
-		let meetingEnd = meeting.meetingDate.addingTimeInterval(TimeInterval(meeting.timerMinutes * 60))
-		let newStatus: BookMeetingStatus
-		if meetingEnd <= now {
-			newStatus = .completed
-		} else if meeting.meetingDate <= now {
-			newStatus = .inProgress
-		} else {
-			newStatus = .upcoming
-		}
-		guard newStatus != meeting.status else { return meeting }
-		return BookMeeting(
-			id: meeting.id,
-			chatroomId: meeting.chatroomId,
-			book: meeting.book,
-			meetingDate: meeting.meetingDate,
-			timerMinutes: meeting.timerMinutes,
-			maxParticipants: meeting.maxParticipants,
-			currentParticipants: meeting.currentParticipants,
-			status: newStatus
-		)
 	}
 
 	private func sortedMeetings(_ meetings: [BookMeeting]) -> [BookMeeting] {

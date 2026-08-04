@@ -74,7 +74,6 @@ struct BookMeetingDetailView: View {
 			Text(participationError ?? "")
 		}
 		.task {
-			// 이미 참여한 모임은 서버 status가 RECRUITING으로 내려와 클라이언트 변환을 덮어쓰므로 fetch 생략
 			guard let service, !isParticipant else { return }
 			do {
 				meeting = try await service.fetchMeetingDetail(meetingId: meeting.id)
