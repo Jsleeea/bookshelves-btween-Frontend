@@ -197,7 +197,12 @@ private struct ReadingRatioCardView: View {
 
             Spacer()
 
-            monthSelectionMenu
+            MonthYearPickerView(
+                selectedYear: selectedYear,
+                selectedMonth: selectedMonth,
+                availableYears: selectableYears,
+                includesAllOption: false
+            )
         }
     }
 
@@ -218,55 +223,6 @@ private struct ReadingRatioCardView: View {
             }
             .shadow(color: Color(red: 0.17, green: 0.16, blue: 0.16).opacity(0.1), radius: 2, x: 0, y: 4)
 
-    }
-
-    // MARK: - 연월 선택 메뉴
-
-    private var monthSelectionMenu: some View {
-        Menu {
-            ForEach(selectableYears, id: \.self) { year in
-                Menu {
-                    ForEach(months(in: year), id: \.self) { date in
-                        Button {
-                            Task {
-                                await viewModel.selectMonth(date)
-                            }
-                        } label: {
-                            let month = Calendar.current.component(.month, from: date)
-
-                            if Calendar.current.isDate(
-                                date,
-                                equalTo: viewModel.selectedMonth,
-                                toGranularity: .month
-                            ) {
-                                Label("\(month)월", systemImage: "checkmark")
-                            } else {
-                                Text("\(month)월")
-                            }
-                        }
-                    }
-                } label: {
-                    Text(verbatim: "\(year)년")
-                }
-            }
-        } label: {
-            HStack(spacing: 5) {
-                Text(selectedMonthTitle)
-                    .caption2RegularStyle
-
-                Image(systemName: "chevron.down")
-                    .font(.system(size: 8, weight: .medium))
-            }
-            .foregroundStyle(Color.gray800)
-            .padding(.horizontal, 6.72)
-            .frame(height: 20)
-            .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 7))
-            .overlay {
-                RoundedRectangle(cornerRadius: 7)
-                    .stroke(Color.gray200, lineWidth: 0.5)
-            }
-        }
     }
 
     // MARK: - 도넛 차트
@@ -350,51 +306,63 @@ private struct ReadingRatioCardView: View {
 
     // MARK: - 날짜 계산
 
-    private var selectedMonthTitle: String {
-        let components = Calendar.current.dateComponents(
-            [.year, .month],
-            from: viewModel.selectedMonth
+    private var selectedYear: Binding<Int> {
+        Binding(
+            get: {
+                Calendar.current.component(
+                    .year,
+                    from: viewModel.selectedMonth
+                )
+            },
+            set: { year in
+                selectMonth(
+                    year: year,
+                    month: Calendar.current.component(
+                        .month,
+                        from: viewModel.selectedMonth
+                    )
+                )
+            }
         )
-
-        return "\(components.year ?? 0)년 \(components.month ?? 0)월"
     }
 
-    private var selectableMonths: [Date] {
-        let calendar = Calendar.current
-        let joinedMonth = calendar.dateInterval(of: .month, for: joinedAt)?.start ?? joinedAt
-        let currentMonth = calendar.dateInterval(of: .month, for: .now)?.start ?? .now
-        let firstMonth = min(joinedMonth, currentMonth)
-
-        var months: [Date] = []
-        var month = firstMonth
-
-        while month <= currentMonth {
-            months.append(month)
-
-            guard let nextMonth = calendar.date(byAdding: .month, value: 1, to: month) else {
-                break
+    private var selectedMonth: Binding<Int> {
+        Binding(
+            get: {
+                Calendar.current.component(
+                    .month,
+                    from: viewModel.selectedMonth
+                )
+            },
+            set: { month in
+                selectMonth(
+                    year: Calendar.current.component(
+                        .year,
+                        from: viewModel.selectedMonth
+                    ),
+                    month: month
+                )
             }
-
-            month = nextMonth
-        }
-
-        return months
+        )
     }
 
     private var selectableYears: [Int] {
-        Array(
-            Set(
-                selectableMonths.compactMap {
-                    Calendar.current.dateComponents([.year], from: $0).year
-                }
-            )
-        )
-        .sorted()
+        let calendar = Calendar.current
+        let joinedYear = calendar.component(.year, from: joinedAt)
+        let currentYear = calendar.component(.year, from: .now)
+
+        return Array(min(joinedYear, currentYear)...currentYear)
     }
 
-    private func months(in year: Int) -> [Date] {
-        selectableMonths.filter {
-            Calendar.current.component(.year, from: $0) == year
+    private func selectMonth(year: Int, month: Int) {
+        guard let date = Calendar.current.date(
+            from: DateComponents(year: year, month: month, day: 1)
+        ) else {
+            return
+        }
+
+        Task {
+            await viewModel.selectMonth(date)
         }
     }
 }
