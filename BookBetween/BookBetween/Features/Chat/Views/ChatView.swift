@@ -21,13 +21,13 @@ struct ChatView: View {
     static let messageListTopPadding: CGFloat = 32
     static let messageListBottomPadding: CGFloat = 16
 
-    static let chatBottomTopPadding: CGFloat = 44
     static let chatBottomBottomPadding: CGFloat = 12
     static let backgroundTopColorHex: String = "F0F7FD"
 
     static let downButtonSize: CGFloat = 30
     static let downButtonCornerRadius: CGFloat = 20
     static let downButtonTrailingPadding: CGFloat = 28
+    static let downButtonBottomPadding: CGFloat = 20
     static let downButtonShadowRadius: CGFloat = 24
     static let downButtonShadowYOffset: CGFloat = 20
     static let downButtonShadowOpacity: CGFloat = 0.16
@@ -75,54 +75,49 @@ struct ChatView: View {
     static let expandedParagraphBottomPadding: CGFloat = 20
   }
 
-  // MARK: - Types
-
-  private struct ChatMessage: Identifiable {
-    let id = UUID()
-    let nickname: String
-    let message: String
-    let time: String
-    let isMyMessage: Bool
-    let profileImageName: String?
+  private enum Identifier {
+    static let bottomAnchor = "chat-bottom-anchor"
   }
+
+  // MARK: - Formatter
+
+  private static let timeFormatter: DateFormatter = {
+    let formatter = DateFormatter()
+    formatter.dateFormat = "HH:mm"
+    formatter.locale = Locale(identifier: "ko_KR")
+    return formatter
+  }()
 
   // MARK: - Properties
 
+  @State private var viewModel: ChatViewModel
   @State private var messageText: String = ""
   @State private var isQuestionExpanded: Bool = false
-  private let currentQuestionCount: Int = 2
-  private let maxQuestionCount: Int = 5
+  @State private var showsScrollToBottomButton: Bool = false
+  @FocusState private var isMessageFieldFocused: Bool
+  @Environment(\.dismiss) private var dismiss
+  @Environment(\.scenePhase) private var scenePhase
 
-  private let messages: [ChatMessage] = [
-    ChatMessage(
-      nickname: "조용한 두루미",
-      message: "모든 것이 하나로 흐르는 소리 같아요.",
-      time: "06:27",
-      isMyMessage: false,
-      profileImageName: nil
-    ),
-    ChatMessage(
-      nickname: "",
-      message: "저는 '쉼'이라는 단어가 떠올랐어요.",
-      time: "06:27",
-      isMyMessage: true,
-      profileImageName: nil
-    ),
-    ChatMessage(
-      nickname: "밤의 사슴",
-      message: "저는 강을 다시 읽고 싶어졌어요.",
-      time: "06:27",
-      isMyMessage: false,
-      profileImageName: nil
-    ),
-    ChatMessage(
-      nickname: "새벽 고양이",
-      message: "저도 강을 다시 읽고 싶어졌어요.",
-      time: "06:27",
-      isMyMessage: false,
-      profileImageName: nil
+  // MARK: - Init
+
+  init(viewModel: ChatViewModel) {
+    _viewModel = State(initialValue: viewModel)
+  }
+
+  init(chatroomId: Int, meetingId: Int) {
+    _viewModel = State(
+      initialValue: ChatViewModel(
+        chatroomId: chatroomId,
+        meetingId: meetingId,
+        chatService: ChatService.stubbed(),
+        socketService: ChatSocketService(
+          configuration: NetworkConfiguration(
+            baseURL: URL(string: "https://stub.bookbetween.local")!
+          )
+        )
+      )
     )
-  ]
+  }
 
   // MARK: - Body
 
@@ -130,75 +125,126 @@ struct ChatView: View {
     VStack(spacing: 0) {
       self.headerView
 
-      ScrollView(showsIndicators: false) {
-        ZStack(alignment: .top) {
-          VStack(spacing: 0) {
-            self.questionView
+      VStack(spacing: 0) {
+        self.questionView
 
+        ScrollViewReader { proxy in
+          ScrollView(showsIndicators: false) {
             VStack(spacing: Metric.messageListSpacing) {
-              ForEach(self.messages) { message in
+              ForEach(self.viewModel.messages) { message in
                 ChatMessageView(
-                  nickname: message.nickname,
-                  message: message.message,
-                  time: message.time,
-                  isMyMessage: message.isMyMessage,
-                  profileImageName: message.profileImageName
+                  nickname: message.senderNickname,
+                  message: message.content,
+                  time: Self.timeFormatter.string(from: message.createdAt),
+                  isMyMessage: message.senderMemberId == self.viewModel.myMemberId,
+                  profileImageName: nil
                 )
               }
+
+              Color.clear
+                .frame(height: 1)
+                .id(Identifier.bottomAnchor)
             }
             .padding(.top, Metric.messageListTopPadding)
             .padding(.horizontal, Metric.wideHorizontalPadding)
             .padding(.bottom, Metric.messageListBottomPadding)
           }
-
-          // ZStack의 나중 자식이라 항상 채팅 목록 위에 그려짐이 보장됨
-          if self.isQuestionExpanded {
-            self.expandedQuestionView
-              .padding(.horizontal, Metric.horizontalPadding)
-              .padding(.top, Metric.horizontalPadding)
+          .safeAreaInset(edge: .bottom) {
+            Color.clear
+              .frame(height: Metric.downButtonSize + Metric.downButtonBottomPadding)
           }
+          .onScrollGeometryChange(for: Bool.self) { geometry in
+            let distanceFromBottom = geometry.contentSize.height
+              - geometry.containerSize.height
+              - geometry.contentOffset.y
+            return distanceFromBottom > geometry.containerSize.height / 2
+          } action: { _, newValue in
+            self.showsScrollToBottomButton = newValue
+          }
+          .overlay(alignment: .bottomTrailing) {
+            if self.showsScrollToBottomButton {
+              Button {
+                withAnimation {
+                  proxy.scrollTo(Identifier.bottomAnchor, anchor: .bottom)
+                }
+              } label: {
+                Image("down_button")
+                  .resizable()
+                  .scaledToFit()
+                  .frame(width: Metric.downButtonSize, height: Metric.downButtonSize)
+                  .background(
+                    LinearGradient(
+                      stops: [
+                        Gradient.Stop(
+                          color: .white,
+                          location: Metric.softGradientStartLocation
+                        ),
+                        Gradient.Stop(
+                          color: .white.opacity(0.2),
+                          location: Metric.softGradientEndLocation
+                        )
+                      ],
+                      startPoint: .bottom,
+                      endPoint: .top
+                    )
+                  )
+                  .clipShape(RoundedRectangle(cornerRadius: Metric.downButtonCornerRadius))
+                  .shadow(
+                    color: Color(hex: Metric.downButtonShadowColorHex)
+                      .opacity(Metric.downButtonShadowOpacity),
+                    radius: Metric.downButtonShadowRadius,
+                    x: 0,
+                    y: Metric.downButtonShadowYOffset
+                  )
+              }
+              .buttonStyle(.plain)
+              .padding(.trailing, Metric.horizontalPadding + Metric.downButtonTrailingPadding)
+              .padding(.bottom, Metric.downButtonBottomPadding)
+            }
+          }
+          .onChange(of: self.viewModel.messages.count) { _, _ in
+            guard !self.showsScrollToBottomButton else { return }
+            withAnimation {
+              proxy.scrollTo(Identifier.bottomAnchor, anchor: .bottom)
+            }
+          }
+        }
+      }
+      .overlay(alignment: .top) {
+        if self.isQuestionExpanded {
+          self.expandedQuestionView
+            .padding(.horizontal, Metric.horizontalPadding)
+            .padding(.top, Metric.horizontalPadding)
         }
       }
 
       ChatBottomView(
         messageText: self.$messageText,
-        currentQuestionCount: self.currentQuestionCount,
-        maxQuestionCount: self.maxQuestionCount,
-        onRequestQuestionTap: {},
-        onSendTap: {}
+        isFocused: self.$isMessageFieldFocused,
+        currentQuestionCount: self.viewModel.voteCurrentCount,
+        maxQuestionCount: self.viewModel.voteRequiredCount,
+        onRequestQuestionTap: {
+          Task {
+            await self.viewModel.requestNewQuestion()
+          }
+        },
+        onSendTap: {
+          let text = self.messageText
+          self.messageText = ""
+          Task {
+            await self.viewModel.sendMessage(text)
+          }
+        },
+        isRequestQuestionDisabled:
+          self.viewModel.currentQuestion?.questionOrder == self.viewModel.maxQuestions
       )
-      .overlay(alignment: .topTrailing) {
-        Image("down_button")
-          .resizable()
-          .scaledToFit()
-          .frame(width: Metric.downButtonSize, height: Metric.downButtonSize)
-          .background(
-            LinearGradient(
-              stops: [
-                Gradient.Stop(color: .white, location: Metric.softGradientStartLocation),
-                Gradient.Stop(
-                  color: .white.opacity(0.2),
-                  location: Metric.softGradientEndLocation
-                )
-              ],
-              startPoint: .bottom,
-              endPoint: .top
-            )
-          )
-          .clipShape(RoundedRectangle(cornerRadius: Metric.downButtonCornerRadius))
-          .shadow(
-            color: Color(hex: Metric.downButtonShadowColorHex)
-              .opacity(Metric.downButtonShadowOpacity),
-            radius: Metric.downButtonShadowRadius,
-            x: 0,
-            y: Metric.downButtonShadowYOffset
-          )
-          .padding(.trailing, Metric.downButtonTrailingPadding)
-          .offset(y: -(Metric.downButtonSize + Metric.chatBottomBottomPadding))
-      }
       .padding(.horizontal, Metric.horizontalPadding)
-      .padding(.top, Metric.chatBottomTopPadding)
       .padding(.bottom, Metric.chatBottomBottomPadding)
+      .disabled(self.viewModel.isMeetingEnded)
+    }
+    .contentShape(Rectangle())
+    .onTapGesture {
+      self.isMessageFieldFocused = false
     }
     .background(
       LinearGradient(
@@ -210,6 +256,53 @@ struct ChatView: View {
     )
     .toolbar(.hidden, for: .navigationBar)
     .hideTabBar()
+    .task {
+      await self.viewModel.enterChatRoom()
+    }
+    .onChange(of: self.viewModel.questionUpdateTrigger) { _, _ in
+      withAnimation {
+        self.isQuestionExpanded = true
+      }
+    }
+    .onChange(of: self.scenePhase) { _, newPhase in
+      guard newPhase == .active else { return }
+      Task {
+        await self.viewModel.reconnect()
+      }
+    }
+    .onChange(of: self.messageText) { _, newValue in
+      if newValue.count > ChatViewModel.messageMaxLength {
+        self.messageText = String(newValue.prefix(ChatViewModel.messageMaxLength))
+      }
+    }
+    .alert(
+      "오류가 발생했습니다.",
+      isPresented: Binding(
+        get: { self.viewModel.errorMessage != nil },
+        set: { isPresented in
+          if !isPresented {
+            self.viewModel.errorMessage = nil
+          }
+        }
+      )
+    ) {
+      Button("확인", role: .cancel) {
+        self.viewModel.errorMessage = nil
+      }
+    } message: {
+      Text(self.viewModel.errorMessage ?? "")
+    }
+    .alert(
+      "모임이 종료되었습니다.",
+      isPresented: Binding(
+        get: { self.viewModel.isMeetingEnded },
+        set: { _ in }
+      )
+    ) {
+      Button("확인", role: .cancel) {
+        self.dismiss()
+      }
+    }
   }
 
   // MARK: - Header
@@ -222,14 +315,9 @@ struct ChatView: View {
           .tracking(Metric.bodyTextTracking)
           .lineSpacing(Metric.bodyTextLineSpacing)
           .foregroundStyle(.gray600)
-        HStack(spacing: 0) {
-          Text("싯다르타 · ")
-            .caption1RegularStyle
-            .foregroundStyle(.gray500)
-          Text("4/6")
-            .caption1RegularStyle
-            .foregroundStyle(.green500)
-        }
+        Text(self.viewModel.chatRoom?.bookTitle ?? "")
+          .caption1RegularStyle
+          .foregroundStyle(.gray500)
       }
 
       Spacer(minLength: Metric.headerSpacerMinLength)
@@ -241,7 +329,7 @@ struct ChatView: View {
             .renderingMode(.template)
             .scaledToFit()
             .frame(width: Metric.peopleIconWidth, height: Metric.peopleIconHeight)
-          Text("2/4")
+          Text("\(self.viewModel.appliedCount)/\(self.viewModel.chatRoom?.maxParticipants ?? 0)")
             .font(.caption1SemiBold)
             .tracking(Metric.captionTracking)
             .lineSpacing(Metric.captionLineSpacing)
@@ -249,7 +337,6 @@ struct ChatView: View {
         .foregroundStyle(.gray600)
         .frame(width: Metric.badgeWidth, height: Metric.badgeHeight)
         .background(
-          // linear-gradient(0deg, #FFF 83.67%, rgba(255, 255, 255, 0.20) 155.17%)
           LinearGradient(
             gradient: Gradient(stops: [
               .init(color: .white, location: Metric.softGradientStartLocation),
@@ -267,15 +354,21 @@ struct ChatView: View {
             .renderingMode(.template)
             .scaledToFit()
             .frame(width: Metric.timeIconSize, height: Metric.timeIconSize)
-          Text("24:13")
-            .font(.caption1SemiBold)
-            .tracking(Metric.captionTracking)
-            .lineSpacing(Metric.captionLineSpacing)
+          if let endsAt = self.viewModel.chatRoom?.endsAt, endsAt > Date.now {
+            Text(timerInterval: Date.now...endsAt, countsDown: true)
+              .font(.caption1SemiBold)
+              .tracking(Metric.captionTracking)
+              .lineSpacing(Metric.captionLineSpacing)
+          } else {
+            Text("00:00")
+              .font(.caption1SemiBold)
+              .tracking(Metric.captionTracking)
+              .lineSpacing(Metric.captionLineSpacing)
+          }
         }
         .foregroundStyle(.gray600)
         .frame(width: Metric.badgeWidth, height: Metric.badgeHeight)
         .background(
-          // linear-gradient(0deg, #FFF 83.67%, rgba(255, 255, 255, 0.20) 155.17%)
           LinearGradient(
             gradient: Gradient(stops: [
               .init(color: .white, location: Metric.softGradientStartLocation),
@@ -336,7 +429,6 @@ struct ChatView: View {
     .frame(height: Metric.questionRowHeight)
     .background(
       ZStack {
-        // 선형 100%: #FFFFFF 100% 0% -> #FFFFFF 40% 100%
         LinearGradient(
           stops: [
             Gradient.Stop(color: .white, location: 0),
@@ -345,7 +437,6 @@ struct ChatView: View {
           startPoint: .top,
           endPoint: .bottom
         )
-        // 선형 80%: #CCE1D2 100% 0% -> #CCE1D2 40% 100%
         LinearGradient(
           stops: [
             Gradient.Stop(color: Color(hex: Metric.questionGradientColorHex), location: 0),
@@ -405,7 +496,7 @@ struct ChatView: View {
       .padding(.leading, Metric.questionRowLeadingPadding)
       .frame(height: Metric.questionRowHeight)
 
-      Text("작품을 읽으며 가장 오래\n마음에 남은 장면은 무엇이었나요?")
+      Text(self.viewModel.currentQuestion?.content ?? "")
         .font(.body2Regular)
         .tracking(Metric.bodyTextTracking)
         .lineSpacing(Metric.bodyTextLineSpacing)
@@ -429,5 +520,5 @@ struct ChatView: View {
 }
 
 #Preview {
-  ChatView()
+  ChatView(chatroomId: 3, meetingId: 10)
 }

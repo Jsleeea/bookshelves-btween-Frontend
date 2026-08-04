@@ -18,6 +18,8 @@ struct BookBetweenApp: App {
     private let homeService: any HomeServiceProtocol
     private let meetingService: MeetingService
     private let notificationService: NotificationServiceProtocol
+    private let chatService: any ChatServiceProtocol
+    private let chatSocketService: any ChatSocketServiceProtocol
 
     init() {
         guard let kakaoNativeAppKey = Bundle.main.object(
@@ -84,6 +86,12 @@ struct BookBetweenApp: App {
         self.notificationService = NotificationService(
             configuration: authenticatedNetworkConfiguration
         )
+        self.chatService = ChatService(
+            configuration: authenticatedNetworkConfiguration
+        )
+        self.chatSocketService = ChatSocketService(
+            configuration: authenticatedNetworkConfiguration
+        )
     }
 
     var body: some Scene {
@@ -95,7 +103,9 @@ struct BookBetweenApp: App {
                 bookService: bookService,
                 homeService: homeService,
                 meetingService: meetingService,
-                notificationService: notificationService
+                notificationService: notificationService,
+                chatService: chatService,
+                chatSocketService: chatSocketService
             )
                 .onOpenURL { url in
                     if AuthApi.isKakaoTalkLoginUrl(url) {

@@ -8,20 +8,35 @@ import SwiftUI
 
 // MARK: - 독서 통계 상세 화면
 
+@MainActor
 struct ReadingStatisticsView: View {
     // MARK: - 속성
 
     @Environment(\.dismiss) private var dismiss
+    @State private var viewModel: ReadingStatisticsViewModel
 
     let joinedAt: Date
 
     // MARK: - 초기화
 
     init(
+        viewModel: ReadingStatisticsViewModel,
+        joinedAt: Date
+    ) {
+        _viewModel = State(initialValue: viewModel)
+        self.joinedAt = joinedAt
+    }
+
+    init(
         joinedAt: Date = Calendar.current.date(
             from: DateComponents(year: 2026, month: 3, day: 1)
         ) ?? .now
     ) {
+        _viewModel = State(
+            initialValue: ReadingStatisticsViewModel(
+                bookService: BookService.stubbed()
+            )
+        )
         self.joinedAt = joinedAt
     }
 
@@ -39,13 +54,16 @@ struct ReadingStatisticsView: View {
                     }
 
                     ReadingStatisticsSummaryView(
-                        readBookCount: 24,
-                        reviewCount: 17,
-                        averageRating: 4.0
+                        readBookCount: viewModel.completedBookCount,
+                        reviewCount: viewModel.reviewCount,
+                        averageRating: viewModel.averageRating
                     )
                     .padding(.horizontal, 20)
 
-                    ReadingRatioCardView(joinedAt: joinedAt)
+                    ReadingRatioCardView(
+                        viewModel: viewModel,
+                        joinedAt: joinedAt
+                    )
                         .padding(.horizontal, 30)
                         .padding(.top, 16)
                 }
@@ -53,6 +71,13 @@ struct ReadingStatisticsView: View {
         }
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
+        .task {
+            guard viewModel.statistics == nil else {
+                return
+            }
+
+            await viewModel.fetchStatistics()
+        }
     }
 }
 
@@ -90,58 +115,18 @@ private struct ReadingStatisticsHeaderView: View {
 private struct ReadingRatioCardView: View {
     // MARK: - 속성
 
+    let viewModel: ReadingStatisticsViewModel
     let joinedAt: Date
 
-    @State private var selectedMonth: Date
     @State private var isInfoVisible = false
 
-    // MARK: - 목업 데이터
-
-    private let readingRatios = [
-        ReadingRatio(
-            name: "한국 문학",
-            bookCount: 14,
-            percentage: 60,
-            color: Color(red: 0.24, green: 0.4, blue: 0.29),
-            gradientEndColor: Color(red: 0.64, green: 0.77, blue: 0.69),
-            labelColor: .white
-        ),
-        ReadingRatio(
-            name: "영미문학",
-            bookCount: 6,
-            percentage: 25,
-            color: Color(red: 0.69, green: 0.79, blue: 0.7),
-            gradientEndColor: Color(red: 0.85, green: 0.9, blue: 0.86),
-            labelColor: Color.gray700
-        ),
-        ReadingRatio(
-            name: "심리학",
-            bookCount: 4,
-            percentage: 15,
-            color: Color(red: 0.87, green: 0.92, blue: 0.99),
-            gradientEndColor: Color(red: 0.96, green: 0.98, blue: 1),
-            labelColor: Color.gray700
-        ),
-        ReadingRatio(
-            name: "기타",
-            bookCount: 0,
-            percentage: 0,
-            color: Color(red: 0.93, green: 0.92, blue: 0.9),
-            gradientEndColor: Color(red: 0.98, green: 0.97, blue: 0.96),
-            labelColor: Color.gray700
-        )
-    ]
-
-    // MARK: - 초기화
-
-    init(joinedAt: Date) {
-        self.joinedAt = joinedAt
-        _selectedMonth = State(
-            initialValue: Calendar.current.dateInterval(
-                of: .month,
-                for: joinedAt
-            )?.start ?? joinedAt
-        )
+    private var readingRatios: [ReadingRatio] {
+        viewModel.categoryStatistics.enumerated().map { index, statistics in
+            ReadingRatio(
+                statistics: statistics,
+                colorIndex: index
+            )
+        }
     }
 
     // MARK: - 화면 구성
@@ -212,7 +197,12 @@ private struct ReadingRatioCardView: View {
 
             Spacer()
 
-            monthSelectionMenu
+            MonthYearPickerView(
+                selectedYear: selectedYear,
+                selectedMonth: selectedMonth,
+                availableYears: selectableYears,
+                includesAllOption: false
+            )
         }
     }
 
@@ -233,49 +223,6 @@ private struct ReadingRatioCardView: View {
             }
             .shadow(color: Color(red: 0.17, green: 0.16, blue: 0.16).opacity(0.1), radius: 2, x: 0, y: 4)
 
-    }
-
-    // MARK: - 연월 선택 메뉴
-
-    private var monthSelectionMenu: some View {
-        Menu {
-            ForEach(selectableYears, id: \.self) { year in
-                Menu {
-                    ForEach(months(in: year), id: \.self) { date in
-                        Button {
-                            selectedMonth = date
-                        } label: {
-                            let month = Calendar.current.component(.month, from: date)
-
-                            if Calendar.current.isDate(date, equalTo: selectedMonth, toGranularity: .month) {
-                                Label("\(month)월", systemImage: "checkmark")
-                            } else {
-                                Text("\(month)월")
-                            }
-                        }
-                    }
-                } label: {
-                    Text(verbatim: "\(year)년")
-                }
-            }
-        } label: {
-            HStack(spacing: 5) {
-                Text(selectedMonthTitle)
-                    .caption2RegularStyle
-
-                Image(systemName: "chevron.down")
-                    .font(.system(size: 8, weight: .medium))
-            }
-            .foregroundStyle(Color.gray800)
-            .padding(.horizontal, 6.72)
-            .frame(height: 20)
-            .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 7))
-            .overlay {
-                RoundedRectangle(cornerRadius: 7)
-                    .stroke(Color.gray200, lineWidth: 0.5)
-            }
-        }
     }
 
     // MARK: - 도넛 차트
@@ -359,51 +306,63 @@ private struct ReadingRatioCardView: View {
 
     // MARK: - 날짜 계산
 
-    private var selectedMonthTitle: String {
-        let components = Calendar.current.dateComponents(
-            [.year, .month],
-            from: selectedMonth
+    private var selectedYear: Binding<Int> {
+        Binding(
+            get: {
+                Calendar.current.component(
+                    .year,
+                    from: viewModel.selectedMonth
+                )
+            },
+            set: { year in
+                selectMonth(
+                    year: year,
+                    month: Calendar.current.component(
+                        .month,
+                        from: viewModel.selectedMonth
+                    )
+                )
+            }
         )
-
-        return "\(components.year ?? 0)년 \(components.month ?? 0)월"
     }
 
-    private var selectableMonths: [Date] {
-        let calendar = Calendar.current
-        let joinedMonth = calendar.dateInterval(of: .month, for: joinedAt)?.start ?? joinedAt
-        let currentMonth = calendar.dateInterval(of: .month, for: .now)?.start ?? .now
-        let firstMonth = min(joinedMonth, currentMonth)
-
-        var months: [Date] = []
-        var month = firstMonth
-
-        while month <= currentMonth {
-            months.append(month)
-
-            guard let nextMonth = calendar.date(byAdding: .month, value: 1, to: month) else {
-                break
+    private var selectedMonth: Binding<Int> {
+        Binding(
+            get: {
+                Calendar.current.component(
+                    .month,
+                    from: viewModel.selectedMonth
+                )
+            },
+            set: { month in
+                selectMonth(
+                    year: Calendar.current.component(
+                        .year,
+                        from: viewModel.selectedMonth
+                    ),
+                    month: month
+                )
             }
-
-            month = nextMonth
-        }
-
-        return months
+        )
     }
 
     private var selectableYears: [Int] {
-        Array(
-            Set(
-                selectableMonths.compactMap {
-                    Calendar.current.dateComponents([.year], from: $0).year
-                }
-            )
-        )
-        .sorted()
+        let calendar = Calendar.current
+        let joinedYear = calendar.component(.year, from: joinedAt)
+        let currentYear = calendar.component(.year, from: .now)
+
+        return Array(min(joinedYear, currentYear)...currentYear)
     }
 
-    private func months(in year: Int) -> [Date] {
-        selectableMonths.filter {
-            Calendar.current.component(.year, from: $0) == year
+    private func selectMonth(year: Int, month: Int) {
+        guard let date = Calendar.current.date(
+            from: DateComponents(year: year, month: month, day: 1)
+        ) else {
+            return
+        }
+
+        Task {
+            await viewModel.selectMonth(date)
         }
     }
 }
@@ -417,6 +376,34 @@ private struct ReadingRatio: Identifiable {
     let color: Color
     let gradientEndColor: Color
     let labelColor: Color
+
+    init(
+        statistics: ReadingCategoryStatisticsDTO,
+        colorIndex: Int
+    ) {
+        self.name = statistics.name
+        self.bookCount = statistics.count
+        self.percentage = statistics.percentage
+
+        switch colorIndex % 4 {
+        case 0:
+            self.color = Color(red: 0.24, green: 0.4, blue: 0.29)
+            self.gradientEndColor = Color(red: 0.64, green: 0.77, blue: 0.69)
+            self.labelColor = .white
+        case 1:
+            self.color = Color(red: 0.69, green: 0.79, blue: 0.7)
+            self.gradientEndColor = Color(red: 0.85, green: 0.9, blue: 0.86)
+            self.labelColor = Color.gray700
+        case 2:
+            self.color = Color(red: 0.87, green: 0.92, blue: 0.99)
+            self.gradientEndColor = Color(red: 0.96, green: 0.98, blue: 1)
+            self.labelColor = Color.gray700
+        default:
+            self.color = Color(red: 0.93, green: 0.92, blue: 0.9)
+            self.gradientEndColor = Color(red: 0.98, green: 0.97, blue: 0.96)
+            self.labelColor = Color.gray700
+        }
+    }
 
     var id: String { name }
 

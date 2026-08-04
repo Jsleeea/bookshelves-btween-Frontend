@@ -19,6 +19,8 @@ struct AppRootView: View {
     private let homeService: any HomeServiceProtocol
     private let meetingService: (any MeetingServiceProtocol)?
     private let notificationService: any NotificationServiceProtocol
+    private let chatService: any ChatServiceProtocol
+    private let chatSocketService: (any ChatSocketServiceProtocol)?
 
     init(
         loginViewModel: LoginViewModel,
@@ -28,7 +30,9 @@ struct AppRootView: View {
         homeService: any HomeServiceProtocol = HomeService.stubbed(),
         meetingService: (any MeetingServiceProtocol)? = nil,
         notificationService: any NotificationServiceProtocol =
-            NotificationService.stubbed()
+            NotificationService.stubbed(),
+        chatService: any ChatServiceProtocol = ChatService.stubbed(),
+        chatSocketService: (any ChatSocketServiceProtocol)? = nil
     ) {
         _loginViewModel = State(initialValue: loginViewModel)
         _accountSetupViewModel = State(initialValue: accountSetupViewModel)
@@ -37,6 +41,8 @@ struct AppRootView: View {
         self.homeService = homeService
         self.meetingService = meetingService
         self.notificationService = notificationService
+        self.chatService = chatService
+        self.chatSocketService = chatSocketService
     }
 
     var body: some View {
@@ -98,19 +104,78 @@ struct AppRootView: View {
                 homeService: homeService,
                 meetingService: meetingService,
                 notificationService: notificationService,
+                chatService: chatService,
+                chatSocketService: chatSocketService,
                 onLogout: {
                     try await loginViewModel.logout()
+                },
+                onWithdraw: {
+                    try await withdrawAccount()
                 }
             )
 
         case .success(.accountRecovery):
-            AccountRecoveryView(
-                viewModel: loginViewModel
-            )
+            accountRecoveryContent
 
         case .idle, .loading, .failure:
             LoginView(viewModel: loginViewModel)
         }
+    }
+
+    private var accountRecoveryContent: some View {
+        ZStack {
+            LoginView(viewModel: loginViewModel)
+                .allowsHitTesting(false)
+
+            Color.black.opacity(0.3)
+                .ignoresSafeArea()
+
+            AccountRecoveryModalView(
+                onCancel: {
+                    guard !loginViewModel.isRecoveringAccount else {
+                        return
+                    }
+
+                    loginViewModel.cancelAccountRecovery()
+                },
+                onConfirm: {
+                    Task {
+                        await loginViewModel.restoreAccount()
+                    }
+                }
+            )
+        }
+        .alert(
+            "계정을 복구하지 못했습니다.",
+            isPresented: Binding(
+                get: {
+                    loginViewModel.accountRecoveryErrorMessage != nil
+                },
+                set: { isPresented in
+                    if !isPresented {
+                        loginViewModel.accountRecoveryErrorMessage = nil
+                    }
+                }
+            )
+        ) {
+            Button("확인", role: .cancel) {
+                loginViewModel.accountRecoveryErrorMessage = nil
+            }
+        } message: {
+            Text(
+                loginViewModel.accountRecoveryErrorMessage
+                    ?? "다시 시도해주세요."
+            )
+        }
+    }
+
+    private func withdrawAccount() async throws {
+        guard let memberService else {
+            throw NetworkError.emptyResult
+        }
+
+        _ = try await memberService.withdrawMyAccount()
+        loginViewModel.completeAccountWithdrawal()
     }
 }
 

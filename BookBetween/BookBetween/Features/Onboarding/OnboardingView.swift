@@ -23,12 +23,14 @@ struct OnboardingView: View {
           .frame(width: geometry.size.width, height: geometry.size.height)
 
         VStack(spacing: 0) {
-          OnboardingBackButton {
-            self.viewModel.backButtonDidTap()
+          if self.viewModel.currentPageIndex > 0 {
+            OnboardingBackButton {
+              self.viewModel.backButtonDidTap()
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 21)
+            .padding(.top, 16)
           }
-          .frame(maxWidth: .infinity, alignment: .leading)
-          .padding(.horizontal, 21)
-          .padding(.top, 16)
 
           Spacer()
 
@@ -48,8 +50,14 @@ struct OnboardingView: View {
           .padding(.horizontal, 29)
           .padding(.bottom, 24)
 
-          OnboardingSkipButton {
-            self.viewModel.skipButtonDidTap()
+          if !self.viewModel.isLastPage {
+            OnboardingSkipButton {
+              self.onComplete()
+            }
+          } else {
+            OnboardingSkipButton {}
+              .hidden()
+              .allowsHitTesting(false)
           }
         }
         .frame(width: geometry.size.width, height: geometry.size.height)

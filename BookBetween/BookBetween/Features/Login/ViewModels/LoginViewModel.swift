@@ -178,6 +178,11 @@ final class LoginViewModel {
         state = .idle
     }
 
+    func completeAccountWithdrawal() {
+        clearLocalSession()
+        printSessionTokenDeletionStatus()
+    }
+
     func reissueTokens() async throws {
         if let reissueTask {
             return try await reissueTask.value

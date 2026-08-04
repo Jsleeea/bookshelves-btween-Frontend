@@ -44,6 +44,7 @@ struct MyLibraryBookCardView: View {
 				BookRecordDetailView(
                     record: record,
                     service: bookService,
+                    loadsRemoteDetail: true,
                     onRecordSaved: onRecordSaved
                 )
 			} label: {

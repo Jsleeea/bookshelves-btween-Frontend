@@ -22,6 +22,16 @@ protocol BookServiceProtocol {
         rating: Double?,
         memo: String?
     ) async throws
+    func fetchMemberBooks(status: String, page: Int, size: Int) async throws -> [UserBookRecord]
+    func deleteMemberBook(isbn: String) async throws
+    func fetchReadingStatistics(
+        year: Int?,
+        month: Int?
+    ) async throws -> ReadingStatisticsResultDTO
+    func fetchReadingCalendar(
+        year: Int,
+        month: Int
+    ) async throws -> ReadingCalendarResultDTO
 }
 
 final class BookService: BookServiceProtocol {
@@ -159,6 +169,109 @@ final class BookService: BookServiceProtocol {
                 _ = try response.decodePayload(
                     MemberBookUpsertResultDTO.self
                 )
+            } catch let error as MoyaError {
+                throw NetworkError.transport(error)
+            }
+        }
+    }
+
+    func fetchMemberBooks(status: String, page: Int, size: Int) async throws -> [UserBookRecord] {
+        try await requestExecutor.execute {
+            do {
+                let response = try await provider.requestAsync(
+                    BookTarget(
+                        baseURL: baseURL,
+                        endpoint: .memberBooks(status: status, page: page, size: size)
+                    )
+                )
+                return try response.decodePayload(MemberBooksListDTO.self).toDomain()
+            } catch let error as MoyaError {
+                throw NetworkError.transport(error)
+            }
+        }
+    }
+
+    func deleteMemberBook(isbn: String) async throws {
+        try await requestExecutor.execute {
+            do {
+                let response = try await provider.requestAsync(
+                    BookTarget(
+                        baseURL: baseURL,
+                        endpoint: .deleteMemberBook(isbn: isbn)
+                    )
+                )
+                try response.validateAPIResponse()
+            } catch let error as MoyaError {
+                throw NetworkError.transport(error)
+            }
+        }
+    }
+
+    func fetchReadingStatistics(
+        year: Int? = nil,
+        month: Int? = nil
+    ) async throws -> ReadingStatisticsResultDTO {
+        try await requestExecutor.execute {
+            do {
+                let response = try await provider.requestAsync(
+                    BookTarget(
+                        baseURL: baseURL,
+                        endpoint: .readingStatistics(
+                            year: year,
+                            month: month
+                        )
+                    )
+                )
+                let result = try response.decodePayload(
+                    ReadingStatisticsResultDTO.self
+                )
+
+                #if DEBUG
+                print("""
+                [ReadingStatistics]
+                URL: \(response.request?.url?.absoluteString ?? "확인 불가")
+                HTTP: \(response.statusCode)
+                year: \(result.year), month: \(result.month)
+                """)
+                #endif
+
+                return result
+            } catch let error as MoyaError {
+                throw NetworkError.transport(error)
+            }
+        }
+    }
+
+    func fetchReadingCalendar(
+        year: Int,
+        month: Int
+    ) async throws -> ReadingCalendarResultDTO {
+        try await requestExecutor.execute {
+            do {
+                let response = try await provider.requestAsync(
+                    BookTarget(
+                        baseURL: baseURL,
+                        endpoint: .readingCalendar(
+                            year: year,
+                            month: month
+                        )
+                    )
+                )
+                let result = try response.decodePayload(
+                    ReadingCalendarResultDTO.self
+                )
+
+                #if DEBUG
+                print("""
+                [ReadingCalendar]
+                URL: \(response.request?.url?.absoluteString ?? "확인 불가")
+                HTTP: \(response.statusCode)
+                year: \(result.year), month: \(result.month)
+                daysCount: \(result.days.count)
+                """)
+                #endif
+
+                return result
             } catch let error as MoyaError {
                 throw NetworkError.transport(error)
             }

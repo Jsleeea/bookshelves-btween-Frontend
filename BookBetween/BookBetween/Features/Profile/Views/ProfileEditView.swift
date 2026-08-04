@@ -16,9 +16,13 @@ struct ProfileEditView: View {
     @State private var saveErrorMessage: String?
     @State private var isLoggingOut = false
     @State private var logoutErrorMessage: String?
+    @State private var isWithdrawing = false
+    @State private var withdrawalErrorMessage: String?
+    @State private var activeModal: ProfileEditModal?
 
     private let onSave: (MemberProfileUpdateRequestDTO) async throws -> Void
     private let onLogout: () async throws -> Void
+    private let onWithdraw: () async throws -> Void
     private let genreCategoryIDs: [String: Int] = [
         "총류": 1,
         "철학": 2,
@@ -37,7 +41,8 @@ struct ProfileEditView: View {
         onSave: @escaping (
             MemberProfileUpdateRequestDTO
         ) async throws -> Void = { _ in },
-        onLogout: @escaping () async throws -> Void = {}
+        onLogout: @escaping () async throws -> Void = {},
+        onWithdraw: @escaping () async throws -> Void = {}
     ) {
         let backgroundColorCode = ProfileBackgroundColorCode(
             rawValue: profile?.profileBackgroundColor ?? ""
@@ -67,6 +72,7 @@ struct ProfileEditView: View {
         )
         self.onSave = onSave
         self.onLogout = onLogout
+        self.onWithdraw = onWithdraw
     }
 
     var body: some View {
@@ -106,18 +112,74 @@ struct ProfileEditView: View {
                         },
                         isSaving: isSaving,
                         onLogout: {
-                            Task {
-                                await logout()
-                            }
+                            activeModal = .logoutConfirmation
                         },
                         onWithdraw: {
-                            // 회원 탈퇴 기능 연결 시 동작 추가
+                            activeModal = .withdrawalConfirmation
                         }
                     )
                 }
                 .padding(.bottom, 40)
             }
+
+            if let activeModal {
+                Color.black.opacity(0.3)
+                    .ignoresSafeArea()
+
+                Group {
+                    switch activeModal {
+                    case .saveCompleted:
+                        SuccessModalView(
+                            title: "저장되었습니다"
+                        ) {
+                            self.activeModal = nil
+                            dismiss()
+                        }
+
+                    case .logoutConfirmation:
+                        AccountActionModalView(
+                            title: "로그아웃 하시겠습니까?",
+                            description: "해당 기기에서 로그아웃 됩니다.",
+                            confirmTitle: "로그아웃",
+                            onCancel: {
+                                guard !isLoggingOut else {
+                                    return
+                                }
+
+                                self.activeModal = nil
+                            },
+                            onConfirm: {
+                                Task {
+                                    await logout()
+                                }
+                            }
+                        )
+
+                    case .withdrawalConfirmation:
+                        AccountActionModalView(
+                            title: "탈퇴하시겠습니까?",
+                            description: "탈퇴하기 클릭 후 30일이 지나면\n계정 복구가 불가능합니다.",
+                            confirmTitle: "탈퇴하기",
+                            onCancel: {
+                                guard !isWithdrawing else {
+                                    return
+                                }
+
+                                self.activeModal = nil
+                            },
+                            onConfirm: {
+                                Task {
+                                    await withdrawAccount()
+                                }
+                            }
+                        )
+                    }
+                }
+                .transition(.scale.combined(with: .opacity))
+                .zIndex(1)
+            }
         }
+        .animation(.easeInOut(duration: 0.2), value: activeModal)
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
         .alert(
@@ -154,6 +216,23 @@ struct ProfileEditView: View {
         } message: {
             Text(logoutErrorMessage ?? "")
         }
+        .alert(
+            "회원 탈퇴에 실패했습니다.",
+            isPresented: Binding(
+                get: { withdrawalErrorMessage != nil },
+                set: { isPresented in
+                    if !isPresented {
+                        withdrawalErrorMessage = nil
+                    }
+                }
+            )
+        ) {
+            Button("확인", role: .cancel) {
+                withdrawalErrorMessage = nil
+            }
+        } message: {
+            Text(withdrawalErrorMessage ?? "")
+        }
     }
 
     private func saveProfile() async {
@@ -175,7 +254,7 @@ struct ProfileEditView: View {
 
         do {
             try await onSave(request)
-            dismiss()
+            activeModal = .saveCompleted
         } catch {
             saveErrorMessage = error.localizedDescription
         }
@@ -191,10 +270,35 @@ struct ProfileEditView: View {
 
         do {
             try await onLogout()
+            activeModal = nil
         } catch {
+            activeModal = nil
             logoutErrorMessage = error.localizedDescription
         }
     }
+
+    private func withdrawAccount() async {
+        guard !isWithdrawing else {
+            return
+        }
+
+        isWithdrawing = true
+        defer { isWithdrawing = false }
+
+        do {
+            try await onWithdraw()
+            activeModal = nil
+        } catch {
+            activeModal = nil
+            withdrawalErrorMessage = error.localizedDescription
+        }
+    }
+}
+
+private enum ProfileEditModal: Equatable {
+    case saveCompleted
+    case logoutConfirmation
+    case withdrawalConfirmation
 }
 
 // MARK: - 상단 헤더

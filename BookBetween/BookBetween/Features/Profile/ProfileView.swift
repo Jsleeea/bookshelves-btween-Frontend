@@ -11,23 +11,37 @@ struct ProfileView: View {
     // MARK: - 속성
 
     @State private var viewModel: ProfileViewModel
+    @State private var statisticsViewModel: ReadingStatisticsViewModel
+    @State private var isReadingStatisticsPresented = false
     private let onLogout: () async throws -> Void
+    private let onWithdraw: () async throws -> Void
 
     private let weekdays = ["일", "월", "화", "수", "목", "금", "토"]
 
     init(
-        onLogout: @escaping () async throws -> Void = {}
+        onLogout: @escaping () async throws -> Void = {},
+        onWithdraw: @escaping () async throws -> Void = {}
     ) {
         _viewModel = State(initialValue: ProfileViewModel())
+        _statisticsViewModel = State(
+            initialValue: ReadingStatisticsViewModel(
+                bookService: BookService.stubbed()
+            )
+        )
         self.onLogout = onLogout
+        self.onWithdraw = onWithdraw
     }
 
     init(
         viewModel: ProfileViewModel,
-        onLogout: @escaping () async throws -> Void
+        statisticsViewModel: ReadingStatisticsViewModel,
+        onLogout: @escaping () async throws -> Void,
+        onWithdraw: @escaping () async throws -> Void
     ) {
         _viewModel = State(initialValue: viewModel)
+        _statisticsViewModel = State(initialValue: statisticsViewModel)
         self.onLogout = onLogout
+        self.onWithdraw = onWithdraw
     }
 
     private var displayedMonthTitle: String {
@@ -37,6 +51,14 @@ struct ProfileView: View {
                 .year()
                 .month(.wide)
         )
+    }
+
+    private var joinedAt: Date {
+        Calendar.current.date(
+            byAdding: .day,
+            value: -max((viewModel.profile?.joinedDays ?? 1) - 1, 0),
+            to: .now
+        ) ?? .now
     }
 
     // MARK: - 화면 구성
@@ -52,11 +74,11 @@ struct ProfileView: View {
                     .padding(.bottom, 50)
 
                 ReadingStatisticsSummaryView(
-                    readBookCount: 24,
-                    reviewCount: 17,
-                    averageRating: 4.0
+                    readBookCount: statisticsViewModel.completedBookCount,
+                    reviewCount: statisticsViewModel.reviewCount,
+                    averageRating: statisticsViewModel.averageRating
                 ) {
-                    // 독서 통계 상세 화면 연결 시 동작 추가해야함
+                    isReadingStatisticsPresented = true
                 }
                     .padding(.bottom, 16)
 
@@ -74,29 +96,58 @@ struct ProfileView: View {
         .background(Color.beige100)
         .toolbar(.hidden, for: .navigationBar)
         .overlay {
-            if viewModel.isLoading {
+            if viewModel.isLoading
+                || viewModel.isCalendarLoading
+                || statisticsViewModel.isLoading {
                 ProgressView()
             }
         }
         .task {
-            await viewModel.fetchMyProfile()
+            async let profileRequest: Void = viewModel.fetchMyProfile()
+            async let statisticsRequest: Void = statisticsViewModel.fetchStatistics()
+            async let calendarRequest: Void = viewModel.fetchReadingCalendar()
+
+            _ = await (
+                profileRequest,
+                statisticsRequest,
+                calendarRequest
+            )
+        }
+        .navigationDestination(isPresented: $isReadingStatisticsPresented) {
+            ReadingStatisticsView(
+                viewModel: statisticsViewModel,
+                joinedAt: joinedAt
+            )
         }
         .alert(
-            "내 정보를 불러오지 못했습니다.",
+            "마이페이지 정보를 불러오지 못했습니다.",
             isPresented: Binding(
-                get: { viewModel.errorMessage != nil },
+                get: {
+                    viewModel.errorMessage != nil
+                        || viewModel.calendarErrorMessage != nil
+                        || statisticsViewModel.errorMessage != nil
+                },
                 set: { isPresented in
                     if !isPresented {
                         viewModel.errorMessage = nil
+                        viewModel.calendarErrorMessage = nil
+                        statisticsViewModel.errorMessage = nil
                     }
                 }
             )
         ) {
             Button("확인", role: .cancel) {
                 viewModel.errorMessage = nil
+                viewModel.calendarErrorMessage = nil
+                statisticsViewModel.errorMessage = nil
             }
         } message: {
-            Text(viewModel.errorMessage ?? "")
+            Text(
+                viewModel.errorMessage
+                    ?? viewModel.calendarErrorMessage
+                    ?? statisticsViewModel.errorMessage
+                    ?? ""
+            )
         }
     }
 
@@ -197,7 +248,8 @@ struct ProfileView: View {
                         request: request
                     )
                 },
-                onLogout: onLogout
+                onLogout: onLogout,
+                onWithdraw: onWithdraw
             )
         } label: {
             HStack(spacing: 4) {
@@ -278,20 +330,45 @@ struct ProfileView: View {
 
         return LazyVGrid(columns: columns, spacing: 0) {
             ForEach(viewModel.calendarDays) { calendarDay in
-                Text("\(calendarDay.day)")
-                    .body2SemiBoldStyle
-                    .foregroundStyle(
-                        calendarDay.isCurrentMonth ? Color.gray800 : Color.gray300
-                    )
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                    .padding(.top, 5)
-                    .padding(.leading, 8)
-                    .frame(height: 60)
-                    .overlay {
-                        Rectangle()
-                            .stroke(Color.gray300, lineWidth: 0.5)
-                    }
+                calendarCell(for: calendarDay)
             }
+        }
+    }
+
+    private func calendarCell(for calendarDay: CalendarDay) -> some View {
+        let readingDay = viewModel.readingCalendarDay(
+            for: calendarDay.date
+        )
+
+        return ZStack(alignment: .topLeading) {
+            Text("\(calendarDay.day)")
+                .caption2RegularStyle
+                .foregroundStyle(
+                    calendarDay.isCurrentMonth
+                        ? Color.gray800
+                        : Color.gray300
+                )
+                .padding(.top, 5)
+                .padding(.leading, 8)
+
+            if calendarDay.isCurrentMonth,
+               let readingDay {
+                BookCoverImage(
+                    coverImageUrl: readingDay.coverImageUrl,
+                    placeholderImageName: "book_cover_mock"
+                )
+                .frame(width: 45, height: 55)
+                .clipShape(RoundedRectangle(cornerRadius: 2))
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.top, 21)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .frame(height: 80)
+        .clipped()
+        .overlay {
+            Rectangle()
+                .stroke(Color.gray300, lineWidth: 0.5)
         }
     }
 }

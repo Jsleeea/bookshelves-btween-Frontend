@@ -31,6 +31,8 @@ final class BookClubViewModel {
 	var selectedTab: BookClubTab = .myMeetings
 	var meetingService: (any MeetingServiceProtocol)?
     private let bookService: (any BookServiceProtocol)?
+    var chatService: (any ChatServiceProtocol)?
+    var chatSocketService: (any ChatSocketServiceProtocol)?
 	var searchText: String = ""
 	var participatingMeetings: [BookMeeting] = []
 	var createdMeetings: [BookMeeting] = []
@@ -56,18 +58,16 @@ final class BookClubViewModel {
 	}
 
 	var filteredCreatedMeetings: [BookMeeting] {
-		let meetings: [BookMeeting]
 		if meetingService == nil {
-			meetings = createdMeetings.filter { meeting in
+			let meetings = createdMeetings.filter { meeting in
 				let components = Calendar.current.dateComponents([.year, .month], from: meeting.meetingDate)
 				let yearMatch = selectedYear == 0 || components.year == selectedYear
 				let monthMatch = selectedMonth == 0 || components.month == selectedMonth
 				return yearMatch && monthMatch
 			}
-		} else {
-			meetings = createdMeetings
+			return sortedMeetings(meetings)
 		}
-		return sortedMeetings(meetings)
+		return sortedMeetings(createdMeetings)
 	}
 
 	private func sortedMeetings(_ meetings: [BookMeeting]) -> [BookMeeting] {
@@ -89,7 +89,7 @@ final class BookClubViewModel {
 		}
 	}
 
-	var allBooks: [Book] = [
+	private let allBooks: [Book] = [
 		Book(id: 101, title: "혼모노", author: "성해나", publisher: "창비", kdcName: "한국소설"),
 		Book(id: 102, title: "빛은 얼마나 깊이 스미는가", author: "김초엽", publisher: "창비", kdcName: "SF소설"),
 		Book(id: 103, title: "프로젝트 헤일메리", author: "앤디 위어", publisher: "알에이치코리아", kdcName: "SF소설"),
@@ -121,9 +121,16 @@ final class BookClubViewModel {
 
 	// MARK: - Init
 
-	init(meetingService: (any MeetingServiceProtocol)? = nil, bookService: (any BookServiceProtocol)? = nil) {
+	init(
+		meetingService: (any MeetingServiceProtocol)? = nil,
+		bookService: (any BookServiceProtocol)? = nil,
+		chatService: (any ChatServiceProtocol)? = nil,
+		chatSocketService: (any ChatSocketServiceProtocol)? = nil
+	) {
 		self.meetingService = meetingService
         self.bookService = bookService
+        self.chatService = chatService
+        self.chatSocketService = chatSocketService
 
         guard meetingService == nil else { return }
 
@@ -269,7 +276,7 @@ final class BookClubViewModel {
 
 		if let svc = bookService {
 			do {
-				let page = try await svc.searchBooks(query: query, page: 1, size: 20)
+				let page = try await svc.searchBooks(query: query, page: 1, size: 20, saveRecent: false)
 				let items = page.books.filter { $0.isSaveable }.map { $0.book }
 				var seenIsbns = Set<String>()
 				var seenTitles = Set<String>()

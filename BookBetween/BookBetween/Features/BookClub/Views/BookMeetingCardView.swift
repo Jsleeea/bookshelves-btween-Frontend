@@ -5,11 +5,22 @@ struct BookMeetingCardView: View {
     let service: (any MeetingServiceProtocol)?
     let isParticipant: Bool
     let onParticipated: (() -> Void)?
+    let chatService: (any ChatServiceProtocol)?
+    let chatSocketService: (any ChatSocketServiceProtocol)?
 
-    init(meeting: BookMeeting, service: (any MeetingServiceProtocol)? = nil, isParticipant: Bool = false, onParticipated: (() -> Void)? = nil) {
+    init(
+        meeting: BookMeeting,
+        service: (any MeetingServiceProtocol)? = nil,
+        isParticipant: Bool = false,
+        chatService: (any ChatServiceProtocol)? = nil,
+        chatSocketService: (any ChatSocketServiceProtocol)? = nil,
+        onParticipated: (() -> Void)? = nil
+    ) {
         self.meeting = meeting
         self.service = service
         self.isParticipant = isParticipant
+        self.chatService = chatService
+        self.chatSocketService = chatSocketService
         self.onParticipated = onParticipated
     }
 
@@ -176,7 +187,18 @@ struct BookMeetingCardView: View {
         case .completed:
             BookMeetingResultView(meeting: meeting, service: service)
         case .inProgress:
-            ChatView()
+            if let chatService, let chatSocketService {
+                ChatView(
+                    viewModel: ChatViewModel(
+                        chatroomId: meeting.chatroomId,
+                        meetingId: meeting.id,
+                        chatService: chatService,
+                        socketService: chatSocketService
+                    )
+                )
+            } else {
+                ChatView(chatroomId: meeting.chatroomId, meetingId: meeting.id)
+            }
         default:
             BookMeetingDetailView(meeting: meeting, service: service, isParticipant: isParticipant, onParticipated: onParticipated)
         }
