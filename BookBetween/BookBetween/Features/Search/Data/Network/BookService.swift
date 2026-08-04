@@ -28,6 +28,10 @@ protocol BookServiceProtocol {
         year: Int?,
         month: Int?
     ) async throws -> ReadingStatisticsResultDTO
+    func fetchReadingCalendar(
+        year: Int,
+        month: Int
+    ) async throws -> ReadingCalendarResultDTO
 }
 
 final class BookService: BookServiceProtocol {
@@ -228,6 +232,42 @@ final class BookService: BookServiceProtocol {
                 URL: \(response.request?.url?.absoluteString ?? "확인 불가")
                 HTTP: \(response.statusCode)
                 year: \(result.year), month: \(result.month)
+                """)
+                #endif
+
+                return result
+            } catch let error as MoyaError {
+                throw NetworkError.transport(error)
+            }
+        }
+    }
+
+    func fetchReadingCalendar(
+        year: Int,
+        month: Int
+    ) async throws -> ReadingCalendarResultDTO {
+        try await requestExecutor.execute {
+            do {
+                let response = try await provider.requestAsync(
+                    BookTarget(
+                        baseURL: baseURL,
+                        endpoint: .readingCalendar(
+                            year: year,
+                            month: month
+                        )
+                    )
+                )
+                let result = try response.decodePayload(
+                    ReadingCalendarResultDTO.self
+                )
+
+                #if DEBUG
+                print("""
+                [ReadingCalendar]
+                URL: \(response.request?.url?.absoluteString ?? "확인 불가")
+                HTTP: \(response.statusCode)
+                year: \(result.year), month: \(result.month)
+                daysCount: \(result.days.count)
                 """)
                 #endif
 
