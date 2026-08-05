@@ -45,6 +45,7 @@ struct NotificationInboxView: View {
         }
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
+        .enableSwipeBack()
         .overlay {
             if viewModel.isLoading && viewModel.notifications.isEmpty {
                 ProgressView()

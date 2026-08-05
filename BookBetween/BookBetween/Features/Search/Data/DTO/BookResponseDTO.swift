@@ -80,6 +80,48 @@ struct BookDetailBookDTO: Decodable {
     let coverImageUrl: String?
     let kdcCode: String?
     let kdcName: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case isbn
+        case title
+        case author
+        case publisher
+        case publishedDate
+        case description
+        case coverImageUrl
+        case kdcCode
+        case kdcName
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        id = try container.decodeIfPresent(Int.self, forKey: .id)
+        isbn = try container.decode(String.self, forKey: .isbn)
+        title = try container.decodeIfPresent(String.self, forKey: .title)
+            ?? "제목 정보 없음"
+        author = try container.decodeIfPresent(String.self, forKey: .author)
+            ?? "저자 미상"
+        publisher = try container.decodeIfPresent(
+            String.self,
+            forKey: .publisher
+        )
+        publishedDate = try container.decodeIfPresent(
+            String.self,
+            forKey: .publishedDate
+        )
+        description = try container.decodeIfPresent(
+            String.self,
+            forKey: .description
+        )
+        coverImageUrl = try container.decodeIfPresent(
+            String.self,
+            forKey: .coverImageUrl
+        )
+        kdcCode = try container.decodeIfPresent(String.self, forKey: .kdcCode)
+        kdcName = try container.decodeIfPresent(String.self, forKey: .kdcName)
+    }
 }
 
 struct BookDetailMemberBookDTO: Decodable {

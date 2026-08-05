@@ -56,6 +56,7 @@ struct BookRecordDetailView: View {
                 .allowsHitTesting(false)
             }
         .toolbar(.hidden, for: .navigationBar)
+        .enableSwipeBack()
     }
 
     // MARK: - 책정보, 수정하기
