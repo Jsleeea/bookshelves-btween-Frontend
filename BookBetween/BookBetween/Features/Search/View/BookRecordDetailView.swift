@@ -86,6 +86,7 @@ struct BookRecordDetailView: View {
                 .allowsHitTesting(false)
             }
         .toolbar(.hidden, for: .navigationBar)
+        .enableSwipeBack()
         .overlay {
             ZStack {
                 if viewModel.isLoading {
