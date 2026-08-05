@@ -35,6 +35,7 @@ struct BookMeetingResultView: View {
 			leafDecoration
 			VStack(spacing: 0) {
 				navigationHeader
+                    .padding(.top, 8)
                     .padding(.bottom, 8)
 
 				ScrollView(showsIndicators: false) {
@@ -108,8 +109,7 @@ struct BookMeetingResultView: View {
         Image(.leaf2)
             .resizable()
             .scaledToFit()
-            .frame(width: 170, height: 268)
-            .rotationEffect(.degrees(-7))
+            .frame(width: 205, height: 288)
             .offset(x: 137, y: -250)
             .allowsHitTesting(false)
     }

@@ -133,16 +133,15 @@ final class MyLibraryViewModel {
     }
 
     func updateRecord(_ updatedRecord: UserBookRecord) {
-        guard let index = records.firstIndex(where: { record in
+        if let index = records.firstIndex(where: { record in
             if let updatedID = updatedRecord.id {
                 return record.id == updatedID
             }
-
             return record.book.isbn == updatedRecord.book.isbn
-        }) else {
-            return
+        }) {
+            records[index] = updatedRecord
+        } else {
+            records.append(updatedRecord)
         }
-
-        records[index] = updatedRecord
     }
 }

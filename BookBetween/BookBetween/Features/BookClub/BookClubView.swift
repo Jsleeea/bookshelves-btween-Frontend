@@ -36,6 +36,7 @@ struct BookClubView: View {
                     .foregroundStyle(Color.gray900)
 				Spacer()
 			}
+            .padding(.top, 8)
 			.padding(.horizontal, 30)
             .padding(.bottom, 6)
 
@@ -57,16 +58,23 @@ struct BookClubView: View {
                 .padding(.bottom, 15)
 
 				ScrollView(showsIndicators: false) {
-					VStack(spacing: 12) {
-						if viewModel.selectedTab == .myMeetings {
-							meetingList(viewModel.filteredParticipatingMeetings)
-						} else {
-							meetingList(viewModel.filteredCreatedMeetings)
+					let meetings = viewModel.selectedTab == .myMeetings
+						? viewModel.filteredParticipatingMeetings
+						: viewModel.filteredCreatedMeetings
+					if meetings.isEmpty {
+						emptyStateView(message: "모임이 없습니다")
+							.frame(height: 522)
+					} else {
+						VStack(spacing: 12) {
+							meetingList(meetings)
 						}
+						.padding(.top, 1)
+						.padding(.bottom, 100)
 					}
-                    .padding(.top, 1)
-					.padding(.bottom, 100)
 				}
+				.refreshable {
+                    await viewModel.fetchMyMeetings()
+                }
 				.scrollBounceBehavior(.basedOnSize)
 			}
 		}
@@ -174,7 +182,7 @@ struct BookClubView: View {
 				VStack(alignment: .leading, spacing: 0) {
 					ZStack(alignment: .top) {
 						if viewModel.meetingSearchResults.isEmpty {
-							emptyMeetingStateView
+							emptyStateView(message: "검색된 모임이 없습니다")
 						} else {
 							meetingResultsSection
 						}
@@ -200,19 +208,19 @@ struct BookClubView: View {
 		}
 	}
 
-	private var emptyMeetingStateView: some View {
+	private func emptyStateView(message: String) -> some View {
         GeometryReader { geo in
             let w = geo.size.width
             let h = geo.size.height
             ZStack {
                 RadialGradient(
-                    colors: [
-                        Color.green01.opacity(0.58),
-                        Color.white.opacity(0)
+                    stops: [
+                        Gradient.Stop(color: Color.green01.opacity(0.4), location: 0.2982),
+                        Gradient.Stop(color: Color.green01.opacity(0.0), location: 0.7019)
                     ],
-                    center: UnitPoint(x: 0.5, y: 0.48),
-                    startRadius: 12,
-                    endRadius: 270
+                    center: .center,
+                    startRadius: 0,
+                    endRadius: w * 0.5951
                 )
 
                 Image("leaf_left")
@@ -233,7 +241,7 @@ struct BookClubView: View {
                     .frame(width: 152, height: 131)
                     .position(x: w / 2, y: h * 0.46)
 
-                Text("검색된 모임이 없습니다")
+                Text(message)
                     .pointText5Style
                     .foregroundStyle(Color.green900)
                     .position(x: w / 2, y: h * 0.67)

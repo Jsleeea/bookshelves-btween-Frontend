@@ -27,6 +27,7 @@ struct BookMeetingDetailView: View {
 			}
 			VStack(spacing: 0) {
 				navigationHeader
+                    .padding(.top, 8)
                     .padding(.bottom, 7)
 				subtitleHeader
                     .padding(.bottom, 6)
