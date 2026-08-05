@@ -128,12 +128,7 @@ struct SearchBookResultCardView: View {
 
     private var actionMenu: some View {
         VStack(spacing: 0) {
-            NavigationLink {
-                BookMeetingCreateView(
-                    book: book,
-                    service: meetingService
-                )
-            } label: {
+            NavigationLink(value: SearchRoute.createMeeting(book)) {
                 actionMenuRow(
                     iconName: "icon_search_group",
                     title: "모임 생성하기",
@@ -148,14 +143,7 @@ struct SearchBookResultCardView: View {
             Divider()
                 .background(Color.gray300)
 
-            NavigationLink {
-                BookRecordDetailView(
-                    book: book,
-                    isSaveable: item.isSaveable,
-                    service: service,
-                    loadsRemoteDetail: true
-                )
-            } label: {
+            NavigationLink(value: SearchRoute.bookDetail(item)) {
                 actionMenuRow(
                     iconName: "icon_search_tag",
                     title: "내 서재에 추가",
