@@ -64,7 +64,10 @@ struct MainTabView: View {
                                     NotificationInboxView(
                                         viewModel: NotificationInboxViewModel(
                                             service: notificationService
-                                        )
+                                        ),
+                                        meetingService: meetingService,
+                                        chatService: chatService,
+                                        chatSocketService: chatSocketService
                                     )
                                 }
                             }

@@ -33,8 +33,9 @@ struct MeetingBookDTO: Decodable {
 
 struct MeetingSummaryItemDTO: Decodable {
     let order: Int
-    let title: String
-    let summary: String
+    // 대화가 적어 채울 내용이 없는 주제는 서버가 빈 문자열 대신 null을 내려줍니다.
+    let title: String?
+    let summary: String?
 }
 
 extension MeetingResultDTO {
@@ -65,7 +66,11 @@ extension MeetingResultDTO {
             currentParticipants: currentParticipants,
             status: statusValue,
             meetingSummary: meetingSummary?.map {
-                MeetingSummaryItem(order: $0.order, title: $0.title, summary: $0.summary)
+                MeetingSummaryItem(
+                    order: $0.order,
+                    title: $0.title ?? "",
+                    summary: $0.summary ?? ""
+                )
             }
         )
     }

@@ -7,10 +7,30 @@ import SwiftUI
 
 @MainActor
 struct NotificationInboxView: View {
+    private enum NotificationDestination {
+        case summary(BookMeeting)
+        case chat(BookMeeting)
+    }
+
     @Environment(\.dismiss) private var dismiss
     @State private var viewModel: NotificationInboxViewModel
+    @State private var destination: NotificationDestination?
+    @State private var isDestinationPresented = false
+    @State private var isMeetingEndedModalPresented = false
 
-    init(viewModel: NotificationInboxViewModel) {
+    private let meetingService: (any MeetingServiceProtocol)?
+    private let chatService: (any ChatServiceProtocol)?
+    private let chatSocketService: (any ChatSocketServiceProtocol)?
+
+    init(
+        viewModel: NotificationInboxViewModel,
+        meetingService: (any MeetingServiceProtocol)? = nil,
+        chatService: (any ChatServiceProtocol)? = nil,
+        chatSocketService: (any ChatSocketServiceProtocol)? = nil
+    ) {
+        self.meetingService = meetingService
+        self.chatService = chatService
+        self.chatSocketService = chatSocketService
         _viewModel = State(initialValue: viewModel)
     }
 
@@ -35,7 +55,22 @@ struct NotificationInboxView: View {
 
             leafDecoration
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+
+            if isMeetingEndedModalPresented {
+                Color.black.opacity(0.3)
+                    .ignoresSafeArea()
+                    .onTapGesture {
+                        isMeetingEndedModalPresented = false
+                    }
+
+                ErrorModalView(title: "모임이 종료되었습니다") {
+                    isMeetingEndedModalPresented = false
+                }
+                .transition(.scale.combined(with: .opacity))
+                .zIndex(1)
+            }
         }
+        .animation(.easeInOut(duration: 0.2), value: isMeetingEndedModalPresented)
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
         .overlay {
@@ -45,6 +80,9 @@ struct NotificationInboxView: View {
         }
         .task {
             await viewModel.start()
+        }
+        .navigationDestination(isPresented: $isDestinationPresented) {
+            notificationDestinationView
         }
         .alert(
             "알림을 불러오지 못했습니다.",
@@ -94,7 +132,7 @@ struct NotificationInboxView: View {
                 ForEach(viewModel.notifications) { notification in
                     Button {
                         Task {
-                            await viewModel.markAsRead(notification)
+                            await handleNotificationTap(notification)
                         }
                     } label: {
                         NotificationCardView(item: notification)
@@ -118,6 +156,88 @@ struct NotificationInboxView: View {
         }
         .refreshable {
             await viewModel.refreshNotifications()
+        }
+    }
+
+    @ViewBuilder
+    private var notificationDestinationView: some View {
+        switch destination {
+        case .summary(let meeting):
+            BookMeetingResultView(
+                meeting: meeting,
+                service: meetingService
+            )
+        case .chat(let meeting):
+            if let chatService, let chatSocketService {
+                ChatView(
+                    viewModel: ChatViewModel(
+                        chatroomId: meeting.chatroomId,
+                        meetingId: meeting.id,
+                        chatService: chatService,
+                        socketService: chatSocketService
+                    )
+                )
+            } else {
+                ChatView(
+                    chatroomId: meeting.chatroomId,
+                    meetingId: meeting.id
+                )
+            }
+        case nil:
+            EmptyView()
+        }
+    }
+
+    private func handleNotificationTap(_ notification: NotificationItem) async {
+        await viewModel.markAsRead(notification)
+
+        guard notification.isActionable,
+              let meetingId = notification.targetId,
+              let meetingService else {
+            return
+        }
+
+        switch notification.type {
+        case .aiSummaryReady:
+            do {
+                let meeting = try await meetingService.fetchMeetingDetail(
+                    meetingId: meetingId
+                )
+                destination = .summary(meeting)
+                isDestinationPresented = true
+            } catch {
+                #if DEBUG
+                print("""
+                [알림함] AI 요약 진입 실패
+                notificationId: \(notification.id)
+                targetId(meetingId): \(meetingId)
+                error: \(error)
+                """)
+                #endif
+
+                viewModel.errorMessage = error.localizedDescription
+            }
+
+        case .meetingStarted:
+            do {
+                let meeting = try await meetingService.fetchMeetingDetail(
+                    meetingId: meetingId
+                )
+
+                guard case .inProgress = meeting.status,
+                      meeting.chatroomId > 0 else {
+                    isMeetingEndedModalPresented = true
+                    return
+                }
+
+                destination = .chat(meeting)
+                isDestinationPresented = true
+            } catch {
+                isMeetingEndedModalPresented = true
+            }
+
+        case .meetingCancelled, .system:
+            break
         }
     }
 
