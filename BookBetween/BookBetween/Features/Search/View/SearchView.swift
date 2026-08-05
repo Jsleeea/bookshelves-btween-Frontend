@@ -10,16 +10,23 @@ import SwiftUI
 @MainActor
 struct SearchView: View {
     @State private var viewModel: SearchViewModel
+    @State private var presentedActionMenuItemID: UUID?
     @FocusState private var isSearchFocused: Bool
+    private let meetingService: (any MeetingServiceProtocol)?
 
-    init() {
+    init(meetingService: (any MeetingServiceProtocol)? = nil) {
         _viewModel = State(
             initialValue: SearchViewModel(service: BookService.stubbed())
         )
+        self.meetingService = meetingService
     }
 
-    init(viewModel: SearchViewModel) {
+    init(
+        viewModel: SearchViewModel,
+        meetingService: (any MeetingServiceProtocol)? = nil
+    ) {
         _viewModel = State(initialValue: viewModel)
+        self.meetingService = meetingService
     }
 
     var body: some View {
@@ -178,8 +185,11 @@ struct SearchView: View {
                 ForEach(viewModel.searchResults, id: \.listID) { item in
                     SearchBookResultCardView(
                         item: item,
-                        service: viewModel.bookService
+                        service: viewModel.bookService,
+                        meetingService: meetingService,
+                        isActionMenuPresented: actionMenuBinding(for: item)
                     )
+                        .zIndex(presentedActionMenuItemID == item.listID ? 1 : 0)
                         .task {
                             await viewModel.loadNextPageIfNeeded(currentItem: item)
                         }
@@ -191,6 +201,19 @@ struct SearchView: View {
                     .padding(.vertical, 12)
             }
         }
+    }
+
+    private func actionMenuBinding(for item: BookSearchItem) -> Binding<Bool> {
+        Binding(
+            get: { presentedActionMenuItemID == item.listID },
+            set: { isPresented in
+                if isPresented {
+                    presentedActionMenuItemID = item.listID
+                } else if presentedActionMenuItemID == item.listID {
+                    presentedActionMenuItemID = nil
+                }
+            }
+        )
     }
 
     private func SearchIdleView(height: CGFloat) -> some View {
