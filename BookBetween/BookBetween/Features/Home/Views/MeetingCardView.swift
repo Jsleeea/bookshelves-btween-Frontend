@@ -46,7 +46,7 @@ struct MeetingCardView: View {
                             .clipShape(.circle)
                         
                         Text(meetingDateText)
-                            .caption2RegularStyle
+                            .caption1RegularStyle
                     }
                     .foregroundStyle(.gray500)
                     .padding(.top, 20)
@@ -58,11 +58,11 @@ struct MeetingCardView: View {
                             .clipShape(.circle)
                 HStack(spacing: 0) {
                     Text("\(meeting.meeting.currentParticipants)")
-                        .caption1SemiBoldStyle
+                        .body2RegularStyle
                         .foregroundStyle(.green700)
 
                     Text("/\(meeting.meeting.maxParticipants)명 참여 중")
-                        .caption2RegularStyle
+                        .caption1RegularStyle
                 }
                     }
                     .foregroundStyle(.gray500)
