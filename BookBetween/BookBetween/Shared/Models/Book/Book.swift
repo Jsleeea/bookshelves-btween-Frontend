@@ -7,7 +7,16 @@
 
 import Foundation
 
-struct Book: Decodable {
+struct Book: Decodable, Hashable {
+    static func == (lhs: Book, rhs: Book) -> Bool {
+        lhs.isbn == rhs.isbn && lhs.id == rhs.id && lhs.title == rhs.title
+    }
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(isbn)
+        hasher.combine(id)
+        hasher.combine(title)
+    }
+
     let id: Int?
     let isbn: String?
     let title: String

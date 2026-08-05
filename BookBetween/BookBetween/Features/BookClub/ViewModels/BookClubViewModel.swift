@@ -31,6 +31,7 @@ final class BookClubViewModel {
 	var selectedTab: BookClubTab = .myMeetings
 	var meetingService: (any MeetingServiceProtocol)?
     private let bookService: (any BookServiceProtocol)?
+    private let memberService: (any MemberServiceProtocol)?
     var chatService: (any ChatServiceProtocol)?
     var chatSocketService: (any ChatSocketServiceProtocol)?
 	var searchText: String = ""
@@ -39,6 +40,7 @@ final class BookClubViewModel {
 
 	var selectedYear: Int = 0
 	var selectedMonth: Int = 0
+    var joinedYear: Int? = nil
 
 	var filteredParticipatingMeetings: [BookMeeting] {
 		let meetings: [BookMeeting]
@@ -124,11 +126,13 @@ final class BookClubViewModel {
 	init(
 		meetingService: (any MeetingServiceProtocol)? = nil,
 		bookService: (any BookServiceProtocol)? = nil,
+        memberService: (any MemberServiceProtocol)? = nil,
 		chatService: (any ChatServiceProtocol)? = nil,
 		chatSocketService: (any ChatSocketServiceProtocol)? = nil
 	) {
 		self.meetingService = meetingService
         self.bookService = bookService
+        self.memberService = memberService
         self.chatService = chatService
         self.chatSocketService = chatSocketService
 
@@ -241,6 +245,13 @@ final class BookClubViewModel {
 	}
 
 	// MARK: - Actions
+
+    func fetchJoinedYear() async {
+        guard let memberService else { return }
+        guard let profile = try? await memberService.fetchMyProfile() else { return }
+        let joinedAt = Calendar.current.date(byAdding: .day, value: -profile.joinedDays, to: Date()) ?? Date()
+        joinedYear = Calendar.current.component(.year, from: joinedAt)
+    }
 
 	func fetchMyMeetings() async {
 		guard let meetingService else { return }

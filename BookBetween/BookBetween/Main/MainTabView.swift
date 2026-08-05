@@ -11,6 +11,7 @@ struct MainTabView: View {
     @State private var selectedTab: TabCase = .home
     @State private var hideTabBar = false
     @State private var homeNavigationPath = NavigationPath()
+    @State private var bookClubPath = NavigationPath()
 
     private let memberService: MemberServiceProtocol?
     private let bookService: BookServiceProtocol
@@ -66,6 +67,24 @@ struct MainTabView: View {
                                             service: notificationService
                                         )
                                     )
+                                case .meetingDetail(let meeting):
+                                    BookMeetingDetailView(
+                                        meeting: meeting,
+                                        service: meetingService
+                                    )
+                                case .bookDetail(let book):
+                                    BookRecordDetailView(
+                                        book: book,
+                                        isSaveable: book.isbn != nil,
+                                        service: bookService,
+                                        loadsRemoteDetail: true
+                                    )
+                                case .recentBookDetail(let record):
+                                    BookRecordDetailView(
+                                        record: record,
+                                        service: bookService,
+                                        loadsRemoteDetail: true
+                                    )
                                 }
                             }
                     }
@@ -78,12 +97,14 @@ struct MainTabView: View {
                         )
                     }
                 case .bookClub:
-                    NavigationStack {
+                    NavigationStack(path: $bookClubPath) {
                         BookClubView(
                             meetingService: meetingService,
                             bookService: bookService,
+                            memberService: memberService,
                             chatService: chatService,
-                            chatSocketService: chatSocketService
+                            chatSocketService: chatSocketService,
+                            navigationPath: $bookClubPath
                         )
                     }
                 case .myLibrary:

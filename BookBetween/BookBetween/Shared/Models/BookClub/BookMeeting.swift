@@ -45,7 +45,10 @@ enum BookMeetingStatus: Decodable {
     }
 }
 
-struct BookMeeting: Decodable {
+struct BookMeeting: Decodable, Hashable {
+    static func == (lhs: BookMeeting, rhs: BookMeeting) -> Bool { lhs.id == rhs.id }
+    func hash(into hasher: inout Hasher) { hasher.combine(id) }
+
     let id: Int
     let chatroomId: Int
     let book: Book

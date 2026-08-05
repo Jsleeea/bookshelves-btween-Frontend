@@ -11,6 +11,7 @@ struct BookMeetingCreateView: View {
 	@State private var showingParticipantsPicker = false
 	@State private var isCreating = false
 	@State private var creationError: String?
+    @State private var showSuccessModal = false
 
 	private static let dateOnlyFormatter: DateFormatter = {
 		let f = DateFormatter()
@@ -85,8 +86,7 @@ struct BookMeetingCreateView: View {
                                         maxParticipants: maxParticipants,
                                         duration: timerMinutes
                                     )
-                                    dismiss()
-                                    onMeetingCreated?()
+                                    showSuccessModal = true
                                 } catch {
                                     creationError = error.localizedDescription
                                 }
@@ -97,6 +97,17 @@ struct BookMeetingCreateView: View {
                     }
                 }
                 .scrollBounceBehavior(.basedOnSize)
+            }
+        }
+		.overlay {
+            if showSuccessModal {
+                ZStack {
+                    Color.black.opacity(0.4).ignoresSafeArea()
+                    SuccessModalView(title: "모임을 생성했습니다") {
+                        dismiss()
+                        onMeetingCreated?()
+                    }
+                }
             }
         }
 		.toolbar(.hidden, for: .navigationBar)

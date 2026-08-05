@@ -5,23 +5,27 @@ struct BookMeetingCardView: View {
     let service: (any MeetingServiceProtocol)?
     let isParticipant: Bool
     let onParticipated: (() -> Void)?
-    let chatService: (any ChatServiceProtocol)?
-    let chatSocketService: (any ChatSocketServiceProtocol)?
+    let onCompletedNavigate: ((BookMeeting) -> Void)?
+    let onFetchError: (() -> Void)?
+    let onSummaryPending: (() -> Void)?
+    @State private var isFetching = false
 
     init(
         meeting: BookMeeting,
         service: (any MeetingServiceProtocol)? = nil,
         isParticipant: Bool = false,
-        chatService: (any ChatServiceProtocol)? = nil,
-        chatSocketService: (any ChatSocketServiceProtocol)? = nil,
-        onParticipated: (() -> Void)? = nil
+        onParticipated: (() -> Void)? = nil,
+        onCompletedNavigate: ((BookMeeting) -> Void)? = nil,
+        onFetchError: (() -> Void)? = nil,
+        onSummaryPending: (() -> Void)? = nil
     ) {
         self.meeting = meeting
         self.service = service
         self.isParticipant = isParticipant
-        self.chatService = chatService
-        self.chatSocketService = chatSocketService
         self.onParticipated = onParticipated
+        self.onCompletedNavigate = onCompletedNavigate
+        self.onFetchError = onFetchError
+        self.onSummaryPending = onSummaryPending
     }
 
 	var body: some View {
@@ -53,10 +57,17 @@ struct BookMeetingCardView: View {
 			.padding(.top, 11)
 			.padding(.trailing, 19.86)
 
-			NavigationLink {
-				destination
-			} label: {
+			if meeting.status == .completed {
 				Color.clear
+					.contentShape(Rectangle())
+					.onTapGesture {
+						guard !isFetching else { return }
+						Task { await fetchAndNavigate() }
+					}
+			} else {
+				NavigationLink(value: routeValue) {
+					Color.clear
+				}
 			}
 		}
 		.padding(.leading, 22)
@@ -71,11 +82,11 @@ struct BookMeetingCardView: View {
 	}
 
     // MARK: - bookCover
-    
+
 	private var bookCover: some View {
 		BookCoverImage(book: meeting.book, placeholderImageName: "book_cover_mock")
-            .aspectRatio(29.0/44.0, contentMode: .fit)
-            .frame(height: 86)
+            .frame(width: 86.0 * 29.0 / 44.0, height: 86)
+            .clipped()
 			.clipShape(RoundedRectangle(cornerRadius: 8))
             .overlay {
                 RoundedRectangle(cornerRadius: 8)
@@ -84,7 +95,7 @@ struct BookMeetingCardView: View {
 	}
 
 	// MARK: - statusBadge
-    
+
 	private var statusBadge: some View {
 		Text(meeting.status.title)
 			.caption2SemiBoldStyle
@@ -114,7 +125,7 @@ struct BookMeetingCardView: View {
 	}
 
     // MARK: - infoRow
-    
+
 	private var infoRow: some View {
 		HStack(spacing: 0) {
 			Image("icon_calendar")
@@ -123,38 +134,38 @@ struct BookMeetingCardView: View {
                 .frame(width: 13, height: 13)
                 .clipped()
                 .padding(.trailing, 4)
-            
+
 			Text(meetingDateText)
 				.caption1RegularStyle
                 .padding(.trailing, 8)
-            
+
 			separator
                 .padding(.trailing, 8)
-            
+
 			Image("icon_group")
                 .resizable()
                 .scaledToFill()
                 .frame(width: 11, height: 11)
                 .clipped()
                 .padding(.trailing, 4)
-            
+
 			Text("\(meeting.currentParticipants)/\(meeting.maxParticipants)")
 				.caption1RegularStyle
                 .padding(.trailing, 8)
-            
+
 			separator
                 .padding(.trailing, 8)
-            
+
 			Image("icon_clock")
                 .resizable()
                 .scaledToFill()
                 .frame(width: 11, height: 11)
                 .clipped()
                 .padding(.trailing, 4)
-            
+
 			Text("\(meeting.timerMinutes)분")
 				.caption1RegularStyle
-            
+
 		}
 		.foregroundStyle(Color.gray600)
 	}
@@ -166,7 +177,7 @@ struct BookMeetingCardView: View {
 	}
 
     // MARK: - moreButtonLabel
-    
+
     private var moreButtonLabel: some View {
         HStack(spacing: 4) {
             Text("더보기")
@@ -181,26 +192,33 @@ struct BookMeetingCardView: View {
         .foregroundStyle(Color.gray600)
     }
 
-    @ViewBuilder
-    private var destination: some View {
+    private var routeValue: BookClubRoute {
         switch meeting.status {
-        case .completed:
-            BookMeetingResultView(meeting: meeting, service: service)
         case .inProgress:
-            if let chatService, let chatSocketService {
-                ChatView(
-                    viewModel: ChatViewModel(
-                        chatroomId: meeting.chatroomId,
-                        meetingId: meeting.id,
-                        chatService: chatService,
-                        socketService: chatSocketService
-                    )
-                )
-            } else {
-                ChatView(chatroomId: meeting.chatroomId, meetingId: meeting.id)
-            }
+            return .chat(chatroomId: meeting.chatroomId, meetingId: meeting.id)
         default:
-            BookMeetingDetailView(meeting: meeting, service: service, isParticipant: isParticipant, onParticipated: onParticipated)
+            return .detail(meeting, isParticipant: isParticipant)
+        }
+    }
+
+    // MARK: - Completed Meeting Fetch
+
+    private func fetchAndNavigate() async {
+        guard let service else {
+            onCompletedNavigate?(meeting)
+            return
+        }
+        isFetching = true
+        defer { isFetching = false }
+        do {
+            let detail = try await service.fetchMeetingDetail(meetingId: meeting.id)
+            if detail.meetingSummary == nil {
+                onSummaryPending?()
+            } else {
+                onCompletedNavigate?(detail)
+            }
+        } catch {
+            onFetchError?()
         }
     }
 

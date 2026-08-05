@@ -24,7 +24,7 @@ struct BookCoverImage: View {
             AsyncImage(url: coverURL) { phase in
                 switch phase {
                 case .empty:
-                    Color.clear
+                    placeholderImage
                 case .success(let image):
                     image
                         .resizable()
@@ -38,6 +38,12 @@ struct BookCoverImage: View {
         } else {
             fallbackImage
         }
+    }
+
+    private var placeholderImage: some View {
+        Image(placeholderImageName)
+            .resizable()
+            .scaledToFill()
     }
 
     private var fallbackImage: some View {

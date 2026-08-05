@@ -63,22 +63,23 @@ struct BookMeetingResultView: View {
                 showFetchErrorModal = true
             }
 		}
-		.sheet(isPresented: $showFetchErrorModal) {
-			ErrorModalView(title: "데이터를 불러오지 못했습니다") {
-				showFetchErrorModal = false
-				dismiss()
+		.overlay {
+			if showFetchErrorModal || showSummaryPendingModal {
+				ZStack {
+					Color.black.opacity(0.4)
+						.ignoresSafeArea()
+					if showFetchErrorModal {
+						ErrorModalView(title: "데이터를 불러오지 못했습니다") {
+							showFetchErrorModal = false
+							dismiss()
+						}
+					} else if showSummaryPendingModal {
+						ErrorModalView(title: "요약이 완료되지 않았습니다") {
+							showSummaryPendingModal = false
+						}
+					}
+				}
 			}
-			.presentationDetents([.height(280)])
-			.presentationDragIndicator(.hidden)
-			.presentationCornerRadius(20)
-		}
-		.sheet(isPresented: $showSummaryPendingModal) {
-			ErrorModalView(title: "요약이 완료되지 않았습니다") {
-				showSummaryPendingModal = false
-			}
-			.presentationDetents([.height(280)])
-			.presentationDragIndicator(.hidden)
-			.presentationCornerRadius(20)
 		}
 	}
 
