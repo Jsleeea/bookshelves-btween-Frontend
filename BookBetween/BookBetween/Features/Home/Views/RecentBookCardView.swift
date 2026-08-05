@@ -23,31 +23,28 @@ struct RecentBookCardView: View {
             
             
             VStack(alignment: .leading){
-                HStack{
-                    VStack(alignment: .leading, spacing: 0){
-                        Text(record.book.title)
-                            .body1SemiBoldStyle
-                            .foregroundStyle(.gray800)
+                VStack(alignment: .leading, spacing: 0){
+                    Text(record.book.title)
+                        .body1SemiBoldStyle
+                        .foregroundStyle(.gray800)
 
-                        Text(authorAndPublisherText)
-                            .caption1RegularStyle
-                            .foregroundStyle(.gray500)
-                            .padding(.top,4)
-                    }
-                    .padding(.top, 7)// 기본으로 10 들어감 - total: 17
-                    
-                    Spacer()
-                    
+                    Text(authorAndPublisherText)
+                        .body2RegularStyle
+                        .foregroundStyle(.gray500)
+                        .padding(.top,4)
+
                     HStack{
                         Image("icon_star")
                         Text(ratingText)
                             .caption1RegularStyle
                             .foregroundStyle(.green600)
                     }
-                    .padding(.trailing, 16)
+                    .padding(.top, 8)
                 }
+                .padding(.top, 7)// 기본으로 10 들어감 - total: 17
+
                 Spacer()
-                BookProgressView(progress: record.progress)
+                BookProgressView(progress: record.progress, showsKnob: false)
                     .tint(.green600)
                     .frame(width: 246)
                     .padding(.bottom, 19)
@@ -58,7 +55,7 @@ struct RecentBookCardView: View {
         .padding(.trailing, 10)
         .padding(.leading, 13)
         .frame(height: 129)
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background {
             ZStack(alignment: .trailing){
                 Color.white
