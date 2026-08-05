@@ -73,6 +73,7 @@ struct NotificationInboxView: View {
         .animation(.easeInOut(duration: 0.2), value: isMeetingEndedModalPresented)
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
+        .enableSwipeBack()
         .overlay {
             if viewModel.isLoading && viewModel.notifications.isEmpty {
                 ProgressView()
