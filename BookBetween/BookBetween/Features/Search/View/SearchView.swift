@@ -33,27 +33,27 @@ struct SearchView: View {
                         .offset(y: 145)
                 }
 
-                ScrollView(showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: 16) {
-                        TitleView
-                        SearchInputSectionView
+                VStack(alignment: .leading, spacing: 16) {
+                    TitleView
+                    SearchInputSectionView
+
+                    ScrollView(showsIndicators: false) {
                         SearchResultSectionView(
                             idleHeight: idleHeight
                         )
+                        .padding(.bottom, 80)
                     }
                     .scrollDismissesKeyboard(.interactively)
-                    .contentShape(Rectangle())
-                    .onTapGesture {
+                    .refreshable {
                         isSearchFocused = false
+                        await viewModel.refresh()
                     }
-                    .padding(.horizontal, 19)
-                    //.padding(.top, 12)
-                    .padding(.bottom, 80)
                 }
-                .refreshable {
+                .contentShape(Rectangle())
+                .onTapGesture {
                     isSearchFocused = false
-                    await viewModel.refresh()
                 }
+                .padding(.horizontal, 19)
             }
             .padding(.top, 8)
         }
