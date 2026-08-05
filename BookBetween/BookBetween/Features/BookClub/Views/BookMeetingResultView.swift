@@ -6,6 +6,7 @@ struct BookMeetingResultView: View {
     private let service: (any MeetingServiceProtocol)?
     @State private var meeting: BookMeeting
     @State private var showSummaryPendingModal = false
+    @State private var showFetchErrorModal = false
 
     init(meeting: BookMeeting, service: (any MeetingServiceProtocol)? = nil) {
         self._meeting = State(initialValue: meeting)
@@ -58,7 +59,18 @@ struct BookMeetingResultView: View {
 				if meeting.meetingSummary == nil {
 					showSummaryPendingModal = true
 				}
-			} catch {}
+			} catch {
+                showFetchErrorModal = true
+            }
+		}
+		.sheet(isPresented: $showFetchErrorModal) {
+			ErrorModalView(title: "데이터를 불러오지 못했습니다") {
+				showFetchErrorModal = false
+				dismiss()
+			}
+			.presentationDetents([.height(280)])
+			.presentationDragIndicator(.hidden)
+			.presentationCornerRadius(20)
 		}
 		.sheet(isPresented: $showSummaryPendingModal) {
 			ErrorModalView(title: "요약이 완료되지 않았습니다") {
