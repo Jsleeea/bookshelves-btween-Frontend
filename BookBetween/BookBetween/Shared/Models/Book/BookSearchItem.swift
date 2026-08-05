@@ -5,7 +5,7 @@
 
 import Foundation
 
-struct BookSearchItem {
+struct BookSearchItem: Hashable {
     let listID: UUID
     let book: Book
     let isSaveable: Bool

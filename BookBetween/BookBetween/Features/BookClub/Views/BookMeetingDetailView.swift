@@ -64,6 +64,7 @@ struct BookMeetingDetailView: View {
 				.scrollBounceBehavior(.basedOnSize)
 			}
 		}
+        .enableSwipeBack()
 		.overlay {
             if showSuccessModal {
                 ZStack {

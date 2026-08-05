@@ -64,6 +64,19 @@ struct SearchView: View {
             }
             .padding(.top, 8)
         }
+        .navigationDestination(for: SearchRoute.self) { route in
+            switch route {
+            case .createMeeting(let book):
+                BookMeetingCreateView(book: book, service: meetingService)
+            case .bookDetail(let item):
+                BookRecordDetailView(
+                    book: item.book,
+                    isSaveable: item.isSaveable,
+                    service: viewModel.bookService,
+                    loadsRemoteDetail: true
+                )
+            }
+        }
         .toolbar(.hidden, for: .navigationBar)
         .ignoresSafeArea(.keyboard, edges: .bottom)
         .task {

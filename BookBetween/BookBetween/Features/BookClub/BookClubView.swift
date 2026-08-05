@@ -188,10 +188,6 @@ struct BookClubView: View {
 						}
 					}
 					.frame(height: 522)
-
-					if !viewModel.searchText.isEmpty {
-						bookResultsSection
-					}
 				}
 				.padding(.top, 8)
 				.contentShape(Rectangle())
@@ -312,6 +308,21 @@ struct BookClubView: View {
                     .padding(.top, 92)
                     .padding(.bottom, 40)
 			}
+            .background(alignment: .topLeading) {
+                Ellipse()
+                    .fill(
+                        RadialGradient(
+                            colors: [Color.green01, Color.green01.opacity(0)],
+                            center: .center,
+                            startRadius: 0,
+                            endRadius: 281
+                        )
+                    )
+                    .frame(width: 562, height: 454)
+                    .opacity(0.40)
+                    .offset(x: -175, y: 575)
+                    .allowsHitTesting(false)
+            }
 		}
 	}
 
@@ -357,67 +368,8 @@ struct BookClubView: View {
 		.frame(maxWidth: .infinity)
 	}
 
-	// MARK: - Book Results (가로 스크롤)
-
-	@ViewBuilder
-	private var bookResultsSection: some View {
-		if !viewModel.bookSearchResults.isEmpty {
-			VStack(spacing: 0) {
-                Text("도서 목록")
-                    .pointText4Style
-                    .foregroundStyle(Color.gray800)
-                    .padding(.bottom, 5.14)
-
-				HStack(spacing: 0) {
-                    Rectangle()
-                        .frame(width: 110, height: 1)
-                        .foregroundStyle(Color.gray900)
-                        .opacity(0.35)
-                    Spacer()
-                    Rectangle()
-                        .frame(width: 110, height: 1)
-                        .foregroundStyle(Color.gray900)
-                        .opacity(0.35)
-				}
-                .padding(.bottom, 6.86)
-                .padding(.horizontal, 7)
-
-				Text("아래 목록에서 도서를 선택해보세요")
-					.caption1RegularStyle
-					.foregroundStyle(Color.gray400)
-					.frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.bottom, 24.14)
-
-				ScrollView(.horizontal, showsIndicators: false) {
-					HStack(spacing: 20) {
-						ForEach(viewModel.bookSearchResults, id: \.isbn) { book in
-							NavigationLink(value: BookClubRoute.create(book)) {
-								BookSearchCardView(book: book)
-							}
-						}
-					}
-                    .padding(.horizontal, 27)
-					.padding(.bottom, 100)
-				}
-			}
-            .background(alignment: .topLeading) {
-                Ellipse()
-                    .fill(
-                        RadialGradient(
-                            colors: [Color.green01, Color.green01.opacity(0)],
-                            center: .center,
-                            startRadius: 0,
-                            endRadius: 281
-                        )
-                    )
-                    .frame(width: 562, height: 454)
-                    .opacity(0.40)
-                    .offset(x: -175, y: -50)
-                    .allowsHitTesting(false)
-            }
-		}
-	}
 }
+
 
 #Preview {
 	NavigationStack {

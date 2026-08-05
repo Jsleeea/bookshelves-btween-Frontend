@@ -64,6 +64,7 @@ struct BookMeetingResultView: View {
                 showFetchErrorModal = true
             }
 		}
+        .enableSwipeBack()
 		.overlay {
 			if showFetchErrorModal || showSummaryPendingModal {
 				ZStack {
