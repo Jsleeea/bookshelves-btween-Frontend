@@ -17,6 +17,7 @@ struct MyLibraryView: View {
                     .foregroundStyle(Color.gray900)
                 Spacer()
             }
+            .padding(.top, 8)
             .padding(.horizontal, 30)
             .padding(.bottom, 6)
 
@@ -27,7 +28,10 @@ struct MyLibraryView: View {
 					MyLibraryBookCardView(
 						record: record,
 						bookService: bookService,
-						onRecordSaved: viewModel.updateRecord
+						onRecordSaved: { saved in
+                            viewModel.updateRecord(saved)
+                            Task { await viewModel.fetchRecords() }
+                        }
 					)
 					.listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
 					.listRowSeparator(.hidden)
@@ -43,6 +47,9 @@ struct MyLibraryView: View {
 			}
 			.listStyle(.plain)
 			.scrollContentBackground(.hidden)
+			.refreshable {
+                await viewModel.fetchRecords()
+            }
 			.scrollBounceBehavior(.basedOnSize)
 			.contentMargins(.top, 6, for: .scrollContent)
 			.contentMargins(.bottom, 84, for: .scrollContent)

@@ -171,10 +171,26 @@ struct MemberBookBookDTO: Decodable {
     let isbn: String
     let title: String
     let author: String
-    let publisher: String
+    let publisher: String?
     let coverImageUrl: String?
     let kdcCode: String?
     let kdcName: String?
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(Int.self, forKey: .id)
+        isbn = try c.decode(String.self, forKey: .isbn)
+        title = try c.decodeIfPresent(String.self, forKey: .title) ?? ""
+        author = try c.decodeIfPresent(String.self, forKey: .author) ?? ""
+        publisher = try c.decodeIfPresent(String.self, forKey: .publisher)
+        coverImageUrl = try c.decodeIfPresent(String.self, forKey: .coverImageUrl)
+        kdcCode = try c.decodeIfPresent(String.self, forKey: .kdcCode)
+        kdcName = try c.decodeIfPresent(String.self, forKey: .kdcName)
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, isbn, title, author, publisher, coverImageUrl, kdcCode, kdcName
+    }
 }
 
 struct RecentSearchResultDTO: Decodable {

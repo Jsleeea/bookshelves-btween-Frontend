@@ -59,6 +59,7 @@ struct BookMeetingCreateView: View {
             leafDecoration
             VStack(spacing: 0) {
                 navigationHeader
+                    .padding(.top, 8)
                     .padding(.bottom, 7)
                 subtitleHeader
                     .padding(.bottom, 6)
@@ -128,10 +129,8 @@ struct BookMeetingCreateView: View {
         Image(.leaf1)
             .resizable()
             .scaledToFit()
-            .frame(width: 123)
-            .opacity(0.55)
-            .rotationEffect(.degrees(-5))
-            .offset(x: 137, y: -300)
+            .frame(width: 133)
+            .offset(x: 137, y: -320)
             .allowsHitTesting(false)
     }
     
