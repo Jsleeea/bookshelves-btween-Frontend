@@ -30,7 +30,7 @@ extension Font{
     static let head1 = Font.pretend(type: .semiBold, size: 24)
     static let head2 = Font.pretend(type: .semiBold, size: 22)
     static let head3 = Font.pretend(type: .semiBold, size: 18)
-    static let head4 = Font.pretend(type: .regular, size: 18)
+    static let head4 = Font.pretend(type: .semiBold, size: 18)
         
     // Body 시리즈
     static let body1SemiBold = Font.pretend(type: .semiBold, size: 16)

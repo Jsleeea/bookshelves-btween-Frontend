@@ -68,8 +68,8 @@ struct MyLibraryBookCardView: View {
 
 	private var bookCover: some View {
 		BookCoverImage(book: record.book, placeholderImageName: "book_cover_mock")
-			.aspectRatio(29.0/44.0, contentMode: .fit)
-			.frame(height: 130)
+			.frame(width: 130.0 * 29.0 / 44.0, height: 130)
+            .clipped()
             .clipShape(RoundedRectangle(cornerRadius: 8))
             .overlay {
                 RoundedRectangle(cornerRadius: 8)

@@ -75,12 +75,7 @@ struct MeetingCardView: View {
             .padding(.top, 13)
             .padding(.bottom, 4)
             
-            NavigationLink {
-                BookMeetingDetailView(
-                    meeting: bookMeeting,
-                    service: service
-                )
-            } label: {
+            NavigationLink(value: HomeRoute.meetingDetail(bookMeeting)) {
                 HStack(spacing: 6) {
                     Text("참여하기")
                         .body2SemiBoldStyle

@@ -7,12 +7,14 @@ import SwiftUI
 
 struct ErrorModalView: View {
   let title: String
+  var titleStyle: CommonModalTitleStyle = .head2
   var onConfirm: () -> Void = {}
 
   var body: some View {
     CommonModalView(
       title: self.title,
       confirmTitle: "확인",
+      titleStyle: self.titleStyle,
       confirmColor: .red700,
       iconGradientStyle: .error,
       modalHeight: 220,

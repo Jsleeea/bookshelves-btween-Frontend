@@ -10,12 +10,18 @@ enum CommonModalIconGradientStyle {
   case error
 }
 
+enum CommonModalTitleStyle {
+  case head2
+  case head4
+}
+
 struct CommonModalView<Icon: View>: View {
   let title: String
   let description: String?
   let confirmTitle: String
   let cancelTitle: String?
   let titleColor: Color
+  let titleStyle: CommonModalTitleStyle
   let confirmColor: Color
   let iconGradientStyle: CommonModalIconGradientStyle
   let modalHeight: CGFloat
@@ -29,6 +35,7 @@ struct CommonModalView<Icon: View>: View {
     confirmTitle: String,
     cancelTitle: String? = nil,
     titleColor: Color = .gray800,
+    titleStyle: CommonModalTitleStyle = .head2,
     confirmColor: Color = .green600,
     iconGradientStyle: CommonModalIconGradientStyle = .green,
     modalHeight: CGFloat = 220,
@@ -41,6 +48,7 @@ struct CommonModalView<Icon: View>: View {
     self.confirmTitle = confirmTitle
     self.cancelTitle = cancelTitle
     self.titleColor = titleColor
+    self.titleStyle = titleStyle
     self.confirmColor = confirmColor
     self.iconGradientStyle = iconGradientStyle
     self.modalHeight = modalHeight
@@ -113,8 +121,7 @@ struct CommonModalView<Icon: View>: View {
 
   private var messageSection: some View {
     VStack(spacing: 4) {
-      Text(self.title)
-        .head2Style
+      titleText
         .foregroundStyle(self.titleColor)
         .multilineTextAlignment(.center)
 
@@ -124,6 +131,16 @@ struct CommonModalView<Icon: View>: View {
           .foregroundStyle(Color.gray500)
           .multilineTextAlignment(.center)
       }
+    }
+  }
+
+  @ViewBuilder
+  private var titleText: some View {
+    switch titleStyle {
+    case .head2:
+      Text(title).head2Style
+    case .head4:
+      Text(title).head4Style
     }
   }
 

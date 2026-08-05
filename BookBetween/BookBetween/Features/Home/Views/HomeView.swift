@@ -149,14 +149,7 @@ struct HomeView: View {
                         .padding(.top, 4)
 
                     Spacer()
-                    NavigationLink {
-                        BookRecordDetailView(
-                            book: recommendation,
-                            isSaveable: recommendation.isbn != nil,
-                            service: bookService,
-                            loadsRemoteDetail: true
-                        )
-                    } label: {
+                    NavigationLink(value: HomeRoute.bookDetail(recommendation)) {
                         HStack{
                             Text("책 읽으러 가기")
                                 .caption1RegularStyle
@@ -211,13 +204,7 @@ struct HomeView: View {
                     .body1SemiBoldStyle
                 Spacer()
             }
-            NavigationLink {
-                BookRecordDetailView(
-                    record: record,
-                    service: bookService,
-                    loadsRemoteDetail: true
-                )
-            } label: {
+            NavigationLink(value: HomeRoute.recentBookDetail(record)) {
                 RecentBookCardView(record: record)
             }
             .buttonStyle(.plain)

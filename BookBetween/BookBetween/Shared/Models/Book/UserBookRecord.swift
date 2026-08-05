@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct UserBookRecord {
+struct UserBookRecord: Hashable {
     let id: Int?
     let book: Book
     var progress: Int

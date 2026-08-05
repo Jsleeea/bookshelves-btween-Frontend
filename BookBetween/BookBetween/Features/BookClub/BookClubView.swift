@@ -4,21 +4,28 @@ struct BookClubView: View {
 	@State private var viewModel: BookClubViewModel
 	@State private var currentMeetingPage = 0
 	@FocusState private var isSearchFocused: Bool
+    @State private var showFetchErrorModal = false
+    @State private var showSummaryPendingModal = false
+    private let navigationPath: Binding<NavigationPath>
 
 	init(
 		meetingService: (any MeetingServiceProtocol)? = nil,
 		bookService: (any BookServiceProtocol)? = nil,
+        memberService: (any MemberServiceProtocol)? = nil,
 		chatService: (any ChatServiceProtocol)? = nil,
-		chatSocketService: (any ChatSocketServiceProtocol)? = nil
+		chatSocketService: (any ChatSocketServiceProtocol)? = nil,
+        navigationPath: Binding<NavigationPath> = .constant(NavigationPath())
 	) {
 		_viewModel = State(
 			initialValue: BookClubViewModel(
 				meetingService: meetingService,
 				bookService: bookService,
+                memberService: memberService,
 				chatService: chatService,
 				chatSocketService: chatSocketService
 			)
 		)
+        self.navigationPath = navigationPath
 	}
 
 	var body: some View {
@@ -42,7 +49,8 @@ struct BookClubView: View {
 					Spacer()
 					MonthYearPickerView(
 						selectedYear: Bindable(viewModel).selectedYear,
-						selectedMonth: Bindable(viewModel).selectedMonth
+						selectedMonth: Bindable(viewModel).selectedMonth,
+						startYear: viewModel.joinedYear
 					)
 				}
 				.padding(.horizontal, 19)
@@ -64,7 +72,41 @@ struct BookClubView: View {
 		}
 		.background(Color.beige100)
 		.toolbar(.hidden, for: .navigationBar)
+        .navigationDestination(for: BookClubRoute.self) { route in
+            switch route {
+            case .detail(let meeting, let isParticipant):
+                BookMeetingDetailView(
+                    meeting: meeting,
+                    service: viewModel.meetingService,
+                    isParticipant: isParticipant,
+                    onParticipated: isParticipant ? nil : {
+                        viewModel.selectedTab = .myMeetings
+                        Task { await viewModel.fetchMyMeetings() }
+                    }
+                )
+            case .chat(let chatroomId, let meetingId):
+                if let chatService = viewModel.chatService, let chatSocketService = viewModel.chatSocketService {
+                    ChatView(viewModel: ChatViewModel(
+                        chatroomId: chatroomId,
+                        meetingId: meetingId,
+                        chatService: chatService,
+                        socketService: chatSocketService
+                    ))
+                } else {
+                    ChatView(chatroomId: chatroomId, meetingId: meetingId)
+                }
+            case .result(let meeting):
+                BookMeetingResultView(meeting: meeting, service: viewModel.meetingService)
+            case .create(let book):
+                BookMeetingCreateView(book: book, service: viewModel.meetingService) {
+                    viewModel.selectedTab = .myMeetings
+                    Task { await viewModel.fetchMyMeetings() }
+                }
+            }
+        }
+        .bookClubErrorOverlay(showFetchError: $showFetchErrorModal, showSummaryPending: $showSummaryPendingModal)
 		.task {
+            await viewModel.fetchJoinedYear()
 			await viewModel.fetchMyMeetings()
 		}
 		.onChange(of: viewModel.selectedYear) {
@@ -112,8 +154,11 @@ struct BookClubView: View {
 				meeting: meeting,
 				service: viewModel.meetingService,
 				isParticipant: true,
-				chatService: viewModel.chatService,
-				chatSocketService: viewModel.chatSocketService
+                onCompletedNavigate: { fetched in
+                    navigationPath.wrappedValue.append(BookClubRoute.result(fetched))
+                },
+                onFetchError: { showFetchErrorModal = true },
+                onSummaryPending: { showSummaryPendingModal = true }
 			)
 		}
 	}
@@ -244,12 +289,11 @@ struct BookClubView: View {
                             BookMeetingCardView(
                                 meeting: meeting,
                                 service: viewModel.meetingService,
-                                chatService: viewModel.chatService,
-                                chatSocketService: viewModel.chatSocketService,
-                                onParticipated: {
-                                    viewModel.selectedTab = .myMeetings
-                                    Task { await viewModel.fetchMyMeetings() }
-                                }
+                                onCompletedNavigate: { fetched in
+                                    navigationPath.wrappedValue.append(BookClubRoute.result(fetched))
+                                },
+                                onFetchError: { showFetchErrorModal = true },
+                                onSummaryPending: { showSummaryPendingModal = true }
                             )
                         }
                     }
@@ -339,12 +383,7 @@ struct BookClubView: View {
 				ScrollView(.horizontal, showsIndicators: false) {
 					HStack(spacing: 20) {
 						ForEach(viewModel.bookSearchResults, id: \.isbn) { book in
-							NavigationLink {
-								BookMeetingCreateView(book: book, service: viewModel.meetingService) {
-									viewModel.selectedTab = .createdMeetings
-									Task { await viewModel.fetchMyMeetings() }
-								}
-							} label: {
+							NavigationLink(value: BookClubRoute.create(book)) {
 								BookSearchCardView(book: book)
 							}
 						}

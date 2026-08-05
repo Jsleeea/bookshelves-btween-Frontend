@@ -10,6 +10,7 @@ struct BookMeetingDetailView: View {
     @State private var isParticipating = false
     @State private var participationError: String?
     @State private var meetingDismissed = false
+    @State private var showSuccessModal = false
 
     init(meeting: BookMeeting, service: (any MeetingServiceProtocol)? = nil, isParticipant: Bool = false, onParticipated: (() -> Void)? = nil) {
         self._meeting = State(initialValue: meeting)
@@ -47,8 +48,7 @@ struct BookMeetingDetailView: View {
                                     isParticipating = true
                                     do {
                                         _ = try await service?.participateMeeting(meetingId: meeting.id)
-                                        dismiss()
-                                        onParticipated?()
+                                        showSuccessModal = true
                                     } catch {
                                         participationError = error.localizedDescription
                                         isParticipating = false
@@ -63,6 +63,17 @@ struct BookMeetingDetailView: View {
 				.scrollBounceBehavior(.basedOnSize)
 			}
 		}
+		.overlay {
+            if showSuccessModal {
+                ZStack {
+                    Color.black.opacity(0.4).ignoresSafeArea()
+                    SuccessModalView(title: "모임에 참여했습니다") {
+                        dismiss()
+                        onParticipated?()
+                    }
+                }
+            }
+        }
 		.toolbar(.hidden, for: .navigationBar)
 		.hideTabBar()
 		.alert("모임 참여 실패", isPresented: Binding(
