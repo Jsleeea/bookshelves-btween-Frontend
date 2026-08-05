@@ -96,7 +96,8 @@ struct MainTabView: View {
                         SearchView(
                             viewModel: SearchViewModel(
                                 service: bookService
-                            )
+                            ),
+                            meetingService: meetingService
                         )
                     }
                 case .bookClub:
