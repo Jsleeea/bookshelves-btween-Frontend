@@ -53,7 +53,7 @@ enum NotificationStubData {
               {
                 "id": 102,
                 "type": "MEETING_SUMMARY_DONE",
-                "title": "AI 요약이 완료되었어요",
+                "title": "혼모노 모임 요약이 준비되었어요",
                 "content": "지금 확인해보세요",
                 "isRead": false,
                 "targetId": 15,
