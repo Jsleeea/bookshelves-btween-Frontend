@@ -43,7 +43,7 @@ struct NotificationCardView: View {
 
     @ViewBuilder
     private var titleText: some View {
-        if let bookTitle = item.meetingStartedBookTitle {
+        if let bookTitle = item.meetingStartedBookTitle ?? item.aiSummaryBookTitle {
             ViewThatFits(in: .horizontal) {
                 Text(item.displayTitle)
                     .font(.body1SemiBold)
@@ -60,7 +60,7 @@ struct NotificationCardView: View {
                         .lineLimit(1)
                         .truncationMode(.tail)
 
-                    Text(NotificationItem.meetingStartedSuffix)
+                    Text(titleSuffix)
                         .font(.body1SemiBold)
                         .tracking(0)
                         .foregroundStyle(.gray800)
@@ -75,6 +75,17 @@ struct NotificationCardView: View {
                 .lineSpacing(1.5)
                 .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private var titleSuffix: String {
+        switch item.type {
+        case .meetingStarted:
+            return NotificationItem.meetingStartedSuffix
+        case .aiSummaryReady:
+            return NotificationItem.aiSummaryReadySuffix
+        case .meetingCancelled, .system:
+            return item.displayTitle
         }
     }
 
@@ -135,7 +146,7 @@ struct NotificationCardView: View {
             item: NotificationItem(
                 id: 2,
                 type: .aiSummaryReady,
-                title: "AI 요약이 완료되었어요",
+                title: "혼모노 모임 요약이 준비되었어요",
                 message: "지금 확인해보세요",
                 isActionable: true
             )
