@@ -72,6 +72,8 @@ enum NotificationType: Equatable {
 }
 
 extension NotificationItem {
+    static let meetingStartedSuffix = "독서 모임이 시작되었어요"
+
     var displayTitle: String {
         let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
 
@@ -88,11 +90,25 @@ extension NotificationItem {
                 "모임이 시작되었어요"
             ]
             return genericTitles.contains(trimmedTitle)
-                ? "독서 모임이 시작되었어요"
+                ? Self.meetingStartedSuffix
                 : trimmedTitle
         case .system:
             return trimmedTitle
         }
+    }
+
+    /// "{책 제목} 독서 모임이 시작되었어요" 형식에서 책 제목만 추출.
+    /// 책 제목을 알 수 없는 경우(제네릭 문구, 다른 알림 타입 등) nil.
+    var meetingStartedBookTitle: String? {
+        guard type == .meetingStarted else { return nil }
+
+        let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmedTitle.hasSuffix(Self.meetingStartedSuffix) else { return nil }
+
+        let bookTitle = String(trimmedTitle.dropLast(Self.meetingStartedSuffix.count))
+            .trimmingCharacters(in: .whitespaces)
+
+        return bookTitle.isEmpty ? nil : bookTitle
     }
 
     var displayMessage: String {

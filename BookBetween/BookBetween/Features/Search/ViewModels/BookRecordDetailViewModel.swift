@@ -46,6 +46,7 @@ final class BookRecordDetailViewModel {
         self.progress = record.progress
         self.rating = record.rating ?? 0
         self.memo = record.memo ?? ""
+        self.isLoading = loadsRemoteDetail
     }
 
     var book: Book {
@@ -71,12 +72,15 @@ final class BookRecordDetailViewModel {
     }
 
     func loadBookDetail() async {
-        guard
-            loadsRemoteDetail,
-            !hasLoadedDetail,
-            !isLoading,
-            let isbn = normalizedISBN
-        else { return }
+        guard loadsRemoteDetail, !hasLoadedDetail else {
+            isLoading = false
+            return
+        }
+
+        guard let isbn = normalizedISBN else {
+            isLoading = false
+            return
+        }
 
         isLoading = true
         errorMessage = nil

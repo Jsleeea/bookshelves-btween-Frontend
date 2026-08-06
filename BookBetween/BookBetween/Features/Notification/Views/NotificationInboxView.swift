@@ -63,14 +63,14 @@ struct NotificationInboxView: View {
                         isMeetingEndedModalPresented = false
                     }
 
-                ErrorModalView(title: "모임이 종료되었습니다") {
+                ErrorModalView(title: "종료된 모임입니다") {
                     isMeetingEndedModalPresented = false
                 }
                 .transition(.scale.combined(with: .opacity))
                 .zIndex(1)
             }
         }
-        .animation(.easeInOut(duration: 0.2), value: isMeetingEndedModalPresented)
+        .animation(.spring(response: 0.35, dampingFraction: 0.7), value: isMeetingEndedModalPresented)
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
         .enableSwipeBack()
@@ -123,7 +123,6 @@ struct NotificationInboxView: View {
             Spacer()
         }
         .padding(.horizontal, 30)
-        .padding(.top, 8)
         .padding(.bottom, 18)
     }
 
