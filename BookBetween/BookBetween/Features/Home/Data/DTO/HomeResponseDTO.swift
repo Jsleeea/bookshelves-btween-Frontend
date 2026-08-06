@@ -54,10 +54,29 @@ struct HomeBookDTO: Decodable {
     let isbn: String
     let title: String
     let author: String
-    let publisher: String
+    let publisher: String?
     let coverImageUrl: String?
     let kdcCode: String?
     let kdcName: String?
+
+    private enum CodingKeys: String, CodingKey {
+        case id, isbn, title, author, publisher, coverImageUrl, kdcCode, kdcName
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        id = try container.decode(Int.self, forKey: .id)
+        isbn = try container.decode(String.self, forKey: .isbn)
+        title = try container.decodeIfPresent(String.self, forKey: .title)
+            ?? "제목 정보 없음"
+        author = try container.decodeIfPresent(String.self, forKey: .author)
+            ?? "저자 미상"
+        publisher = try container.decodeIfPresent(String.self, forKey: .publisher)
+        coverImageUrl = try container.decodeIfPresent(String.self, forKey: .coverImageUrl)
+        kdcCode = try container.decodeIfPresent(String.self, forKey: .kdcCode)
+        kdcName = try container.decodeIfPresent(String.self, forKey: .kdcName)
+    }
 }
 
 struct HomeMeetingBookDTO: Decodable {

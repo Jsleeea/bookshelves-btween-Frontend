@@ -13,11 +13,7 @@ struct NotificationCardView: View {
             notificationIcon
 
             VStack(alignment: .leading, spacing: 5) {
-                Text(item.displayTitle)
-                    .body1SemiBoldStyle
-                    .foregroundStyle(.gray800)
-                    .lineLimit(2)
-                    .fixedSize(horizontal: false, vertical: true)
+                titleText
 
                 Text(item.displayMessage)
                     .caption1RegularStyle
@@ -27,7 +23,7 @@ struct NotificationCardView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
 
             if item.isActionable {
-                Image("icon_chevron_right_gray")
+                Image("icon_notification_chevron_right")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 7, height: 14)
@@ -42,8 +38,44 @@ struct NotificationCardView: View {
             RoundedRectangle(cornerRadius: 12)
                 .stroke(.gray200, lineWidth: 1)
         }
-        .shadow(color: .black.opacity(0.1), radius: 3, x: 0, y: 2)
         .accessibilityElement(children: .combine)
+    }
+
+    @ViewBuilder
+    private var titleText: some View {
+        if let bookTitle = item.meetingStartedBookTitle {
+            ViewThatFits(in: .horizontal) {
+                Text(item.displayTitle)
+                    .font(.body1SemiBold)
+                    .tracking(0)
+                    .foregroundStyle(.gray800)
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false)
+
+                VStack(alignment: .leading, spacing: 1.5) {
+                    Text(bookTitle)
+                        .font(.body1SemiBold)
+                        .tracking(0)
+                        .foregroundStyle(.gray800)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+
+                    Text(NotificationItem.meetingStartedSuffix)
+                        .font(.body1SemiBold)
+                        .tracking(0)
+                        .foregroundStyle(.gray800)
+                        .lineLimit(1)
+                }
+            }
+        } else {
+            Text(item.displayTitle)
+                .font(.body1SemiBold)
+                .tracking(0)
+                .foregroundStyle(.gray800)
+                .lineSpacing(1.5)
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 
     private var notificationIcon: some View {
@@ -105,6 +137,25 @@ struct NotificationCardView: View {
                 type: .aiSummaryReady,
                 title: "AI 요약이 완료되었어요",
                 message: "지금 확인해보세요",
+                isActionable: true
+            )
+        )
+        NotificationCardView(
+            item: NotificationItem(
+                id: 3,
+                type: .meetingStarted,
+                title: "저는 남자고 임신을 했습니다 독서 모임이 시작되었어요",
+                message: "지금 모임에 참여해보세요",
+                    isActionable: true
+            )
+        )
+
+        NotificationCardView(
+            item: NotificationItem(
+                id: 4,
+                type: .meetingStarted,
+                title: "혼모노 독서 모임이 시작되었어요",
+                message: "지금 모임에 참여해보세요",
                 isActionable: true
             )
         )

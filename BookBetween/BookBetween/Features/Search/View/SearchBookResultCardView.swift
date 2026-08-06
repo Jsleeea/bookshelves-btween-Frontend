@@ -51,15 +51,17 @@ struct SearchBookResultCardView: View {
                     actionMenu
                         .padding(.top, Self.menuTopOffset)
                         .padding(.trailing, 12)
+                        .transition(
+                            .scale(scale: 0.95, anchor: .topTrailing)
+                                .combined(with: .opacity)
+                        )
                 }
             }
             .padding(
                 .bottom,
                 isActionMenuPresented ? Self.menuOverflowHeight : 0
             )
-            .transaction { transaction in
-                transaction.disablesAnimations = true
-            }
+            .animation(.easeInOut(duration: 0.15), value: isActionMenuPresented)
     }
 
     private static var menuOverflowHeight: CGFloat {
@@ -96,10 +98,7 @@ struct SearchBookResultCardView: View {
             Spacer()
 
             Button {
-                var transaction = Transaction()
-                transaction.disablesAnimations = true
-
-                withTransaction(transaction) {
+                withAnimation(.easeInOut(duration: 0.15)) {
                     isActionMenuPresented.toggle()
                 }
             } label: {
