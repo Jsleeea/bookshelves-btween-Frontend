@@ -11,6 +11,8 @@ import KakaoSDKCommon
 
 @main
 struct BookBetweenApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+
     private let loginViewModel: LoginViewModel
     private let accountSetupViewModel: AccountSetupViewModel
     private let memberService: MemberServiceProtocol
