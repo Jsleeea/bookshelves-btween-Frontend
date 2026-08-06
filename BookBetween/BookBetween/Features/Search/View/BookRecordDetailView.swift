@@ -11,6 +11,7 @@ struct BookRecordDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var viewModel: BookRecordDetailViewModel
     @State private var isShowingSaveSuccess = false
+    @State private var editHintShakeTrigger: CGFloat = 0
     @FocusState private var isReviewFocused: Bool  // 키보드 내리기
     private let onRecordSaved: ((UserBookRecord) -> Void)?
     
@@ -62,10 +63,16 @@ struct BookRecordDetailView: View {
 
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
-                    bookHeader
-                    bookDescription
-                    readingRecordForm
+                    if !viewModel.isLoading {
+                        Group {
+                            bookHeader
+                            bookDescription
+                            readingRecordForm
+                        }
+                        .transition(.opacity)
+                    }
                 }
+                .animation(.easeInOut(duration: 0.2), value: viewModel.isLoading)
                 .padding(.horizontal, 30)
                 .padding(.bottom, 140)// 기록 저장하기 잘림 수정 140 - 40
             }
@@ -96,12 +103,16 @@ struct BookRecordDetailView: View {
                 if isShowingSaveSuccess {
                     Color.black.opacity(0.4)
                         .ignoresSafeArea()
+                        .transition(.opacity)
 
                     SuccessModalView(title: "저장되었습니다.") {
                         isShowingSaveSuccess = false
                     }
+                    .transition(.scale.combined(with: .opacity))
+                    .zIndex(1)
                 }
             }
+            .animation(.spring(response: 0.35, dampingFraction: 0.7), value: isShowingSaveSuccess)
         }
         .task {
             await viewModel.loadBookDetail()
@@ -155,12 +166,21 @@ struct BookRecordDetailView: View {
 
                     Text("수정하기")
                         .body1SemiBoldStyle
-                        .foregroundStyle(.gray800)
                 }
+                .foregroundStyle(.gray800)
             }
             .buttonStyle(.plain)
             .disabled(viewModel.isEditing || !viewModel.isSaveable)
             .opacity(viewModel.isEditing || !viewModel.isSaveable ? 0 : 1)
+            .modifier(ShakeEffect(animatableData: editHintShakeTrigger))
+        }
+    }
+
+    private func requestEditHint() {
+        guard !viewModel.isEditing, viewModel.isSaveable else { return }
+
+        withAnimation(.easeInOut(duration: 0.35)) {
+            editHintShakeTrigger += 1
         }
     }
 
@@ -257,6 +277,7 @@ struct BookRecordDetailView: View {
                     .padding(.top, 8)
             }
         }
+        .simultaneousGesture(TapGesture().onEnded { requestEditHint() })
     }
 
     private let starSize: CGFloat = 20
@@ -292,6 +313,7 @@ struct BookRecordDetailView: View {
                 .padding(.top, 3)
             }
         }
+        .simultaneousGesture(TapGesture().onEnded { requestEditHint() })
         .padding(.top, 8)
     }
 
@@ -366,6 +388,7 @@ struct BookRecordDetailView: View {
                     .offset(x: 18, y: 16) // padding 만큼 밀어냄
             }
         }
+        .simultaneousGesture(TapGesture().onEnded { requestEditHint() })
         .padding(.top, 8)
     }
     
@@ -414,6 +437,17 @@ struct BookRecordDetailView: View {
                 RoundedRectangle(cornerRadius: 12)
                     .stroke(borderColor, lineWidth: borderWidth)
             }
+    }
+}
+
+private struct ShakeEffect: GeometryEffect {
+    var travelDistance: CGFloat = 6
+    var numberOfShakes: CGFloat = 3
+    var animatableData: CGFloat
+
+    func effectValue(size: CGSize) -> ProjectionTransform {
+        let translation = travelDistance * sin(animatableData * .pi * numberOfShakes)
+        return ProjectionTransform(CGAffineTransform(translationX: translation, y: 0))
     }
 }
 

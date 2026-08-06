@@ -1,8 +1,11 @@
 import SwiftUI
+import Kingfisher
 
 struct BookCoverImage: View {
     let coverImageUrl: String?
     let placeholderImageName: String
+
+    @State private var loadFailed = false
 
     private var coverURL: URL? {
         guard let coverImageUrl else { return nil }
@@ -20,21 +23,15 @@ struct BookCoverImage: View {
     }
 
     var body: some View {
-        if let coverURL {
-            AsyncImage(url: coverURL) { phase in
-                switch phase {
-                case .empty:
-                    placeholderImage
-                case .success(let image):
-                    image
-                        .resizable()
-                        .scaledToFill()
-                case .failure:
-                    fallbackImage
-                @unknown default:
-                    fallbackImage
-                }
-            }
+        if let coverURL, !loadFailed {
+            KFImage(coverURL)
+                .placeholder { placeholderImage }
+                .onFailure { _ in loadFailed = true }
+                .resizable()
+                .fade(duration: 0.2)
+                .cancelOnDisappear(true)
+                .scaledToFill()
+                .onChange(of: coverImageUrl) { _, _ in loadFailed = false }
         } else {
             fallbackImage
         }

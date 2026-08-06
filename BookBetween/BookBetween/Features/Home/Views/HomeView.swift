@@ -142,7 +142,7 @@ struct HomeView: View {
                             .padding(.top, 3)
                         Spacer()
                         Text(recommendation.title)
-                            .pointText4Style
+                            .pointText3Style
                             .foregroundStyle(.gray800)
                         Text(authorAndCategory)
                             .caption2RegularStyle

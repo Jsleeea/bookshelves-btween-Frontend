@@ -1,5 +1,5 @@
 {
-  "originHash" : "49df94a2824cc4f9d7c7a1947cfb1c7ff22a333e16742fd70f54acecd5d99174",
+  "originHash" : "cc8e5f0e8df283874c4960aa2ab0605823f3b8b64d759bcf10ac486906e6960b",
   "pins" : [
     {
       "identity" : "abseil-cpp-binary",
@@ -110,14 +110,23 @@
       }
     },
     {
-      "identity" : "leveldb",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/firebase/leveldb.git",
-      "state" : {
-        "revision" : "a0bc79961d7be727d258d33d5a6b2f1023270ba1",
-        "version" : "1.22.5"
-      }
-    },
+  "identity" : "kingfisher",
+  "kind" : "remoteSourceControl",
+  "location" : "https://github.com/onevcat/Kingfisher.git",
+  "state" : {
+    "revision" : "410984bf301f4fa224fe56277b3f8672cc465c79",
+    "version" : "8.11.0"
+  }
+},
+{
+  "identity" : "leveldb",
+  "kind" : "remoteSourceControl",
+  "location" : "https://github.com/firebase/leveldb.git",
+  "state" : {
+    "revision" : "a0bc79961d7be727d258d33d5a6b2f1023270ba1",
+    "version" : "1.22.5"
+  }
+},
     {
       "identity" : "moya",
       "kind" : "remoteSourceControl",

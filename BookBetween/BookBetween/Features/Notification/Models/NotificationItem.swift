@@ -72,6 +72,13 @@ enum NotificationType: Equatable {
 }
 
 extension NotificationItem {
+    static let meetingStartedSuffix = "독서 모임이 시작되었어요"
+    /// 카드에 노출하는 고정 문구. 서버가 실제로 내려주는 원문 문구와는 다를 수 있다.
+    static let aiSummaryReadySuffix = "AI 요약이 완료되었어요"
+    /// 서버가 내려주는 원문 title의 접미사("{책 제목} 모임 요약이 준비되었어요").
+    /// 책 제목 파싱에만 사용하고, 화면에는 aiSummaryReadySuffix를 노출한다.
+    private static let aiSummaryReadyRawSuffix = "모임 요약이 준비되었어요"
+
     var displayTitle: String {
         let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
 
@@ -79,7 +86,10 @@ extension NotificationItem {
         case .meetingCancelled:
             return "최소 인원 미달로 모임이 취소되었어요"
         case .aiSummaryReady:
-            return "AI 요약이 완료되었어요"
+            guard let bookTitle = aiSummaryBookTitle else {
+                return Self.aiSummaryReadySuffix
+            }
+            return "\(bookTitle) \(Self.aiSummaryReadySuffix)"
         case .meetingStarted:
             let genericTitles = [
                 "",
@@ -88,11 +98,39 @@ extension NotificationItem {
                 "모임이 시작되었어요"
             ]
             return genericTitles.contains(trimmedTitle)
-                ? "독서 모임이 시작되었어요"
+                ? Self.meetingStartedSuffix
                 : trimmedTitle
         case .system:
             return trimmedTitle
         }
+    }
+
+    /// "{책 제목} 독서 모임이 시작되었어요" 형식에서 책 제목만 추출.
+    /// 책 제목을 알 수 없는 경우(제네릭 문구, 다른 알림 타입 등) nil.
+    var meetingStartedBookTitle: String? {
+        guard type == .meetingStarted else { return nil }
+
+        let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmedTitle.hasSuffix(Self.meetingStartedSuffix) else { return nil }
+
+        let bookTitle = String(trimmedTitle.dropLast(Self.meetingStartedSuffix.count))
+            .trimmingCharacters(in: .whitespaces)
+
+        return bookTitle.isEmpty ? nil : bookTitle
+    }
+
+    /// 서버 원문 title("{책 제목} 모임 요약이 준비되었어요")에서 책 제목만 추출.
+    /// 책 제목을 알 수 없는 경우(제네릭 문구, 다른 알림 타입 등) nil.
+    var aiSummaryBookTitle: String? {
+        guard type == .aiSummaryReady else { return nil }
+
+        let trimmedTitle = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmedTitle.hasSuffix(Self.aiSummaryReadyRawSuffix) else { return nil }
+
+        let bookTitle = String(trimmedTitle.dropLast(Self.aiSummaryReadyRawSuffix.count))
+            .trimmingCharacters(in: .whitespaces)
+
+        return bookTitle.isEmpty ? nil : bookTitle
     }
 
     var displayMessage: String {

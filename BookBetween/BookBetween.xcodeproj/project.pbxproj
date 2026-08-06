@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		6CAEA7B32FFD354B008AE9CA /* Moya in Frameworks */ = {isa = PBXBuildFile; productRef = 6CAEA7B22FFD354B008AE9CA /* Moya */; };
+		6CEB012F3024C9E600055584 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 6CEB012E3024C9E600055584 /* Kingfisher */; };
 		C0DA00052FFF000100000001 /* KakaoSDKCommon in Frameworks */ = {isa = PBXBuildFile; productRef = C0DA00022FFF000100000001 /* KakaoSDKCommon */; };
 		C0DA00062FFF000100000001 /* KakaoSDKAuth in Frameworks */ = {isa = PBXBuildFile; productRef = C0DA00032FFF000100000001 /* KakaoSDKAuth */; };
 		C0DA00072FFF000100000001 /* KakaoSDKUser in Frameworks */ = {isa = PBXBuildFile; productRef = C0DA00042FFF000100000001 /* KakaoSDKUser */; };
@@ -51,7 +52,8 @@
 				C0DA00052FFF000100000001 /* KakaoSDKCommon in Frameworks */,
 				C0DA00072FFF000100000001 /* KakaoSDKUser in Frameworks */,
 				6CAEA7B32FFD354B008AE9CA /* Moya in Frameworks */,
-				FF21C42BB6C2EBAB2B992E2C /* Pods_BookBetween.framework in Frameworks */,
+        FF21C42BB6C2EBAB2B992E2C /* Pods_BookBetween.framework in Frameworks */,
+        6CEB012F3024C9E600055584 /* Kingfisher in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -119,6 +121,7 @@
 				C0DA00022FFF000100000001 /* KakaoSDKCommon */,
 				C0DA00042FFF000100000001 /* KakaoSDKUser */,
 				6CAEA7B22FFD354B008AE9CA /* Moya */,
+				6CEB012E3024C9E600055584 /* Kingfisher */,
 			);
 			productName = BookBetween;
 			productReference = 6CC2D3F62FEC2E1C006EEB29 /* BookBetween.app */;
@@ -151,7 +154,8 @@
 			packageReferences = (
 				C0DA00012FFF000100000001 /* XCRemoteSwiftPackageReference "kakao-ios-sdk" */,
 				6CAEA7B12FFD354B008AE9CA /* XCRemoteSwiftPackageReference "Moya" */,
-				763ECFDE302444FE00D09A63 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+        763ECFDE302444FE00D09A63 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+        6CEB012D3024C9E600055584 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 6CC2D3F72FEC2E1C006EEB29 /* Products */;
@@ -463,12 +467,22 @@
 				minimumVersion = 15.0.3;
 			};
 		};
-		763ECFDE302444FE00D09A63 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 12.17.0;
+763ECFDE302444FE00D09A63 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+    isa = XCRemoteSwiftPackageReference;
+    repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+    requirement = {
+        kind = upToNextMajorVersion;
+        minimumVersion = 12.17.0;
+    };
+};
+6CEB012D3024C9E600055584 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+    isa = XCRemoteSwiftPackageReference;
+    repositoryURL = "https://github.com/onevcat/Kingfisher.git";
+    requirement = {
+        kind = upToNextMajorVersion;
+        minimumVersion = 8.11.0;
+    };
+};
 			};
 		};
 		C0DA00012FFF000100000001 /* XCRemoteSwiftPackageReference "kakao-ios-sdk" */ = {
@@ -486,6 +500,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 6CAEA7B12FFD354B008AE9CA /* XCRemoteSwiftPackageReference "Moya" */;
 			productName = Moya;
+		};
+		6CEB012E3024C9E600055584 /* Kingfisher */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 6CEB012D3024C9E600055584 /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			productName = Kingfisher;
 		};
 		C0DA00022FFF000100000001 /* KakaoSDKCommon */ = {
 			isa = XCSwiftPackageProductDependency;
