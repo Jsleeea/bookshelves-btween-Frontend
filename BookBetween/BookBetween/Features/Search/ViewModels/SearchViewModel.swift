@@ -162,7 +162,19 @@ final class SearchViewModel {
     }
 
     func removeRecentKeyword(_ keyword: String) {
+        let previousKeywords = recentKeywords
         recentKeywords.removeAll { $0 == keyword }
+
+        Task {
+            do {
+                try await service.deleteRecentSearch(keyword: keyword)
+            } catch {
+                recentKeywords = previousKeywords
+                #if DEBUG
+                print("[Recent Search] 최근 검색어 삭제 실패: \(error)")
+                #endif
+            }
+        }
     }
 
     private func resetSearch() {

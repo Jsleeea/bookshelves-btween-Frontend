@@ -17,6 +17,7 @@ struct BookTarget: TargetType {
         )
         case detail(isbn: String)
         case recentSearches
+        case deleteRecentSearch(keyword: String)
         case upsertMemberBook(
             isbn: String,
             request: MemberBookUpsertRequestDTO
@@ -36,7 +37,7 @@ struct BookTarget: TargetType {
             return "/api/v1/books/search"
         case .detail(let isbn):
             return "/api/v1/books/\(isbn)"
-        case .recentSearches:
+        case .recentSearches, .deleteRecentSearch:
             return "/api/v1/books/search/recent"
         case .upsertMemberBook(let isbn, _):
             return "/api/v1/member-books/\(isbn)"
@@ -58,7 +59,7 @@ struct BookTarget: TargetType {
             return .get
         case .upsertMemberBook:
             return .put
-        case .deleteMemberBook:
+        case .deleteMemberBook, .deleteRecentSearch:
             return .delete
         }
     }
@@ -77,6 +78,11 @@ struct BookTarget: TargetType {
             )
         case .detail, .recentSearches, .deleteMemberBook:
             return .requestPlain
+        case let .deleteRecentSearch(keyword):
+            return .requestParameters(
+                parameters: ["keyword": keyword],
+                encoding: URLEncoding.queryString
+            )
         case let .memberBooks(status, page, size):
             return .requestParameters(
                 parameters: ["status": status, "page": page, "size": size],

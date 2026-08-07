@@ -16,6 +16,7 @@ protocol BookServiceProtocol {
     ) async throws -> BookSearchPage
     func fetchBookDetail(isbn: String) async throws -> BookDetail
     func fetchRecentSearches() async throws -> [RecentSearchItem]
+    func deleteRecentSearch(keyword: String) async throws
     func upsertMemberBook(
         isbn: String,
         progress: Int,
@@ -138,6 +139,22 @@ final class BookService: BookServiceProtocol {
                 return try response.decodePayload(
                     RecentSearchResultDTO.self
                 ).toDomain()
+            } catch let error as MoyaError {
+                throw NetworkError.transport(error)
+            }
+        }
+    }
+
+    func deleteRecentSearch(keyword: String) async throws {
+        try await requestExecutor.execute {
+            do {
+                let response = try await provider.requestAsync(
+                    BookTarget(
+                        baseURL: baseURL,
+                        endpoint: .deleteRecentSearch(keyword: keyword)
+                    )
+                )
+                try response.validateAPIResponse()
             } catch let error as MoyaError {
                 throw NetworkError.transport(error)
             }
