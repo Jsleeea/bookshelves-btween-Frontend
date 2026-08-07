@@ -18,6 +18,8 @@ enum NotificationStubData {
             json = newNotificationResponse(afterId: afterId, size: size)
         case .markAsRead(let notificationId):
             json = markAsReadResponse(notificationId: notificationId)
+        case .deleteNotification:
+            json = deleteNotificationResponse
         }
 
         return Data(json.utf8)
@@ -101,6 +103,15 @@ enum NotificationStubData {
         }
         """
     }
+
+    private static let deleteNotificationResponse = """
+    {
+      "isSuccess": true,
+      "code": "NOTI200_5",
+      "message": "알림을 삭제했습니다.",
+      "result": null
+    }
+    """
 
     private static func newNotificationResponse(
         afterId: Int,

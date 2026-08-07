@@ -24,6 +24,7 @@ final class NotificationInboxViewModel {
     private var newestNotificationId = 0
     private var isCheckingForNewNotifications = false
     private var readingNotificationIds: Set<Int> = []
+    private var deletingNotificationIds: Set<Int> = []
 
     var isEmpty: Bool {
         notifications.isEmpty
@@ -145,6 +146,20 @@ final class NotificationInboxViewModel {
             #if DEBUG
             print("[Notification] 읽음 처리 실패: \(error)")
             #endif
+        }
+    }
+
+    func deleteNotification(_ notification: NotificationItem) async {
+        guard !deletingNotificationIds.contains(notification.id) else { return }
+
+        deletingNotificationIds.insert(notification.id)
+        defer { deletingNotificationIds.remove(notification.id) }
+
+        do {
+            try await service.deleteNotification(notificationId: notification.id)
+            notifications.removeAll { $0.id == notification.id }
+        } catch {
+            errorMessage = error.localizedDescription
         }
     }
 
