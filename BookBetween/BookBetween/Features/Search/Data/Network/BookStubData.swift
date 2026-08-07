@@ -16,6 +16,8 @@ enum BookStubData {
             json = detailResponse
         case .recentSearches:
             json = recentSearchesResponse
+        case .deleteRecentSearch:
+            json = deleteRecentSearchResponse
         case .upsertMemberBook:
             json = upsertMemberBookResponse
         case .memberBooks:
@@ -154,6 +156,15 @@ enum BookStubData {
           }
         ]
       }
+    }
+    """
+
+    private static let deleteRecentSearchResponse = """
+    {
+      "isSuccess": true,
+      "code": "BOOK200_10",
+      "message": "최근 검색어 삭제에 성공했습니다.",
+      "result": null
     }
     """
 
