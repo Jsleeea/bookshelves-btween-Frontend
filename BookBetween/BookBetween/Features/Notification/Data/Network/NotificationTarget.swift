@@ -13,6 +13,7 @@ struct NotificationTarget: TargetType {
         case fetchNotifications(page: Int, size: Int)
         case fetchNewNotifications(afterId: Int, size: Int)
         case markAsRead(notificationId: Int)
+        case deleteNotification(notificationId: Int)
     }
 
     let baseURL: URL
@@ -28,6 +29,8 @@ struct NotificationTarget: TargetType {
             return "/api/v1/notifications/new"
         case .markAsRead(let notificationId):
             return "/api/v1/notifications/\(notificationId)/read"
+        case .deleteNotification(let notificationId):
+            return "/api/v1/notifications/\(notificationId)"
         }
     }
 
@@ -39,6 +42,8 @@ struct NotificationTarget: TargetType {
             return .get
         case .markAsRead:
             return .patch
+        case .deleteNotification:
+            return .delete
         }
     }
 
@@ -65,7 +70,7 @@ struct NotificationTarget: TargetType {
                 ],
                 encoding: URLEncoding.queryString
             )
-        case .markAsRead:
+        case .markAsRead, .deleteNotification:
             return .requestPlain
         }
     }

@@ -199,7 +199,7 @@ struct BookRecordDetailView: View {
                 Text(viewModel.book.title)
                     .head2Style
                     .foregroundStyle(.gray800)
-                    .lineLimit(1)
+                    .lineLimit(2)
 
                 Text(authorAndPublisherText)
                     .body1RegularStyle
@@ -273,7 +273,8 @@ struct BookRecordDetailView: View {
                     .foregroundStyle(.gray800)
 
                 BookProgressView(progress: $viewModel.progress, isEditable: viewModel.isEditing)
-                    .frame(width: 288)
+                    .padding(.horizontal, 0)
+                    .frame(maxWidth: .infinity)
                     .padding(.top, 8)
             }
         }
@@ -428,7 +429,7 @@ struct BookRecordDetailView: View {
         borderWidth: CGFloat = 0.5,
         @ViewBuilder content: () -> Content) -> some View {
         content()
-            .padding(.horizontal, 18)
+            .padding(.horizontal, 15)
             .padding(.vertical, 16)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(.white)

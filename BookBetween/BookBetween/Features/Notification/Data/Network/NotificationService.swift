@@ -14,6 +14,7 @@ protocol NotificationServiceProtocol {
         size: Int
     ) async throws -> NewNotificationBatch
     func markAsRead(notificationId: Int) async throws -> Int
+    func deleteNotification(notificationId: Int) async throws
 }
 
 final class NotificationService: NotificationServiceProtocol {
@@ -130,6 +131,24 @@ final class NotificationService: NotificationServiceProtocol {
                 return try response
                     .decodePayload(ReadNotificationResultDTO.self)
                     .id
+            } catch let error as MoyaError {
+                throw NetworkError.transport(error)
+            }
+        }
+    }
+
+    func deleteNotification(notificationId: Int) async throws {
+        try await requestExecutor.execute {
+            do {
+                let response = try await provider.requestAsync(
+                    NotificationTarget(
+                        baseURL: baseURL,
+                        endpoint: .deleteNotification(
+                            notificationId: notificationId
+                        )
+                    )
+                )
+                try response.validateAPIResponse()
             } catch let error as MoyaError {
                 throw NetworkError.transport(error)
             }

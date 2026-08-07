@@ -127,33 +127,49 @@ struct NotificationInboxView: View {
     }
 
     private var notificationList: some View {
-        ScrollView(showsIndicators: false) {
-            LazyVStack(spacing: 12) {
-                ForEach(viewModel.notifications) { notification in
-                    Button {
+        List {
+            ForEach(viewModel.notifications) { notification in
+                Button {
+                    Task {
+                        await handleNotificationTap(notification)
+                    }
+                } label: {
+                    NotificationCardView(item: notification)
+                }
+                .buttonStyle(.plain)
+                .listRowInsets(EdgeInsets(top: 6, leading: 0, bottom: 6, trailing: 0))
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                    Button(role: .destructive) {
                         Task {
-                            await handleNotificationTap(notification)
+                            await viewModel.deleteNotification(notification)
                         }
                     } label: {
-                        NotificationCardView(item: notification)
-                    }
-                    .buttonStyle(.plain)
-                    .task {
-                        await viewModel.loadNextPageIfNeeded(
-                            currentItem: notification
-                        )
+                        Label("삭제", systemImage: "trash")
                     }
                 }
-
-                if viewModel.isLoadingNextPage {
-                    ProgressView()
-                        .padding(.vertical, 12)
+                .task {
+                    await viewModel.loadNextPageIfNeeded(
+                        currentItem: notification
+                    )
                 }
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 28)
-            .padding(.bottom, 40)
+
+            if viewModel.isLoadingNextPage {
+                ProgressView()
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+            }
         }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .scrollIndicators(.hidden)
+        .contentMargins(.horizontal, 20, for: .scrollContent)
+        .contentMargins(.top, 22, for: .scrollContent)
+        .contentMargins(.bottom, 40, for: .scrollContent)
         .refreshable {
             await viewModel.refreshNotifications()
         }
