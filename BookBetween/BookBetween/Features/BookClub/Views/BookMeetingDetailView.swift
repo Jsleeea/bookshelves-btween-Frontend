@@ -7,6 +7,7 @@ struct BookMeetingDetailView: View {
     private let isParticipant: Bool
     private let onParticipated: (() -> Void)?
     @State private var meeting: BookMeeting
+    @State private var isLoading = false
     @State private var isParticipating = false
     @State private var participationError: String?
     @State private var meetingDismissed = false
@@ -32,7 +33,7 @@ struct BookMeetingDetailView: View {
 				subtitleHeader
                     .padding(.bottom, 6)
 
-				ScrollView(showsIndicators: false) {
+				ScrollView(.vertical, showsIndicators: false) {
 					VStack(alignment: .center, spacing: 0) {
 						bookHeaderSection
 							.padding(.bottom, 24)
@@ -66,8 +67,15 @@ struct BookMeetingDetailView: View {
 		}
         .enableSwipeBack()
 		.overlay {
-            if showSuccessModal {
-                ZStack {
+            ZStack {
+                if isLoading {
+                    Color.beige100
+                        .ignoresSafeArea()
+                        .transition(.opacity)
+                    ProgressView()
+                        .transition(.opacity)
+                }
+                if showSuccessModal {
                     Color.black.opacity(0.4).ignoresSafeArea()
                     SuccessModalView(title: "모임에 참여했습니다") {
                         dismiss()
@@ -75,6 +83,7 @@ struct BookMeetingDetailView: View {
                     }
                 }
             }
+            .animation(.easeInOut(duration: 0.25), value: isLoading)
         }
 		.toolbar(.hidden, for: .navigationBar)
 		.hideTabBar()
@@ -88,6 +97,8 @@ struct BookMeetingDetailView: View {
 		}
 		.task {
 			guard let service else { return }
+            isLoading = true
+            defer { isLoading = false }
 			do {
 				meeting = try await service.fetchMeetingDetail(meetingId: meeting.id)
 			} catch {
@@ -351,7 +362,7 @@ struct BottomActionButton: View {
                 .padding(.horizontal, 29)
         }
         .background {
-            Color.white.ignoresSafeArea(edges: .bottom)
+            Color.clear.ignoresSafeArea(edges: .bottom)
         }
     }
 }
