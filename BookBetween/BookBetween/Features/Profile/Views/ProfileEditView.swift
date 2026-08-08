@@ -182,6 +182,8 @@ struct ProfileEditView: View {
         .animation(.easeInOut(duration: 0.2), value: activeModal)
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
+        .hideTabBar()
+        .enableSwipeBack()
         .alert(
             "회원 정보를 수정하지 못했습니다.",
             isPresented: Binding(
