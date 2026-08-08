@@ -46,30 +46,34 @@ struct BookClubView: View {
 				searchContent
                     .padding(.top, 8)
 			} else {
-				HStack {
-					Spacer()
-					MonthYearPickerView(
-						selectedYear: Bindable(viewModel).selectedYear,
-						selectedMonth: Bindable(viewModel).selectedMonth,
-						startYear: viewModel.joinedYear
-					)
-				}
-				.padding(.horizontal, 19)
-                .padding(.bottom, 15)
-
 				ScrollView(showsIndicators: false) {
 					let meetings = viewModel.selectedTab == .myMeetings
 						? viewModel.filteredParticipatingMeetings
 						: viewModel.filteredCreatedMeetings
-					if meetings.isEmpty {
-						emptyStateView(message: "모임이 없습니다")
-							.frame(height: 522)
-					} else {
-						VStack(spacing: 12) {
-							meetingList(meetings)
+					VStack(spacing: 0) {
+						HStack {
+							Spacer()
+							MonthYearPickerView(
+								selectedYear: Bindable(viewModel).selectedYear,
+								selectedMonth: Bindable(viewModel).selectedMonth,
+								startYear: viewModel.joinedYear
+							)
 						}
-						.padding(.top, 1)
-						.padding(.bottom, 100)
+						.padding(.horizontal, 19)
+						.padding(.bottom, 15)
+
+						if meetings.isEmpty {
+							if !viewModel.isLoadingMeetings {
+								emptyStateView(message: "모임이 없습니다")
+									.frame(height: 522)
+							}
+						} else {
+							VStack(spacing: 12) {
+								meetingList(meetings)
+							}
+							.padding(.top, 1)
+							.padding(.bottom, 100)
+						}
 					}
 				}
 				.refreshable {

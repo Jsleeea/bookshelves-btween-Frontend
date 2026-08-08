@@ -1,59 +1,26 @@
-//
-//  MyLibraryBookCardView.swift
-//  BookBetween
-//
-
 import SwiftUI
 
 struct MyLibraryBookCardView: View {
 	let record: UserBookRecord
-    let bookService: any BookServiceProtocol
-    let onRecordSaved: (UserBookRecord) -> Void
 
 	var body: some View {
-		ZStack {
-			HStack(alignment: .top, spacing: 16) {
-				bookCover
-                    .padding(.leading, 17.95)
+		HStack(alignment: .top, spacing: 16) {
+			bookCover
 
-				VStack(alignment: .leading, spacing: 0) {
-					bookInfo
+			VStack(alignment: .leading, spacing: 0) {
+				bookInfo
 
-                    Spacer()
-                    
-					if let quote = record.memo, !quote.isEmpty {
-						Text("\u{201C}\(quote)\u{201D}")
-							.caption2RegularStyle
-							.foregroundStyle(Color.gray500)
-							.lineLimit(2)
-                            .padding(.bottom, 6.5)
-					}
+				if let quote = record.memo, !quote.isEmpty {
+					Text("\u{201C}\(quote)\u{201D}")
+                        .font(.caption2Regular)
+						.foregroundStyle(Color.gray500)
+                        .lineSpacing(1.5)
 				}
-				Spacer()
 			}
-
-			VStack {
-				HStack {
-					Spacer()
-					moreButtonLabel
-				}
-				Spacer()
-			}
-
-			NavigationLink {
-				BookRecordDetailView(
-                    record: record,
-                    service: bookService,
-                    loadsRemoteDetail: true,
-                    onRecordSaved: onRecordSaved
-                )
-			} label: {
-				Color.clear
-					.contentShape(Rectangle())
-			}
+			Spacer()
 		}
-        .padding(.vertical, 15)
-        .padding(.trailing, 18.05)
+        .padding(.vertical, 16)
+        .padding(.horizontal, 16)
 		.background(.white)
 		.clipShape(RoundedRectangle(cornerRadius: 12))
 		.overlay {
@@ -68,7 +35,7 @@ struct MyLibraryBookCardView: View {
 
 	private var bookCover: some View {
 		BookCoverImage(book: record.book, placeholderImageName: "book_cover_mock")
-			.frame(width: 130.0 * 29.0 / 44.0, height: 130)
+			.frame(width: 128.0 * 29.0 / 44.0, height: 128)
             .clipped()
             .clipShape(RoundedRectangle(cornerRadius: 8))
             .overlay {
@@ -78,14 +45,20 @@ struct MyLibraryBookCardView: View {
 	}
 
 	private var bookInfo: some View {
-		VStack(alignment: .leading, spacing: 2) {
+		VStack(alignment: .leading, spacing: 0) {
 			Text(record.book.title)
-				.body1SemiBoldStyle
+                .font(.body1SemiBold)
+                .foregroundStyle(Color.gray800)
                 .padding(.top, 6.5)
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.bottom, 4)
 
-			Text(record.book.author)
-				.caption1RegularStyle
+			Text(authorPublisherText)
+                .font(.caption1Regular)
 				.foregroundStyle(Color.gray500)
+                .lineLimit(1)
+                .padding(.bottom, 2)
 
 			HStack(spacing: 4) {
                 Image(.iconStar)
@@ -94,30 +67,25 @@ struct MyLibraryBookCardView: View {
                     .frame(width: 14, height: 14)
                     .clipped()
 				Text(ratingText)
-					.caption1RegularStyle
+                    .font(.caption1Regular)
 					.foregroundStyle(Color.green600)
 			}
             .padding(.bottom, 2)
 
-			BookProgressView(progress: record.progress)
-                .padding(.bottom, 4)
+			BookProgressView(progress: record.progress, showsKnob: false)
+                .padding(.bottom, 2)
 		}
-	}
-
-	private var moreButtonLabel: some View {
-		HStack(spacing: 4) {
-			Text("더보기")
-				.caption1RegularStyle
-			Image("icon_chevron_right_gray")
-				.resizable()
-				.scaledToFill()
-				.frame(width: 6, height: 12)
-				.clipped()
-		}
-		.foregroundStyle(Color.gray500)
 	}
 
 	// MARK: - Helpers
+
+	private var authorPublisherText: String {
+		let author = record.book.author.isEmpty ? "저자 미상" : record.book.author
+		if let publisher = record.book.publisher, !publisher.isEmpty {
+			return "\(author) | \(publisher)"
+		}
+		return author
+	}
 
 	private var ratingText: String {
 		guard let r = record.rating else { return "-" }
@@ -132,7 +100,7 @@ struct MyLibraryBookCardView: View {
 				id: 1,
 				book: Book(
 					id: 1,
-					title: "싯다르타",
+					title: "싯다르타의 대표작. 인도를 배경으로 한 청년 싯다르타의 깨",
 					author: "헤르만 헤세",
 					publisher: "민음사",
 					description: "헤르만 헤세의 대표작. 인도를 배경으로 한 청년 싯다르타의 깨달음의 여정을 담은 소설.",
@@ -141,9 +109,7 @@ struct MyLibraryBookCardView: View {
 				progress: 70,
 				rating: 4.5,
 				memo: "강은 어디에나 있다. 입구이자 출구이며, 시작이자 끝이다."
-			),
-            bookService: BookService.stubbed(),
-            onRecordSaved: { _ in }
+			)
 		)
 		.padding()
 	}
