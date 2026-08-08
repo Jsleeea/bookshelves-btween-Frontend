@@ -15,6 +15,8 @@ struct MainTabView: View {
     @State private var summaryCompletedMeeting: BookMeeting?
     @State private var summaryResultMeeting: BookMeeting?
     @State private var showSummaryResult = false
+    @State private var meetingStartedMeeting: BookMeeting?
+    @State private var meetingStartedNotificationCursor = 0
 
     private let memberService: MemberServiceProtocol?
     private let bookService: BookServiceProtocol
@@ -163,8 +165,28 @@ struct MainTabView: View {
                 )
                 .transition(.scale(scale: 0.9).combined(with: .opacity))
             }
+
+            if let meeting = meetingStartedMeeting {
+                Color.black.opacity(0.4)
+                    .ignoresSafeArea()
+                    .transition(.opacity)
+                MeetingStartedModalView(
+                    meeting: meeting,
+                    onClose: {
+                        meetingStartedMeeting = nil
+                    },
+                    onParticipate: {
+                        meetingStartedMeeting = nil
+                    }
+                )
+                .transition(.scale(scale: 0.9).combined(with: .opacity))
+            }
         }
         .animation(.easeInOut(duration: 0.2), value: summaryCompletedMeeting != nil)
+        .animation(.easeInOut(duration: 0.2), value: meetingStartedMeeting != nil)
+        .task {
+            await watchMeetingStartedNotifications()
+        }
         .sheet(isPresented: $showSummaryResult) {
             if let meeting = summaryResultMeeting {
                 NavigationStack {
@@ -179,6 +201,39 @@ struct MainTabView: View {
 
     private var shouldShowTabBar: Bool {
         !hideTabBar && (selectedTab != .home || homeNavigationPath.isEmpty)
+    }
+
+    // MARK: - Meeting Started Notification Polling
+
+    private func watchMeetingStartedNotifications() async {
+        if let initialPage = try? await notificationService.fetchNotifications(page: 1, size: 1) {
+            meetingStartedNotificationCursor = initialPage.notifications.first?.id ?? 0
+        }
+
+        while !Task.isCancelled {
+            do {
+                try await Task.sleep(for: .seconds(30))
+            } catch {
+                return
+            }
+
+            guard let batch = try? await notificationService.fetchNewNotifications(
+                afterId: meetingStartedNotificationCursor,
+                size: 20
+            ) else { continue }
+
+            meetingStartedNotificationCursor = max(meetingStartedNotificationCursor, batch.nextCursor)
+
+            for notification in batch.notifications where notification.type == .meetingStarted {
+                guard
+                    let meetingId = notification.targetId,
+                    let meetingService,
+                    let meeting = try? await meetingService.fetchMeetingDetail(meetingId: meetingId)
+                else { continue }
+
+                meetingStartedMeeting = meeting
+            }
+        }
     }
 }
 
