@@ -29,6 +29,7 @@ final class ChatViewModel {
   private(set) var connectedCount = 0
   private(set) var myMemberId: Int?
   private(set) var isMeetingEnded = false
+  private(set) var endedMeeting: BookMeeting?
   private(set) var isLoading = false
   private(set) var questionUpdateTrigger = 0
   var errorMessage: String?
@@ -39,6 +40,7 @@ final class ChatViewModel {
   private let meetingId: Int
   private let chatService: any ChatServiceProtocol
   private let socketService: any ChatSocketServiceProtocol
+  private let meetingService: (any MeetingServiceProtocol)?
   private var eventListeningTask: Task<Void, Never>?
 
   // MARK: - Init
@@ -47,12 +49,14 @@ final class ChatViewModel {
     chatroomId: Int,
     meetingId: Int,
     chatService: any ChatServiceProtocol,
-    socketService: any ChatSocketServiceProtocol
+    socketService: any ChatSocketServiceProtocol,
+    meetingService: (any MeetingServiceProtocol)? = nil
   ) {
     self.chatroomId = chatroomId
     self.meetingId = meetingId
     self.chatService = chatService
     self.socketService = socketService
+    self.meetingService = meetingService
   }
 
   // MARK: - Lifecycle
@@ -162,6 +166,14 @@ final class ChatViewModel {
       let socketService = self.socketService
       Task {
         await socketService.disconnect()
+      }
+
+      if let meetingService {
+        let meetingId = self.meetingId
+        Task { [weak self] in
+          let meeting = try? await meetingService.fetchMeetingDetail(meetingId: meetingId)
+          self?.endedMeeting = meeting
+        }
       }
     }
   }

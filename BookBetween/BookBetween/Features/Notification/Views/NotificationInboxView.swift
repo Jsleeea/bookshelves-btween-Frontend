@@ -190,13 +190,15 @@ struct NotificationInboxView: View {
                         chatroomId: meeting.chatroomId,
                         meetingId: meeting.id,
                         chatService: chatService,
-                        socketService: chatSocketService
+                        socketService: chatSocketService,
+                        meetingService: meetingService
                     )
                 )
             } else {
                 ChatView(
                     chatroomId: meeting.chatroomId,
-                    meetingId: meeting.id
+                    meetingId: meeting.id,
+                    meetingService: meetingService
                 )
             }
         case nil:
