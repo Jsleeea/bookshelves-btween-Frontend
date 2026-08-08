@@ -69,6 +69,7 @@ struct ProfileView: View {
                     .head2Style
                     .foregroundStyle(Color.gray900)
                     .padding(.bottom, 16)
+                    .padding(.leading, 11)
 
                 profileCard
                     .padding(.bottom, 50)
@@ -86,11 +87,14 @@ struct ProfileView: View {
                     .head2Style
                     .foregroundStyle(Color.gray900)
                     .padding(.bottom, 18)
+                    .padding(.leading, 10)
 
                 readingCalendar
+                    .padding(.leading, 10)
+
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 12)
+            .padding(.horizontal, 19)
+            .padding(.top, 8)
             .padding(.bottom, 120)
         }
         .background(Color.beige100)
