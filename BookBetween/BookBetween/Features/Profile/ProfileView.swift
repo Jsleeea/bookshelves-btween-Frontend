@@ -156,26 +156,39 @@ struct ProfileView: View {
     }
 
     private var profileCard: some View {
-        HStack(spacing: 23) {
-            profileImage
+        ZStack(alignment: .topLeading) {
+            Image("profile_leaf")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 130, height: 126)
+                .offset(x: 261, y: 1)
 
-            VStack(alignment: .leading, spacing: 0) {
-                Text("\(viewModel.profile?.nickname ?? "책 먹는 여우")님")
-                    .head3Style
-                    .foregroundStyle(Color.gray800)
-                    .padding(.bottom, 5)
+            HStack(spacing: 23) {
+                profileImage
 
-                Text("가입 \(viewModel.profile?.joinedDays ?? 124)일")
-                    .body2RegularStyle
-                    .foregroundStyle(Color.gray600)
-                    .padding(.bottom, 8)
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("\(viewModel.profile?.nickname ?? "책 먹는 여우")님")
+                        .head3Style
+                        .foregroundStyle(Color.gray800)
+                        .padding(.bottom, 5)
 
-                editProfileButton
+                    Text("가입 \(viewModel.profile?.joinedDays ?? 124)일")
+                        .body2RegularStyle
+                        .foregroundStyle(Color.gray600)
+                        .padding(.bottom, 8)
+
+                    editProfileButton
+                }
+
+                Spacer(minLength: 0)
             }
-
-            Spacer(minLength: 0)
+            .padding(.horizontal, 15)
+            .frame(
+                maxWidth: .infinity,
+                maxHeight: .infinity,
+                alignment: .leading
+            )
         }
-        .padding(.horizontal, 15)
         .frame(maxWidth: .infinity, alignment: .leading)
         .frame(height: 130)
         .background(Color.white)
