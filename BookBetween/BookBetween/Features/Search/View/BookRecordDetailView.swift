@@ -97,7 +97,11 @@ struct BookRecordDetailView: View {
         .overlay {
             ZStack {
                 if viewModel.isLoading {
+                    Color.white
+                        .ignoresSafeArea()
+                        .transition(.opacity)
                     ProgressView()
+                        .transition(.opacity)
                 }
 
                 if isShowingSaveSuccess {
@@ -112,6 +116,7 @@ struct BookRecordDetailView: View {
                     .zIndex(1)
                 }
             }
+            .animation(.easeInOut(duration: 0.25), value: viewModel.isLoading)
             .animation(.spring(response: 0.35, dampingFraction: 0.7), value: isShowingSaveSuccess)
         }
         .task {

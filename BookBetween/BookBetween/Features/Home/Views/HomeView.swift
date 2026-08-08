@@ -20,7 +20,7 @@ struct HomeView: View {
         self.bookService = BookService.stubbed()
         self.meetingService = nil
     }
-    
+
     init(
         viewModel: HomeViewModel,
         bookService: any BookServiceProtocol,
@@ -30,7 +30,7 @@ struct HomeView: View {
         self.bookService = bookService
         self.meetingService = meetingService
     }
-    
+
     var body: some View {
         ScrollView(showsIndicators: false){
             if let home = viewModel.home {
@@ -82,7 +82,7 @@ struct HomeView: View {
             Text(viewModel.errorMessage ?? "")
         }
     }
-    
+
     private func UserTitleView(home: Home) -> some View {
         HStack{
             Text("\(home.member.nickname)의 책장")
@@ -97,7 +97,7 @@ struct HomeView: View {
         }
         .padding(.leading, 10)
     }
-    
+
     // MARK: - 오늘의 AI 추천도서
     private func RecommendationSection(
         recommendedBook: HomeRecommendedBook
