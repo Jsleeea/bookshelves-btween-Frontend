@@ -71,6 +71,7 @@ struct ReadingStatisticsView: View {
         }
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
+        .enableSwipeBack()
         .task {
             guard viewModel.statistics == nil else {
                 return
