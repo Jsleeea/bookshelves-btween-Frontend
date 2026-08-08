@@ -50,6 +50,7 @@ struct SearchView: View {
                         )
                         .padding(.bottom, 80)
                     }
+                    .scrollClipDisabled()
                     .scrollDismissesKeyboard(.interactively)
                     .refreshable {
                         isSearchFocused = false
