@@ -14,7 +14,19 @@
 				<string>kakaof277cf21a7dbbdfb7bcbd2301d9e3701</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>google</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.384828557552-c43r4e72egpgkfi7ue2ft1aa0hcqpies</string>
+			</array>
+		</dict>
 	</array>
+	<key>GIDClientID</key>
+	<string>384828557552-c43r4e72egpgkfi7ue2ft1aa0hcqpies.apps.googleusercontent.com</string>
 	<key>KAKAO_NATIVE_APP_KEY</key>
 	<string>f277cf21a7dbbdfb7bcbd2301d9e3701</string>
 	<key>LSApplicationQueriesSchemes</key>
