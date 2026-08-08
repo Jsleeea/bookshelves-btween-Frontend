@@ -37,6 +37,7 @@ final class BookClubViewModel {
 	var searchText: String = ""
 	var participatingMeetings: [BookMeeting] = []
 	var createdMeetings: [BookMeeting] = []
+	var isLoadingMeetings: Bool = true
 
 	var selectedYear: Int = 0
 	var selectedMonth: Int = 0
@@ -255,6 +256,8 @@ final class BookClubViewModel {
 
 	func fetchMyMeetings() async {
 		guard let meetingService else { return }
+		isLoadingMeetings = true
+		defer { isLoadingMeetings = false }
 		let year: Int? = selectedYear > 0 ? selectedYear : nil
 		let month: Int? = (selectedYear > 0 && selectedMonth > 0) ? selectedMonth : nil
 

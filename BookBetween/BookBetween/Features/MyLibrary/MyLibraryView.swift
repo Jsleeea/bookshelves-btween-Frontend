@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MyLibraryView: View {
 	@State private var viewModel: MyLibraryViewModel
+    @State private var selectedRecord: UserBookRecord?
     private let bookService: any BookServiceProtocol
 
     init(bookService: any BookServiceProtocol) {
@@ -25,14 +26,12 @@ struct MyLibraryView: View {
 
 			List {
 				ForEach(viewModel.filteredRecords, id: \.id) { record in
-					MyLibraryBookCardView(
-						record: record,
-						bookService: bookService,
-						onRecordSaved: { saved in
-                            viewModel.updateRecord(saved)
-                            Task { await viewModel.fetchRecords() }
-                        }
-					)
+					Button {
+						selectedRecord = record
+					} label: {
+						MyLibraryBookCardView(record: record)
+					}
+					.buttonStyle(.plain)
 					.listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
 					.listRowSeparator(.hidden)
 					.listRowBackground(Color.clear)
@@ -55,6 +54,22 @@ struct MyLibraryView: View {
 			.contentMargins(.bottom, 84, for: .scrollContent)
 		}
 		.toolbar(.hidden, for: .navigationBar)
+        .navigationDestination(isPresented: Binding(
+            get: { selectedRecord != nil },
+            set: { if !$0 { selectedRecord = nil } }
+        )) {
+            if let record = selectedRecord {
+                BookRecordDetailView(
+                    record: record,
+                    service: bookService,
+                    loadsRemoteDetail: true,
+                    onRecordSaved: { saved in
+                        viewModel.updateRecord(saved)
+                        Task { await viewModel.fetchRecords() }
+                    }
+                )
+            }
+        }
         .task(id: viewModel.selectedTab) {
             await viewModel.fetchRecords()
         }

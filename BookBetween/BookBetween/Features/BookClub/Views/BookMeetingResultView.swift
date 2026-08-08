@@ -118,12 +118,18 @@ struct BookMeetingResultView: View {
     }
 
     private var leafDecoration: some View {
-        Image(.leaf2)
-            .resizable()
-            .scaledToFit()
-            .frame(width: 205, height: 288)
-            .offset(x: 137, y: -250)
-            .allowsHitTesting(false)
+        GeometryReader { geo in
+            Image(.leaf2)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 205, height: 288)
+                .position(
+                    x: geo.size.width * 0.85,
+                    y: geo.size.height * 0.21
+                )
+        }
+        .allowsHitTesting(false)
+        .ignoresSafeArea()
     }
     
 	// MARK: - Navigation Header
