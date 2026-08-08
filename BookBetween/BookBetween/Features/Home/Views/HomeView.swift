@@ -183,7 +183,7 @@ struct HomeView: View {
                 }
             }
         }
-        .buttonStyle(.plain)
+        //.buttonStyle(.plain)
         .frame(height: 160)
         .padding(.top, 12)
     }

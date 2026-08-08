@@ -38,19 +38,23 @@ struct SearchView: View {
                     SearchIdleView(height: idleHeight)
                         .padding(.horizontal, 19)
                         .offset(y: 145)
+                        .transition(.opacity)
                 }
 
                 VStack(alignment: .leading, spacing: 16) {
-                    TitleView
-                    SearchInputSectionView
+                    VStack(alignment: .leading, spacing: 16) {
+                        TitleView
+                        SearchInputSectionView
+                    }
+                    .padding(.horizontal, 19)
 
                     ScrollView(showsIndicators: false) {
                         SearchResultSectionView(
                             idleHeight: idleHeight
                         )
+                        .padding(.horizontal, 19)
                         .padding(.bottom, 80)
                     }
-                    .scrollClipDisabled()
                     .scrollDismissesKeyboard(.interactively)
                     .refreshable {
                         isSearchFocused = false
@@ -61,8 +65,8 @@ struct SearchView: View {
                 .onTapGesture {
                     isSearchFocused = false
                 }
-                .padding(.horizontal, 19)
             }
+            .animation(.easeInOut(duration: 0.2), value: searchResultPhase)
             .padding(.top, 8)
         }
         .navigationDestination(for: SearchRoute.self) { route in
@@ -101,7 +105,26 @@ struct SearchView: View {
             Text(viewModel.errorMessage ?? "")
         }
     }
-    
+
+    private enum SearchResultPhase: Equatable {
+        case idle
+        case searching
+        case empty
+        case results
+    }
+
+    private var searchResultPhase: SearchResultPhase {
+        if viewModel.isSearching {
+            return .searching
+        } else if !viewModel.hasSearched {
+            return .idle
+        } else if viewModel.searchResults.isEmpty {
+            return .empty
+        } else {
+            return .results
+        }
+    }
+
     // MARK: 도서검색 TITLE
     private var TitleView: some View {
         HStack {
@@ -172,9 +195,12 @@ struct SearchView: View {
                             }
                         },
                         onDelete: {
-                            viewModel.removeRecentKeyword(keyword)
+                            withAnimation(.easeInOut(duration: 0.2)) {
+                                viewModel.removeRecentKeyword(keyword)
+                            }
                         }
                     )
+                    .transition(.opacity)
                 }
             }
         }
@@ -187,14 +213,17 @@ struct SearchView: View {
             if viewModel.isSearching {
                 ProgressView()
                     .padding(.top, 24)
+                    .transition(.opacity)
             } else if !viewModel.hasSearched {
                 Color.clear
                     .frame(height: idleHeight)
+                    .transition(.opacity)
             } else if viewModel.hasSearched && viewModel.searchResults.isEmpty {
                 Text("검색 결과가 없어요")
                     .body2RegularStyle
                     .foregroundStyle(.gray500)
                     .padding(.top, 24)
+                    .transition(.opacity)
             } else {
                 ForEach(viewModel.searchResults, id: \.listID) { item in
                     SearchBookResultCardView(
@@ -208,6 +237,7 @@ struct SearchView: View {
                             await viewModel.loadNextPageIfNeeded(currentItem: item)
                         }
                 }
+                .transition(.opacity)
             }
 
             if viewModel.isLoadingNextPage {

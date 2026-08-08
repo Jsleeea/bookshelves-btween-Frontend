@@ -39,9 +39,9 @@ struct RecentBookCardView: View {
                             .caption1RegularStyle
                             .foregroundStyle(.green600)
                     }
-                    .padding(.top, 8)
+                    .padding(.top, 7)
                 }
-                .padding(.top, 7)// 기본으로 10 들어감 - total: 17
+                .padding(.top, 6)// 기본으로 10 들어감 - total: 16
 
                 Spacer()
                 BookProgressView(progress: record.progress, showsKnob: false)
