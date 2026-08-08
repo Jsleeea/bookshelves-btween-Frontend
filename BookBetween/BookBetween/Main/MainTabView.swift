@@ -141,6 +141,11 @@ struct MainTabView: View {
             .environment(\.showSummaryCompleted) { meeting in
                 summaryCompletedMeeting = meeting
             }
+            .environment(\.goToHome) {
+                selectedTab = .home
+                homeNavigationPath = NavigationPath()
+                bookClubPath = NavigationPath()
+            }
 
             if shouldShowTabBar {
                 CustomTabBar(selectedTab: $selectedTab)

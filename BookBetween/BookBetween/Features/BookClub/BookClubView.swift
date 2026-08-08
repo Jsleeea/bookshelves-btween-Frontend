@@ -102,10 +102,15 @@ struct BookClubView: View {
                         chatroomId: chatroomId,
                         meetingId: meetingId,
                         chatService: chatService,
-                        socketService: chatSocketService
+                        socketService: chatSocketService,
+                        meetingService: viewModel.meetingService
                     ))
                 } else {
-                    ChatView(chatroomId: chatroomId, meetingId: meetingId)
+                    ChatView(
+                        chatroomId: chatroomId,
+                        meetingId: meetingId,
+                        meetingService: viewModel.meetingService
+                    )
                 }
             case .result(let meeting):
                 BookMeetingResultView(meeting: meeting, service: viewModel.meetingService)

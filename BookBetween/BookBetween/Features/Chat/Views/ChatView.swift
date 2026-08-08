@@ -97,6 +97,7 @@ struct ChatView: View {
   @FocusState private var isMessageFieldFocused: Bool
   @Environment(\.dismiss) private var dismiss
   @Environment(\.scenePhase) private var scenePhase
+  @Environment(\.goToHome) private var goToHome
 
   // MARK: - Init
 
@@ -104,7 +105,11 @@ struct ChatView: View {
     _viewModel = State(initialValue: viewModel)
   }
 
-  init(chatroomId: Int, meetingId: Int) {
+  init(
+    chatroomId: Int,
+    meetingId: Int,
+    meetingService: (any MeetingServiceProtocol)? = nil
+  ) {
     _viewModel = State(
       initialValue: ChatViewModel(
         chatroomId: chatroomId,
@@ -114,7 +119,8 @@ struct ChatView: View {
           configuration: NetworkConfiguration(
             baseURL: URL(string: "https://stub.bookbetween.local")!
           )
-        )
+        ),
+        meetingService: meetingService
       )
     )
   }
@@ -292,15 +298,15 @@ struct ChatView: View {
     } message: {
       Text(self.viewModel.errorMessage ?? "")
     }
-    .alert(
-      "모임이 종료되었습니다.",
-      isPresented: Binding(
-        get: { self.viewModel.isMeetingEnded },
-        set: { _ in }
-      )
-    ) {
-      Button("확인", role: .cancel) {
-        self.dismiss()
+    .overlay {
+      if let meeting = self.viewModel.endedMeeting {
+        ZStack {
+          Color.black.opacity(0.4)
+            .ignoresSafeArea()
+          MeetingEndedModalView(meeting: meeting) {
+            self.goToHome()
+          }
+        }
       }
     }
   }
