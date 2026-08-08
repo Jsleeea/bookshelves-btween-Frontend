@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		6CAEA7B32FFD354B008AE9CA /* Moya in Frameworks */ = {isa = PBXBuildFile; productRef = 6CAEA7B22FFD354B008AE9CA /* Moya */; };
+		6CE29D7D30265B0E0053DA0A /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 6CE29D7C30265B0E0053DA0A /* FirebaseMessaging */; };
 		6CEB012F3024C9E600055584 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 6CEB012E3024C9E600055584 /* Kingfisher */; };
 		C0DA00052FFF000100000001 /* KakaoSDKCommon in Frameworks */ = {isa = PBXBuildFile; productRef = C0DA00022FFF000100000001 /* KakaoSDKCommon */; };
 		C0DA00062FFF000100000001 /* KakaoSDKAuth in Frameworks */ = {isa = PBXBuildFile; productRef = C0DA00032FFF000100000001 /* KakaoSDKAuth */; };
@@ -44,6 +45,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6CE29D7D30265B0E0053DA0A /* FirebaseMessaging in Frameworks */,
 				C0DA00062FFF000100000001 /* KakaoSDKAuth in Frameworks */,
 				C0DA00052FFF000100000001 /* KakaoSDKCommon in Frameworks */,
 				C0DA00072FFF000100000001 /* KakaoSDKUser in Frameworks */,
@@ -96,6 +98,7 @@
 				C0DA00042FFF000100000001 /* KakaoSDKUser */,
 				6CAEA7B22FFD354B008AE9CA /* Moya */,
 				6CEB012E3024C9E600055584 /* Kingfisher */,
+				6CE29D7C30265B0E0053DA0A /* FirebaseMessaging */,
 			);
 			productName = BookBetween;
 			productReference = 6CC2D3F62FEC2E1C006EEB29 /* BookBetween.app */;
@@ -129,6 +132,7 @@
 				C0DA00012FFF000100000001 /* XCRemoteSwiftPackageReference "kakao-ios-sdk" */,
 				6CAEA7B12FFD354B008AE9CA /* XCRemoteSwiftPackageReference "Moya" */,
 				6CEB012D3024C9E600055584 /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				6CE29D7B30265B0E0053DA0A /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 6CC2D3F72FEC2E1C006EEB29 /* Products */;
@@ -289,9 +293,12 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_ENTITLEMENTS = BookBetween/BookBetween.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = YU253YJCT8;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = BookBetween/Info.plist;
@@ -309,6 +316,8 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.bookbetween.BookBetween;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = BookBetween;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
@@ -324,9 +333,12 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_ENTITLEMENTS = BookBetween/BookBetween.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_STYLE = Manual;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
+				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = YU253YJCT8;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = BookBetween/Info.plist;
@@ -344,6 +356,8 @@
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.bookbetween.BookBetween;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				"PROVISIONING_PROFILE_SPECIFIER[sdk=iphoneos*]" = BookBetween;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
@@ -386,6 +400,14 @@
 				minimumVersion = 15.0.3;
 			};
 		};
+		6CE29D7B30265B0E0053DA0A /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.17.0;
+			};
+		};
 		6CEB012D3024C9E600055584 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/onevcat/Kingfisher.git";
@@ -409,6 +431,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 6CAEA7B12FFD354B008AE9CA /* XCRemoteSwiftPackageReference "Moya" */;
 			productName = Moya;
+		};
+		6CE29D7C30265B0E0053DA0A /* FirebaseMessaging */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 6CE29D7B30265B0E0053DA0A /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseMessaging;
 		};
 		6CEB012E3024C9E600055584 /* Kingfisher */ = {
 			isa = XCSwiftPackageProductDependency;

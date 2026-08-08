@@ -21,6 +21,7 @@ struct AppRootView: View {
     private let notificationService: any NotificationServiceProtocol
     private let chatService: any ChatServiceProtocol
     private let chatSocketService: (any ChatSocketServiceProtocol)?
+    private let fcmTokenStore: FCMTokenStoreProtocol
 
     init(
         loginViewModel: LoginViewModel,
@@ -32,7 +33,8 @@ struct AppRootView: View {
         notificationService: any NotificationServiceProtocol =
             NotificationService.stubbed(),
         chatService: any ChatServiceProtocol = ChatService.stubbed(),
-        chatSocketService: (any ChatSocketServiceProtocol)? = nil
+        chatSocketService: (any ChatSocketServiceProtocol)? = nil,
+        fcmTokenStore: FCMTokenStoreProtocol = FCMTokenStore()
     ) {
         _loginViewModel = State(initialValue: loginViewModel)
         _accountSetupViewModel = State(initialValue: accountSetupViewModel)
@@ -43,6 +45,7 @@ struct AppRootView: View {
         self.notificationService = notificationService
         self.chatService = chatService
         self.chatSocketService = chatSocketService
+        self.fcmTokenStore = fcmTokenStore
     }
 
     var body: some View {
@@ -85,6 +88,29 @@ struct AppRootView: View {
         }
         .animation(.easeInOut, value: launchPhase)
         .animation(.easeInOut, value: loginViewModel.state)
+        .onChange(of: loginViewModel.state) { _, newState in
+            syncFCMTokenIfNeeded(for: newState)
+        }
+    }
+
+    private func syncFCMTokenIfNeeded(for state: LoginViewState) {
+        switch state {
+        case .success(.accountSetup), .success(.main):
+            guard let fcmToken = fcmTokenStore.token() else {
+                return
+            }
+
+            Task {
+                do {
+                    try await notificationService.registerFCMToken(fcmToken)
+                } catch {
+                    print("❌ FCM 토큰 등록 실패:", error)
+                }
+            }
+
+        case .idle, .loading, .failure, .success(.accountRecovery):
+            break
+        }
     }
 
     @ViewBuilder
