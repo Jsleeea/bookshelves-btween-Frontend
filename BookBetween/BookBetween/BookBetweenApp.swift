@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import GoogleSignIn
 import KakaoSDKAuth
 import KakaoSDKCommon
 
@@ -53,6 +54,7 @@ struct BookBetweenApp: App {
         )
         let loginViewModel = LoginViewModel(
             kakaoLoginService: KakaoLoginService(),
+            googleLoginService: GoogleLoginService(),
             authService: authService,
             authTokenStore: authTokenStore,
             authSessionStore: authSessionStore
@@ -112,6 +114,10 @@ struct BookBetweenApp: App {
                 chatSocketService: chatSocketService
             )
                 .onOpenURL { url in
+                    if GIDSignIn.sharedInstance.handle(url) {
+                        return
+                    }
+
                     if AuthApi.isKakaoTalkLoginUrl(url) {
                         _ = AuthController.handleOpenUrl(url: url)
                     }

@@ -23,6 +23,7 @@ enum LoginViewState: Equatable {
 @Observable
 final class LoginViewModel {
     private let kakaoLoginService: KakaoLoginServiceProtocol
+    private let googleLoginService: GoogleLoginServiceProtocol
     private let authService: AuthServiceProtocol
     private let authTokenStore: AuthTokenStoreProtocol
     private let authSessionStore: AuthSessionStoreProtocol
@@ -31,6 +32,7 @@ final class LoginViewModel {
     private var reissueTask: Task<Void, Error>?
 
     private(set) var state: LoginViewState = .idle
+    private(set) var activeLoginProvider: SocialProvider?
     private(set) var isRecoveringAccount = false
     private(set) var scheduledDeletionAt: String?
     var accountRecoveryErrorMessage: String?
@@ -39,13 +41,23 @@ final class LoginViewModel {
         state == .loading
     }
 
+    var isKakaoLoading: Bool {
+        isLoading && activeLoginProvider == .kakao
+    }
+
+    var isGoogleLoading: Bool {
+        isLoading && activeLoginProvider == .google
+    }
+
     init(
         kakaoLoginService: KakaoLoginServiceProtocol,
+        googleLoginService: GoogleLoginServiceProtocol,
         authService: AuthServiceProtocol,
         authTokenStore: AuthTokenStoreProtocol = AuthTokenStore(),
         authSessionStore: AuthSessionStoreProtocol = AuthSessionStore()
     ) {
         self.kakaoLoginService = kakaoLoginService
+        self.googleLoginService = googleLoginService
         self.authService = authService
         self.authTokenStore = authTokenStore
         self.authSessionStore = authSessionStore
@@ -58,11 +70,33 @@ final class LoginViewModel {
         }
 
         state = .loading
+        activeLoginProvider = .kakao
+        defer { activeLoginProvider = nil }
 
         do {
             let providerToken = try await kakaoLoginService.login()
             state = try await requestSocialLogin(
                 provider: .kakao,
+                providerToken: providerToken
+            )
+        } catch {
+            state = .failure(error.localizedDescription)
+        }
+    }
+
+    func loginWithGoogle() async {
+        guard !isLoading else {
+            return
+        }
+
+        state = .loading
+        activeLoginProvider = .google
+        defer { activeLoginProvider = nil }
+
+        do {
+            let providerToken = try await googleLoginService.login()
+            state = try await requestSocialLogin(
+                provider: .google,
                 providerToken: providerToken
             )
         } catch {
@@ -79,6 +113,8 @@ final class LoginViewModel {
         }
 
         state = .loading
+        activeLoginProvider = provider
+        defer { activeLoginProvider = nil }
 
         do {
             state = try await requestSocialLogin(
@@ -92,6 +128,7 @@ final class LoginViewModel {
 
     func resetState() {
         accountRecoveryErrorMessage = nil
+        activeLoginProvider = nil
         state = .idle
     }
 

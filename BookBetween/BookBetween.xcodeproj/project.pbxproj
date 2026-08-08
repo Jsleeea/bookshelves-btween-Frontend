@@ -10,6 +10,7 @@
 		6CAEA7B32FFD354B008AE9CA /* Moya in Frameworks */ = {isa = PBXBuildFile; productRef = 6CAEA7B22FFD354B008AE9CA /* Moya */; };
 		6CE29D7D30265B0E0053DA0A /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = 6CE29D7C30265B0E0053DA0A /* FirebaseMessaging */; };
 		6CEB012F3024C9E600055584 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 6CEB012E3024C9E600055584 /* Kingfisher */; };
+		C0DA00132FFF000100000001 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = C0DA00122FFF000100000001 /* GoogleSignIn */; };
 		C0DA00052FFF000100000001 /* KakaoSDKCommon in Frameworks */ = {isa = PBXBuildFile; productRef = C0DA00022FFF000100000001 /* KakaoSDKCommon */; };
 		C0DA00062FFF000100000001 /* KakaoSDKAuth in Frameworks */ = {isa = PBXBuildFile; productRef = C0DA00032FFF000100000001 /* KakaoSDKAuth */; };
 		C0DA00072FFF000100000001 /* KakaoSDKUser in Frameworks */ = {isa = PBXBuildFile; productRef = C0DA00042FFF000100000001 /* KakaoSDKUser */; };
@@ -46,6 +47,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6CE29D7D30265B0E0053DA0A /* FirebaseMessaging in Frameworks */,
+				C0DA00132FFF000100000001 /* GoogleSignIn in Frameworks */,
 				C0DA00062FFF000100000001 /* KakaoSDKAuth in Frameworks */,
 				C0DA00052FFF000100000001 /* KakaoSDKCommon in Frameworks */,
 				C0DA00072FFF000100000001 /* KakaoSDKUser in Frameworks */,
@@ -93,6 +95,7 @@
 			);
 			name = BookBetween;
 			packageProductDependencies = (
+				C0DA00122FFF000100000001 /* GoogleSignIn */,
 				C0DA00032FFF000100000001 /* KakaoSDKAuth */,
 				C0DA00022FFF000100000001 /* KakaoSDKCommon */,
 				C0DA00042FFF000100000001 /* KakaoSDKUser */,
@@ -129,6 +132,7 @@
 			mainGroup = 6CC2D3ED2FEC2E1C006EEB29;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				C0DA00112FFF000100000001 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 				C0DA00012FFF000100000001 /* XCRemoteSwiftPackageReference "kakao-ios-sdk" */,
 				6CAEA7B12FFD354B008AE9CA /* XCRemoteSwiftPackageReference "Moya" */,
 				6CEB012D3024C9E600055584 /* XCRemoteSwiftPackageReference "Kingfisher" */,
@@ -394,6 +398,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		C0DA00112FFF000100000001 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.0.0;
+			};
+		};
 		6CAEA7B12FFD354B008AE9CA /* XCRemoteSwiftPackageReference "Moya" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Moya/Moya";
@@ -429,6 +441,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		C0DA00122FFF000100000001 /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C0DA00112FFF000100000001 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
 		6CAEA7B22FFD354B008AE9CA /* Moya */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 6CAEA7B12FFD354B008AE9CA /* XCRemoteSwiftPackageReference "Moya" */;
