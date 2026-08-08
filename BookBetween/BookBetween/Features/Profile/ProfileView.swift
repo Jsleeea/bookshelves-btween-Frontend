@@ -69,8 +69,9 @@ struct ProfileView: View {
                     .head2Style
                     .foregroundStyle(Color.gray900)
                     .padding(.bottom, 16)
+                    .padding(.leading, 11)
 
-                profileCard
+                profileCardContent
                     .padding(.bottom, 50)
 
                 ReadingStatisticsSummaryView(
@@ -86,11 +87,14 @@ struct ProfileView: View {
                     .head2Style
                     .foregroundStyle(Color.gray900)
                     .padding(.bottom, 18)
+                    .padding(.leading, 10)
 
                 readingCalendar
+                    .padding(.leading, 10)
+
             }
-            .padding(.horizontal, 20)
-            .padding(.top, 12)
+            .padding(.horizontal, 19)
+            .padding(.top, 8)
             .padding(.bottom, 120)
         }
         .background(Color.beige100)
@@ -151,23 +155,64 @@ struct ProfileView: View {
         }
     }
 
-    private var profileCard: some View {
-        HStack(spacing: 23) {
-            profileImage
+    @ViewBuilder
+    private var profileCardContent: some View {
+        if let profile = viewModel.profile {
+            profileCard(profile: profile)
+        } else {
+            profileCardPlaceholder
+        }
+    }
 
-            VStack(alignment: .leading, spacing: 0) {
-                Text("\(viewModel.profile?.nickname ?? "책 먹는 여우")님")
-                    .head3Style
-                    .foregroundStyle(Color.gray800)
-                    .padding(.bottom, 5)
+    private func profileCard(profile: MemberProfile) -> some View {
+        ZStack(alignment: .topLeading) {
+            Image("profile_leaf")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 130, height: 126)
+                .offset(x: 261, y: 1)
 
-                Text("가입 \(viewModel.profile?.joinedDays ?? 124)일")
-                    .body2RegularStyle
-                    .foregroundStyle(Color.gray600)
-                    .padding(.bottom, 8)
+            HStack(spacing: 23) {
+                profileImage(profile: profile)
 
-                editProfileButton
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("\(profile.nickname)님")
+                        .head3Style
+                        .foregroundStyle(Color.gray800)
+                        .padding(.bottom, 5)
+
+                    Text("가입 \(profile.joinedDays)일")
+                        .body2RegularStyle
+                        .foregroundStyle(Color.gray600)
+                        .padding(.bottom, 8)
+
+                    editProfileButton
+                }
+
+                Spacer(minLength: 0)
             }
+            .padding(.horizontal, 15)
+            .frame(
+                maxWidth: .infinity,
+                maxHeight: .infinity,
+                alignment: .leading
+            )
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(height: 130)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .overlay {
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.gray200, lineWidth: 0.5)
+        }
+    }
+
+    private var profileCardPlaceholder: some View {
+        HStack(spacing: 23) {
+            Circle()
+                .fill(Color.gray100)
+                .frame(width: 100, height: 100)
 
             Spacer(minLength: 0)
         }
@@ -182,15 +227,14 @@ struct ProfileView: View {
         }
     }
 
-    private var profileImage: some View {
+    private func profileImage(profile: MemberProfile) -> some View {
         let animalImageName = NicknameGenerator.animalImageName(
-            for: viewModel.profile?.nicknameAnimal
-                ?? GeneratedNickname.placeholder.animal
+            for: profile.nicknameAnimal
         )
 
         return ZStack {
             Circle()
-                .fill(profileBackgroundGradient)
+                .fill(profileBackgroundGradient(profile: profile))
 
             Image(animalImageName)
                 .resizable()
@@ -206,11 +250,13 @@ struct ProfileView: View {
         .shadow(color: Color.black.opacity(0.1), radius: 2, y: 2)
     }
 
-    private var profileBackgroundGradient: LinearGradient {
+    private func profileBackgroundGradient(
+        profile: MemberProfile
+    ) -> LinearGradient {
         let endColor: Color
 
         switch ProfileBackgroundColorCode(
-            rawValue: viewModel.profile?.profileBackgroundColor ?? ""
+            rawValue: profile.profileBackgroundColor
         ) {
         case .purple:
             endColor = Color(red: 0.47, green: 0.47, blue: 0.75)
@@ -374,6 +420,30 @@ struct ProfileView: View {
 }
 
 #Preview {
+    NavigationStack {
+        ProfileView(
+            viewModel: ProfileViewModel(
+                initialProfile: MemberProfile(
+                    memberId: 1,
+                    nickname: "책 먹는 곰",
+                    nicknameNoun: "책",
+                    nicknameModifier: "먹는",
+                    nicknameAnimal: "곰",
+                    profileBackgroundColor: "BROWN",
+                    joinedDays: 124,
+                    categories: []
+                )
+            ),
+            statisticsViewModel: ReadingStatisticsViewModel(
+                bookService: BookService.stubbed()
+            ),
+            onLogout: {},
+            onWithdraw: {}
+        )
+    }
+}
+
+#Preview("Loading") {
     NavigationStack {
         ProfileView()
     }
