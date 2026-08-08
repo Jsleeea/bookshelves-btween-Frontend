@@ -80,6 +80,18 @@ struct ProfileEditView: View {
             Color.beige100
                 .ignoresSafeArea()
 
+            GeometryReader { geometry in
+                Image("onboarding3LeafRight")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 130, height: 139)
+                    .position(
+                        x: 342,
+                        y: 144.5 - geometry.safeAreaInsets.top
+                    )
+            }
+            .allowsHitTesting(false)
+
             ScrollView(showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
                     ProfileEditHeaderView {
@@ -330,7 +342,7 @@ private struct ProfileEditHeaderView: View {
                 .foregroundStyle(Color.gray600)
         }
         .padding(.horizontal, 30)
-        .padding(.top, 12)
+        .padding(.top, 8)
         .padding(.bottom, 32)
     }
 }
@@ -347,6 +359,7 @@ private struct ProfileNicknameSectionView: View {
                 .body1SemiBoldStyle
                 .foregroundStyle(Color.gray800)
                 .padding(.bottom, 8)
+                .padding(.leading, 13)
 
             HStack(spacing: 12) {
                 Text(nickname)
@@ -390,8 +403,9 @@ private struct ProfileNicknameSectionView: View {
                 .caption1RegularStyle
                 .foregroundStyle(Color.gray600)
                 .padding(.top, 8)
+                .padding(.leading, 13)
         }
-        .padding(.horizontal, 28)
+        .padding(.horizontal, 19)
         .padding(.bottom, 44)
     }
 }
@@ -451,26 +465,14 @@ private struct ProfileAppearanceSectionView: View {
         .padding(.vertical, 19.5)
         .frame(maxWidth: .infinity, alignment: .leading)
         .frame(height: 155, alignment: .leading)
-        .background(
-            LinearGradient(
-                stops: [
-                    Gradient.Stop(color: Color.white, location: 0.26),
-                    Gradient.Stop(
-                        color: Color(red: 0.86, green: 0.92, blue: 0.88),
-                        location: 1
-                    )
-                ],
-                startPoint: UnitPoint(x: 1.02, y: -0.33),
-                endPoint: UnitPoint(x: 0.26, y: 1)
-            )
-        )
+        .background(Color.white)
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .overlay {
             RoundedRectangle(cornerRadius: 12)
                 .inset(by: 0.75)
-                .stroke(Color.white, lineWidth: 1.5)
+                .stroke(Color.gray200)
         }
-        .padding(.horizontal, 20)
+        .padding(.horizontal, 19)
         .padding(.bottom, 28)
     }
 }
@@ -486,7 +488,7 @@ private struct ProfileBackgroundColorButton: View {
         Button(action: action) {
             Circle()
                 .fill(background.gradient)
-                .frame(width: 22, height: 22)
+                .frame(width: 30, height: 30)
                 .overlay {
                     Circle()
                         .stroke(
@@ -506,11 +508,11 @@ private struct ProfileBackgroundColorButton: View {
 
 private enum ProfileBackgroundColor: CaseIterable, Identifiable {
     case brown
+    case yellow
     case lightGreen
     case skyBlue
     case orange
     case purple
-    case yellow
 
     var id: Self { self }
 
@@ -518,6 +520,8 @@ private enum ProfileBackgroundColor: CaseIterable, Identifiable {
         switch code {
         case .brown:
             self = .brown
+        case .yellow:
+            self = .yellow
         case .purple:
             self = .purple
         case .blue:
@@ -526,8 +530,6 @@ private enum ProfileBackgroundColor: CaseIterable, Identifiable {
             self = .lightGreen
         case .red:
             self = .orange
-        case .yellow:
-            self = .yellow
         }
     }
 
@@ -535,6 +537,8 @@ private enum ProfileBackgroundColor: CaseIterable, Identifiable {
         switch self {
         case .brown:
             return .brown
+        case .yellow:
+            return .yellow
         case .lightGreen:
             return .green
         case .skyBlue:
@@ -543,8 +547,6 @@ private enum ProfileBackgroundColor: CaseIterable, Identifiable {
             return .red
         case .purple:
             return .purple
-        case .yellow:
-            return .yellow
         }
     }
 
@@ -632,7 +634,7 @@ private struct ProfileGenreSectionView: View {
             .padding(.top, 16)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 30)
+        .padding(.leading, 28.5)
         .padding(.bottom, 48)
     }
 
@@ -668,7 +670,7 @@ private struct ProfileAccountActionSectionView: View {
                 .foregroundStyle(Color.beige100)
                 .frame(maxWidth: .infinity)
                 .frame(height: 53)
-                .background(Color.green600)
+                .background(Color.green700)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             }
             .disabled(isSaving)
