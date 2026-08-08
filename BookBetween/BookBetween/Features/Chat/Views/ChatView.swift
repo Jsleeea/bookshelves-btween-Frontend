@@ -97,6 +97,7 @@ struct ChatView: View {
   @FocusState private var isMessageFieldFocused: Bool
   @Environment(\.dismiss) private var dismiss
   @Environment(\.scenePhase) private var scenePhase
+  @Environment(\.goToHome) private var goToHome
 
   // MARK: - Init
 
@@ -303,7 +304,7 @@ struct ChatView: View {
           Color.black.opacity(0.4)
             .ignoresSafeArea()
           MeetingEndedModalView(meeting: meeting) {
-            self.dismiss()
+            self.goToHome()
           }
         }
       }
