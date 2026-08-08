@@ -270,10 +270,12 @@ struct SearchView: View {
                         Color(hex: "DCEBE1").opacity(0.58),
                         Color.white.opacity(0)
                     ],
-                    center: UnitPoint(x: 0.5, y: 0.36),
+                    center: .center,
                     startRadius: 12,
                     endRadius: 270
                 )
+                .frame(width: 270 * 2, height: 270 * 2)
+                .position(x: width / 2, y: height * 0.36)
 
                 Image("leaf_left")
                     .resizable()
