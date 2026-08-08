@@ -11,6 +11,8 @@ import KakaoSDKCommon
 
 @main
 struct BookBetweenApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+
     private let loginViewModel: LoginViewModel
     private let accountSetupViewModel: AccountSetupViewModel
     private let memberService: MemberServiceProtocol
@@ -92,6 +94,8 @@ struct BookBetweenApp: App {
         self.chatSocketService = ChatSocketService(
             configuration: authenticatedNetworkConfiguration
         )
+
+        appDelegate.notificationService = self.notificationService
     }
 
     var body: some Scene {
