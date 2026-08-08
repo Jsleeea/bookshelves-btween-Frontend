@@ -417,7 +417,7 @@ struct ChatView: View {
         .frame(width: Metric.starIconSize, height: Metric.starIconSize)
         .foregroundStyle(.green600)
         .padding(.trailing, Metric.starIconTrailingPadding)
-      Text("첫번째 질문 보기")
+      Text("\(self.viewModel.currentQuestion?.orderText ?? "첫번째") 질문 보기")
         .body2SemiBoldStyle
         .foregroundStyle(.green600)
       Spacer()
@@ -485,7 +485,7 @@ struct ChatView: View {
           .frame(width: Metric.starIconSize, height: Metric.starIconSize)
           .foregroundStyle(.green600)
           .padding(.trailing, Metric.starIconTrailingPadding)
-        Text("첫번째 질문 보기")
+        Text("\(self.viewModel.currentQuestion?.orderText ?? "첫번째") 질문 보기")
           .body2SemiBoldStyle
           .foregroundStyle(.green600)
         Spacer()

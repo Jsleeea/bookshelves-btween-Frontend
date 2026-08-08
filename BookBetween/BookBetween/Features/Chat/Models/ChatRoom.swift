@@ -29,9 +29,20 @@ struct ChatParticipants {
 }
 
 struct ChatQuestion {
+  private enum Ordinal {
+    static let names = ["첫번째", "두번째", "세번째", "네번째", "다섯번째"]
+  }
+
   let questionId: Int
   let questionOrder: Int
   let content: String
+
+  var orderText: String {
+    guard self.questionOrder >= 1, self.questionOrder <= Ordinal.names.count else {
+      return "\(self.questionOrder)번째"
+    }
+    return Ordinal.names[self.questionOrder - 1]
+  }
 }
 
 struct ChatVote {
