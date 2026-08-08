@@ -177,6 +177,10 @@ struct MainTabView: View {
                     },
                     onParticipate: {
                         meetingStartedMeeting = nil
+                        bookClubPath.append(
+                            BookClubRoute.chat(chatroomId: meeting.chatroomId, meetingId: meeting.id)
+                        )
+                        selectedTab = .bookClub
                     }
                 )
                 .transition(.scale(scale: 0.9).combined(with: .opacity))
