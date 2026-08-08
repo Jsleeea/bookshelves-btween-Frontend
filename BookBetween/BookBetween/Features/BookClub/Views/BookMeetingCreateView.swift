@@ -64,7 +64,7 @@ struct BookMeetingCreateView: View {
                 subtitleHeader
                     .padding(.bottom, 6)
 
-                ScrollView(showsIndicators: false) {
+                ScrollView(.vertical, showsIndicators: false) {
                     VStack(alignment: .center, spacing: 0) {
                         bookHeaderSection
                             .padding(.bottom, 24)
@@ -102,8 +102,15 @@ struct BookMeetingCreateView: View {
         }
         .enableSwipeBack()
 		.overlay {
-            if showSuccessModal {
-                ZStack {
+            ZStack {
+                if isCreating {
+                    Color.beige100
+                        .ignoresSafeArea()
+                        .transition(.opacity)
+                    ProgressView()
+                        .transition(.opacity)
+                }
+                if showSuccessModal {
                     Color.black.opacity(0.4).ignoresSafeArea()
                     SuccessModalView(title: "모임을 생성했습니다") {
                         dismiss()
@@ -111,6 +118,7 @@ struct BookMeetingCreateView: View {
                     }
                 }
             }
+            .animation(.easeInOut(duration: 0.25), value: isCreating)
         }
 		.toolbar(.hidden, for: .navigationBar)
 		.hideTabBar()

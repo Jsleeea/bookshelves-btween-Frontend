@@ -12,6 +12,9 @@ struct MainTabView: View {
     @State private var hideTabBar = false
     @State private var homeNavigationPath = NavigationPath()
     @State private var bookClubPath = NavigationPath()
+    @State private var summaryCompletedMeeting: BookMeeting?
+    @State private var summaryResultMeeting: BookMeeting?
+    @State private var showSummaryResult = false
 
     private let memberService: MemberServiceProtocol?
     private let bookService: BookServiceProtocol
@@ -133,11 +136,40 @@ struct MainTabView: View {
             }
             .ignoresSafeArea(.keyboard, edges: .bottom)
             .onPreferenceChange(HideTabBarPreferenceKey.self) { hideTabBar = $0 }
+            .environment(\.showSummaryCompleted) { meeting in
+                summaryCompletedMeeting = meeting
+            }
 
             if shouldShowTabBar {
                 CustomTabBar(selectedTab: $selectedTab)
                     .ignoresSafeArea(.keyboard, edges: .bottom)
                     .transition(.move(edge: .bottom))
+            }
+
+            if let meeting = summaryCompletedMeeting {
+                Color.black.opacity(0.4)
+                    .ignoresSafeArea()
+                    .transition(.opacity)
+                SummaryCompletedModalView(
+                    meeting: meeting,
+                    onClose: {
+                        summaryCompletedMeeting = nil
+                    },
+                    onConfirm: {
+                        summaryCompletedMeeting = nil
+                        summaryResultMeeting = meeting
+                        showSummaryResult = true
+                    }
+                )
+                .transition(.scale(scale: 0.9).combined(with: .opacity))
+            }
+        }
+        .animation(.easeInOut(duration: 0.2), value: summaryCompletedMeeting != nil)
+        .sheet(isPresented: $showSummaryResult) {
+            if let meeting = summaryResultMeeting {
+                NavigationStack {
+                    BookMeetingResultView(meeting: meeting, service: meetingService)
+                }
             }
         }
         .animation(.easeInOut(duration: 0.2), value: shouldShowTabBar)

@@ -5,6 +5,7 @@ struct BookMeetingResultView: View {
 
     private let service: (any MeetingServiceProtocol)?
     @State private var meeting: BookMeeting
+    @State private var isLoading = false
     @State private var showSummaryPendingModal = false
     @State private var showFetchErrorModal = false
 
@@ -55,6 +56,8 @@ struct BookMeetingResultView: View {
 		.toolbar(.hidden, for: .navigationBar)
 		.task {
 			guard let service else { return }
+            isLoading = true
+            defer { isLoading = false }
 			do {
 				meeting = try await service.fetchMeetingDetail(meetingId: meeting.id)
 				if meeting.meetingSummary == nil {
@@ -66,22 +69,30 @@ struct BookMeetingResultView: View {
 		}
         .enableSwipeBack()
 		.overlay {
-			if showFetchErrorModal || showSummaryPendingModal {
-				ZStack {
-					Color.black.opacity(0.4)
-						.ignoresSafeArea()
-					if showFetchErrorModal {
-						ErrorModalView(title: "데이터를 불러오지 못했습니다") {
-							showFetchErrorModal = false
-							dismiss()
-						}
-					} else if showSummaryPendingModal {
-						ErrorModalView(title: "요약이 완료되지 않았습니다") {
-							showSummaryPendingModal = false
-						}
-					}
-				}
-			}
+            ZStack {
+                if isLoading {
+                    Color.beige01
+                        .ignoresSafeArea()
+                        .transition(.opacity)
+                    ProgressView()
+                        .transition(.opacity)
+                }
+                if showFetchErrorModal || showSummaryPendingModal {
+                    Color.black.opacity(0.4)
+                        .ignoresSafeArea()
+                    if showFetchErrorModal {
+                        ErrorModalView(title: "데이터를 불러오지 못했습니다") {
+                            showFetchErrorModal = false
+                            dismiss()
+                        }
+                    } else if showSummaryPendingModal {
+                        ErrorModalView(title: "요약이 완료되지 않았습니다") {
+                            showSummaryPendingModal = false
+                        }
+                    }
+                }
+            }
+            .animation(.easeInOut(duration: 0.25), value: isLoading)
 		}
 	}
 
