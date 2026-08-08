@@ -210,39 +210,40 @@ struct BookRecordDetailView: View {
                     .body1RegularStyle
                     .foregroundStyle(.gray500)
 
-                if let categoryText {
-                    Text(categoryText)
-                        .body2SemiBoldStyle
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(.green600)
-                        .clipShape(Capsule())
-                }
+                Text(categoryText)
+                    .body2SemiBoldStyle
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(.green600)
+                    .clipShape(Capsule())
             }
         }
         .padding(.top, 16)
     }
 
     private var authorAndPublisherText: String {
+        let author = viewModel.book.author.trimmingCharacters(in: .whitespacesAndNewlines)
+        let authorText = author.isEmpty ? "저자 미상" : author
+
         guard
             let publisher = viewModel.book.publisher?
                 .trimmingCharacters(in: .whitespacesAndNewlines),
             !publisher.isEmpty
         else {
-            return viewModel.book.author
+            return "\(authorText) | 미등록 출판사"
         }
 
-        return "\(viewModel.book.author) | \(publisher)"
+        return "\(authorText) | \(publisher)"
     }
 
-    private var categoryText: String? {
+    private var categoryText: String {
         guard
             let kdcName = viewModel.book.kdcName?
                 .trimmingCharacters(in: .whitespacesAndNewlines),
             !kdcName.isEmpty
         else {
-            return nil
+            return "#미분류"
         }
 
         return kdcName.hasPrefix("#") ? kdcName : "#\(kdcName)"

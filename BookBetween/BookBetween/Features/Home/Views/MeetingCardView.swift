@@ -49,7 +49,7 @@ struct MeetingCardView: View {
                             .caption1RegularStyle
                     }
                     .foregroundStyle(.gray500)
-                    .padding(.top, 20)
+                    .padding(.top, 25)
                     
                     HStack(spacing: 8) {
                         Image("icon_group")
@@ -72,8 +72,8 @@ struct MeetingCardView: View {
                 Spacer()
             }
             .padding(.leading, 24)
-            .padding(.top, 13)
-            .padding(.bottom, 4)
+            .padding(.top, 15)
+            .padding(.bottom, 7)
             
             NavigationLink(value: HomeRoute.meetingDetail(bookMeeting)) {
                 HStack(spacing: 6) {
@@ -83,7 +83,7 @@ struct MeetingCardView: View {
                 }
                 .foregroundStyle(.green600)
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 4)
+                .padding(.vertical, 6)
                 .background(
                     LinearGradient(
                         stops: [
