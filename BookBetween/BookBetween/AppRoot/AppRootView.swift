@@ -216,6 +216,7 @@ private enum AppLaunchPhase: Equatable {
     AppRootView(
         loginViewModel: LoginViewModel(
             kakaoLoginService: PreviewKakaoLoginService(),
+            googleLoginService: PreviewGoogleLoginService(),
             authService: AuthService(
                 baseURL: URL(string: "https://stub.bookbetween.local")!,
                 provider: AuthStubProviderFactory.make(
@@ -232,5 +233,11 @@ private enum AppLaunchPhase: Equatable {
 private final class PreviewKakaoLoginService: KakaoLoginServiceProtocol {
     func login() async throws -> String {
         "preview-kakao-provider-token"
+    }
+}
+
+private final class PreviewGoogleLoginService: GoogleLoginServiceProtocol {
+    func login() async throws -> String {
+        "preview-google-provider-token"
     }
 }

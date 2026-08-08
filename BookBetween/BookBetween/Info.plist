@@ -27,6 +27,8 @@
 	</array>
 	<key>GIDClientID</key>
 	<string>384828557552-c43r4e72egpgkfi7ue2ft1aa0hcqpies.apps.googleusercontent.com</string>
+	<key>GIDServerClientID</key>
+	<string>384828557552-mr9gccum9p9uv6hf4aifj7dlonvopv1e.apps.googleusercontent.com</string>
 	<key>KAKAO_NATIVE_APP_KEY</key>
 	<string>f277cf21a7dbbdfb7bcbd2301d9e3701</string>
 	<key>LSApplicationQueriesSchemes</key>
