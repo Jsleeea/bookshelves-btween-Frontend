@@ -37,7 +37,8 @@ final class ProfileViewModel {
         memberService: MemberServiceProtocol? = nil,
         bookService: BookServiceProtocol? = nil,
         calendar: Calendar = .current,
-        displayedMonth: Date = Date()
+        displayedMonth: Date = Date(),
+        initialProfile: MemberProfile? = nil
     ) {
         var sundayFirstCalendar = calendar
         sundayFirstCalendar.firstWeekday = 1
@@ -45,6 +46,7 @@ final class ProfileViewModel {
         self.calendar = sundayFirstCalendar
         self.memberService = memberService
         self.bookService = bookService
+        self.profile = initialProfile
         self.displayedMonth = sundayFirstCalendar.date(
             from: sundayFirstCalendar.dateComponents([.year, .month], from: displayedMonth)
         ) ?? displayedMonth
