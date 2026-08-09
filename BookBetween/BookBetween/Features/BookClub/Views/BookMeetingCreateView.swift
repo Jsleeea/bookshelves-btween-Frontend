@@ -11,7 +11,7 @@ struct BookMeetingCreateView: View {
 	@State private var showingParticipantsPicker = false
 	@State private var isCreating = false
 	@State private var creationError: String?
-    @State private var showSuccessModal = false
+	@State private var showSuccessModal = false
 
 	private static let dateOnlyFormatter: DateFormatter = {
 		let f = DateFormatter()
@@ -45,81 +45,81 @@ struct BookMeetingCreateView: View {
 
 	let book: Book
 	private let service: (any MeetingServiceProtocol)?
-    private let onMeetingCreated: (() -> Void)?
+	private let onMeetingCreated: (() -> Void)?
 
 	init(book: Book, service: (any MeetingServiceProtocol)? = nil, onMeetingCreated: (() -> Void)? = nil) {
 		self.book = book
 		self.service = service
-        self.onMeetingCreated = onMeetingCreated
+		self.onMeetingCreated = onMeetingCreated
 	}
 
 	var body: some View {
-        ZStack {
-            Color.beige100.ignoresSafeArea()
-            leafDecoration
-            VStack(spacing: 0) {
-                navigationHeader
-                    .padding(.top, 8)
-                    .padding(.bottom, 7)
-                subtitleHeader
-                    .padding(.bottom, 6)
+		ZStack {
+			Color.beige100.ignoresSafeArea()
+			leafDecoration
+			VStack(spacing: 0) {
+				navigationHeader
+					.padding(.top, 8)
+					.padding(.bottom, 7)
+				subtitleHeader
+					.padding(.bottom, 6)
 
-                ScrollView(.vertical, showsIndicators: false) {
-                    VStack(alignment: .center, spacing: 0) {
-                        bookHeaderSection
-                            .padding(.bottom, 24)
-                        descriptionText
-                            .padding(.bottom, 52)
-                        meetingInfoSection
-                            .padding(.bottom, 40)
-                        noticeSection
-                            .padding(.bottom, 24)
-                        BottomActionButton(title: isCreating ? "생성 중..." : "+ 모임 생성하기") {
-                            guard !isCreating, let isbn = book.isbn else { return }
-                            Task {
-                                isCreating = true
-                                defer { isCreating = false }
-                                do {
-                                    _ = try await service?.createMeeting(
-                                        isbn: isbn,
-                                        startDate: Self.apiDateFormatter.string(from: meetingDate),
-                                        startTime: Self.apiTimeFormatter.string(from: meetingDate),
-                                        maxParticipants: maxParticipants,
-                                        duration: timerMinutes
-                                    )
-                                    showSuccessModal = true
-                                } catch {
-                                    creationError = error.localizedDescription
-                                }
-                            }
-                        }
-                        .padding(.bottom, 42)
-                        .disabled(isCreating || book.isbn == nil)
-                    }
-                }
-                .scrollBounceBehavior(.basedOnSize)
-            }
-        }
-        .enableSwipeBack()
+				ScrollView(.vertical, showsIndicators: false) {
+					VStack(alignment: .center, spacing: 0) {
+						bookHeaderSection
+							.padding(.bottom, 24)
+						descriptionText
+							.padding(.bottom, 52)
+						meetingInfoSection
+							.padding(.bottom, 40)
+						noticeSection
+							.padding(.bottom, 24)
+						BottomActionButton(title: isCreating ? "생성 중..." : "+ 모임 생성하기") {
+							guard !isCreating, let isbn = book.isbn else { return }
+							Task {
+								isCreating = true
+								defer { isCreating = false }
+								do {
+									_ = try await service?.createMeeting(
+										isbn: isbn,
+										startDate: Self.apiDateFormatter.string(from: meetingDate),
+										startTime: Self.apiTimeFormatter.string(from: meetingDate),
+										maxParticipants: maxParticipants,
+										duration: timerMinutes
+									)
+									showSuccessModal = true
+								} catch {
+									creationError = error.localizedDescription
+								}
+							}
+						}
+						.padding(.bottom, 42)
+						.disabled(isCreating || book.isbn == nil)
+					}
+				}
+				.scrollBounceBehavior(.basedOnSize)
+			}
+		}
+		.enableSwipeBack()
 		.overlay {
-            ZStack {
-                if isCreating {
-                    Color.beige100
-                        .ignoresSafeArea()
-                        .transition(.opacity)
-                    ProgressView()
-                        .transition(.opacity)
-                }
-                if showSuccessModal {
-                    Color.black.opacity(0.4).ignoresSafeArea()
-                    SuccessModalView(title: "모임을 생성했습니다") {
-                        dismiss()
-                        onMeetingCreated?()
-                    }
-                }
-            }
-            .animation(.easeInOut(duration: 0.25), value: isCreating)
-        }
+			ZStack {
+				if isCreating {
+					Color.beige100
+						.ignoresSafeArea()
+						.transition(.opacity)
+					ProgressView()
+						.transition(.opacity)
+				}
+				if showSuccessModal {
+					Color.black.opacity(0.4).ignoresSafeArea()
+					SuccessModalView(title: "모임을 생성했습니다") {
+						dismiss()
+						onMeetingCreated?()
+					}
+				}
+			}
+			.animation(.easeInOut(duration: 0.25), value: isCreating)
+		}
 		.toolbar(.hidden, for: .navigationBar)
 		.hideTabBar()
 		.alert("모임 생성 실패", isPresented: Binding(
@@ -132,17 +132,17 @@ struct BookMeetingCreateView: View {
 		}
 	}
 
-    // MARK: - Decoration
-    
-    private var leafDecoration: some View {
-        Image(.leaf1)
-            .resizable()
-            .scaledToFit()
-            .frame(width: 133)
-            .offset(x: 137, y: -320)
-            .allowsHitTesting(false)
-    }
-    
+	// MARK: - Decoration
+
+	private var leafDecoration: some View {
+		Image(.leaf1)
+			.resizable()
+			.scaledToFit()
+			.frame(width: 133)
+			.offset(x: 137, y: -320)
+			.allowsHitTesting(false)
+	}
+
 	// MARK: - Navigation Header
 
 	private var navigationHeader: some View {
@@ -153,11 +153,11 @@ struct BookMeetingCreateView: View {
 					.scaledToFill()
 					.frame(width: 20, height: 20)
 					.clipped()
-                    .foregroundStyle(Color.gray600)
+					.foregroundStyle(Color.gray600)
 			}
 			Text("독서 모임")
 				.head2Style
-                .foregroundStyle(Color.gray900)
+				.foregroundStyle(Color.gray900)
 			Spacer()
 		}
 		.padding(.horizontal, 30)
@@ -172,7 +172,7 @@ struct BookMeetingCreateView: View {
 		}
 		.padding(.horizontal, 62)
 	}
-    
+
 	// MARK: - Book Header
 
 	private var bookHeaderSection: some View {
@@ -180,17 +180,17 @@ struct BookMeetingCreateView: View {
 			BookCoverImage(book: book, placeholderImageName: "book_cover_mock")
 				.aspectRatio(29.0/44.0, contentMode: .fit)
 				.frame(height: 160)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-                .overlay {
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color.gray200, lineWidth: 0.5)
-                }
+				.clipShape(RoundedRectangle(cornerRadius: 8))
+				.overlay {
+					RoundedRectangle(cornerRadius: 8)
+						.stroke(Color.gray200, lineWidth: 0.5)
+				}
 
 			VStack(alignment: .leading, spacing: 4) {
 				Text(book.title)
 					.head1Style
-                    .foregroundStyle(Color.gray800)
-                    .padding(.bottom, 4)
+					.foregroundStyle(Color.gray800)
+					.padding(.bottom, 4)
 
 				Text(book.publisher.map { "\(book.author) | \($0)" } ?? book.author)
 					.body2RegularStyle
@@ -206,11 +206,11 @@ struct BookMeetingCreateView: View {
 						.clipShape(Capsule())
 				}
 			}
-            
-            Spacer()
+
+			Spacer()
 		}
-        .padding(.top, 6)
-        .padding(.horizontal, 28.5)
+		.padding(.top, 6)
+		.padding(.horizontal, 28.5)
 	}
 
 	@ViewBuilder
@@ -219,8 +219,8 @@ struct BookMeetingCreateView: View {
 			Text(description)
 				.caption1RegularStyle
 				.foregroundStyle(Color.gray600)
-                .padding(.horizontal, 29.5)
-                .lineLimit(4)
+				.padding(.horizontal, 29.5)
+				.lineLimit(4)
 		}
 	}
 
@@ -228,23 +228,23 @@ struct BookMeetingCreateView: View {
 
 	private var meetingInfoSection: some View {
 		VStack(alignment: .leading, spacing: 20) {
-            HStack(spacing: 4.5) {
+			HStack(spacing: 4.5) {
 				Image("icon_calendar")
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 20, height: 20)
-                    .clipped()
-                    .foregroundStyle(Color.gray600)
+					.resizable()
+					.scaledToFill()
+					.frame(width: 20, height: 20)
+					.clipped()
+					.foregroundStyle(Color.gray600)
 				Text("모임정보")
 					.head2Style
-                    .foregroundStyle(Color.gray600)
+					.foregroundStyle(Color.gray600)
 			}
 			.padding(.horizontal, 6)
 
 			meetingInfoCard
-                .padding(.horizontal, 4)
+				.padding(.horizontal, 4)
 		}
-        .padding(.horizontal, 19)
+		.padding(.horizontal, 19)
 	}
 
 	private var meetingInfoCard: some View {
@@ -284,14 +284,14 @@ struct BookMeetingCreateView: View {
 					.padding(.horizontal, 8)
 				}
 			)
-            .padding(.top, 9)
-            .padding(.bottom,6)
+			.padding(.top, 9)
+			.padding(.bottom, 6)
 
-            Divider()
-                .overlay(Color.gray300)
+			Divider()
+				.overlay(Color.gray300)
 
 			infoRow(
-				icon: { Image("icon_calendar")},
+				icon: { Image("icon_calendar") },
 				label: "모임 시간",
 				value: Self.timeOnlyFormatter.string(from: meetingDate),
 				isExpanded: showingMeetingTimePicker,
@@ -325,11 +325,11 @@ struct BookMeetingCreateView: View {
 					.padding(.horizontal, 8)
 				}
 			)
-            .padding(.top, 24)
-            .padding(.bottom, 6)
+			.padding(.top, 24)
+			.padding(.bottom, 6)
 
-            Divider()
-                .overlay(Color.gray300)
+			Divider()
+				.overlay(Color.gray300)
 
 			infoRow(
 				icon: { Image("icon_clock").resizable().scaledToFill().frame(width: 14, height: 14).clipped() },
@@ -355,11 +355,11 @@ struct BookMeetingCreateView: View {
 					.padding(.horizontal, 8)
 				}
 			)
-            .padding(.top, 24)
-            .padding(.bottom, 6)
+			.padding(.top, 24)
+			.padding(.bottom, 6)
 
-            Divider()
-                .overlay(Color.gray300)
+			Divider()
+				.overlay(Color.gray300)
 
 			infoRow(
 				icon: { Image("icon_group") },
@@ -385,21 +385,20 @@ struct BookMeetingCreateView: View {
 					.padding(.horizontal, 8)
 				}
 			)
-            .padding(.top, 24)
-            .padding(.bottom, 6)
-            
-            Divider()
-                .overlay(Color.gray300)
-            
+			.padding(.top, 24)
+			.padding(.bottom, 6)
+
+			Divider()
+				.overlay(Color.gray300)
 		}
-        .padding(.vertical, 20)
-        .padding(.horizontal, 20)
-        .background(.white)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .overlay {
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.gray200, lineWidth: 0.5)
-        }
+		.padding(.vertical, 20)
+		.padding(.horizontal, 20)
+		.background(.white)
+		.clipShape(RoundedRectangle(cornerRadius: 12))
+		.overlay {
+			RoundedRectangle(cornerRadius: 12)
+				.stroke(Color.gray200, lineWidth: 0.5)
+		}
 	}
 
 	private func infoRow<Icon: View, Picker: View>(
@@ -428,7 +427,7 @@ struct BookMeetingCreateView: View {
 						.clipped()
 						.foregroundStyle(Color.gray600)
 				}
-                .padding(.horizontal, 8)
+				.padding(.horizontal, 8)
 			}
 			.buttonStyle(.plain)
 
@@ -517,12 +516,12 @@ struct BookMeetingCreateView: View {
 					.foregroundStyle(Color.gray500)
 			}
 		}
-        .frame(maxWidth: .infinity)
+		.frame(maxWidth: .infinity)
 		.padding(.top, 12)
-        .padding(.bottom, 9)
+		.padding(.bottom, 9)
 		.background(Color.green50.opacity(0.5))
 		.clipShape(RoundedRectangle(cornerRadius: 8))
-        .padding(.horizontal, 29)
+		.padding(.horizontal, 29)
 	}
 }
 
