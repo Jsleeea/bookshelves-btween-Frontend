@@ -20,6 +20,7 @@ struct BookRecordDetailView: View {
         isSaveable: Bool = true,
         service: any BookServiceProtocol = BookService.stubbed(),
         loadsRemoteDetail: Bool = false,
+        startsInEditingMode: Bool = false,
         onRecordSaved: ((UserBookRecord) -> Void)? = nil
     ) {
         self.onRecordSaved = onRecordSaved
@@ -28,7 +29,8 @@ struct BookRecordDetailView: View {
                 record: record,
                 isSaveable: isSaveable,
                 service: service,
-                loadsRemoteDetail: loadsRemoteDetail
+                loadsRemoteDetail: loadsRemoteDetail,
+                startsInEditingMode: startsInEditingMode
             )
         )
     }
@@ -38,6 +40,7 @@ struct BookRecordDetailView: View {
         isSaveable: Bool = true,
         service: any BookServiceProtocol = BookService.stubbed(),
         loadsRemoteDetail: Bool = false,
+        startsInEditingMode: Bool = false,
         onRecordSaved: ((UserBookRecord) -> Void)? = nil
     ) {
         self.init(
@@ -50,6 +53,7 @@ struct BookRecordDetailView: View {
             isSaveable: isSaveable,
             service: service,
             loadsRemoteDetail: loadsRemoteDetail,
+            startsInEditingMode: startsInEditingMode,
             onRecordSaved: onRecordSaved
         )
     }
