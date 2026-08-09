@@ -30,6 +30,7 @@ final class ChatViewModel {
   private(set) var myMemberId: Int?
   private(set) var isMeetingEnded = false
   private(set) var endedMeeting: BookMeeting?
+  var isReported = false
   private(set) var isLoading = false
   private(set) var questionUpdateTrigger = 0
   var errorMessage: String?
@@ -104,6 +105,15 @@ final class ChatViewModel {
     do {
       _ = try await self.chatService.voteForNewQuestion(meetingId: self.meetingId)
       self.hasVotedThisRound = true
+    } catch {
+      self.errorMessage = error.localizedDescription
+    }
+  }
+
+  func reportChatRoom() async {
+    do {
+      _ = try await self.chatService.reportChatRoom(chatroomId: self.chatroomId)
+      self.isReported = true
     } catch {
       self.errorMessage = error.localizedDescription
     }
