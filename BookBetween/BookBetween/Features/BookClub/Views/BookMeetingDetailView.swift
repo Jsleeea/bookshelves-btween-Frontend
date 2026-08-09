@@ -347,6 +347,7 @@ struct BookMeetingDetailView: View {
 	private var meetingTimeText: String {
 		Self.timeFormatter.string(from: meeting.meetingDate)
 	}
+
 }
 
 // MARK: - Shared Bottom Button
