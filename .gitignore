@@ -44,3 +44,14 @@ iOSInjectionProject/
 
 # Firebase
 /BookBetween/BookBetween/GoogleService-Info.plist
+
+# Apple signing files
+*.p12
+*.p8
+*.mobileprovision
+*.pem
+
+# Environment and server credentials
+.env
+.env.*
+*ServiceAccount*.json
