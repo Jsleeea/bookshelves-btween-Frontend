@@ -55,6 +55,7 @@ struct BookBetweenApp: App {
         let loginViewModel = LoginViewModel(
             kakaoLoginService: KakaoLoginService(),
             googleLoginService: GoogleLoginService(),
+            appleLoginService: AppleLoginService(),
             authService: authService,
             authTokenStore: authTokenStore,
             authSessionStore: authSessionStore
