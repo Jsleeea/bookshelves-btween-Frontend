@@ -8,6 +8,7 @@ import Foundation
 nonisolated enum SocialProvider: String, Encodable {
     case kakao = "KAKAO"
     case google = "GOOGLE"
+    case apple = "APPLE"
 }
 
 nonisolated enum MemberStatus: String, Decodable {
