@@ -22,6 +22,7 @@ struct LoginView: View {
         isLoading: viewModel.isLoading,
         isKakaoLoading: viewModel.isKakaoLoading,
         isGoogleLoading: viewModel.isGoogleLoading,
+        isAppleLoading: viewModel.isAppleLoading,
         onKakaoLogin: {
           Task {
             await viewModel.loginWithKakao()
@@ -30,6 +31,11 @@ struct LoginView: View {
         onGoogleLogin: {
           Task {
             await viewModel.loginWithGoogle()
+          }
+        },
+        onAppleLogin: {
+          Task {
+            await viewModel.loginWithApple()
           }
         }
       )
@@ -93,8 +99,10 @@ private struct LoginContentView: View {
   let isLoading: Bool
   let isKakaoLoading: Bool
   let isGoogleLoading: Bool
+  let isAppleLoading: Bool
   let onKakaoLogin: () -> Void
   let onGoogleLogin: () -> Void
+  let onAppleLogin: () -> Void
 
   var body: some View {
     VStack(spacing: 0) {
@@ -111,8 +119,10 @@ private struct LoginContentView: View {
         isLoading: isLoading,
         isKakaoLoading: isKakaoLoading,
         isGoogleLoading: isGoogleLoading,
+        isAppleLoading: isAppleLoading,
         onKakaoLogin: onKakaoLogin,
-        onGoogleLogin: onGoogleLogin
+        onGoogleLogin: onGoogleLogin,
+        onAppleLogin: onAppleLogin
       )
 
       Spacer()
@@ -151,8 +161,10 @@ private struct LoginSocialButtonSectionView: View {
   let isLoading: Bool
   let isKakaoLoading: Bool
   let isGoogleLoading: Bool
+  let isAppleLoading: Bool
   let onKakaoLogin: () -> Void
   let onGoogleLogin: () -> Void
+  let onAppleLogin: () -> Void
 
   var body: some View {
     VStack(spacing: 12) {
@@ -168,7 +180,11 @@ private struct LoginSocialButtonSectionView: View {
       )
       .disabled(isLoading)
 
-      AppleLoginButton()
+      AppleLoginButton(
+        isLoading: isAppleLoading,
+        action: onAppleLogin
+      )
+      .disabled(isLoading)
     }
   }
 }
@@ -237,18 +253,25 @@ private struct GoogleLoginButton: View {
 }
 
 private struct AppleLoginButton: View {
-  var body: some View {
-    Button {
-    } label: {
-      HStack(spacing: 8) {
-        Image("apple")
-          .resizable()
-          .scaledToFit()
-          .frame(width: 13, height: 14)
+  let isLoading: Bool
+  let action: () -> Void
 
-        Text("Apple로 로그인")
-          .font(.system(size: 16, weight: .semibold))
-          .foregroundStyle(.white)
+  var body: some View {
+    Button(action: action) {
+      HStack(spacing: 8) {
+        if isLoading {
+          ProgressView()
+            .tint(.white)
+        } else {
+          Image("apple")
+            .resizable()
+            .scaledToFit()
+            .frame(width: 13, height: 14)
+
+          Text("Apple로 로그인")
+            .font(.system(size: 16, weight: .semibold))
+            .foregroundStyle(.white)
+        }
       }
       .frame(maxWidth: .infinity)
       .frame(height: 45)
@@ -263,6 +286,7 @@ private struct AppleLoginButton: View {
     viewModel: LoginViewModel(
       kakaoLoginService: KakaoLoginService(),
       googleLoginService: GoogleLoginService(),
+      appleLoginService: AppleLoginService(),
       authService: AuthService(
         baseURL: URL(string: "https://stub.bookbetween.local")!,
         provider: AuthStubProviderFactory.make(
