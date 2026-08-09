@@ -78,7 +78,8 @@ struct SearchView: View {
                     book: item.book,
                     isSaveable: item.isSaveable,
                     service: viewModel.bookService,
-                    loadsRemoteDetail: true
+                    loadsRemoteDetail: true,
+                    startsInEditingMode: true
                 )
             }
         }

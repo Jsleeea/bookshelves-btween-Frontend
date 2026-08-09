@@ -31,22 +31,29 @@ final class BookRecordDetailViewModel {
 
     private let service: any BookServiceProtocol
     private let loadsRemoteDetail: Bool
+    private let startsInEditingMode: Bool
     private var hasLoadedDetail = false
 
     init(
         record: UserBookRecord,
         isSaveable: Bool = true,
         service: any BookServiceProtocol,
-        loadsRemoteDetail: Bool = false
+        loadsRemoteDetail: Bool = false,
+        startsInEditingMode: Bool = false
     ) {
         self.record = record
         self.isSaveable = isSaveable
         self.service = service
         self.loadsRemoteDetail = loadsRemoteDetail
+        self.startsInEditingMode = startsInEditingMode
         self.progress = record.progress
         self.rating = record.rating ?? 0
         self.memo = record.memo ?? ""
         self.isLoading = loadsRemoteDetail
+
+        if !loadsRemoteDetail {
+            applyStartsInEditingModeIfNeeded()
+        }
     }
 
     var book: Book {
@@ -74,11 +81,13 @@ final class BookRecordDetailViewModel {
     func loadBookDetail() async {
         guard loadsRemoteDetail, !hasLoadedDetail else {
             isLoading = false
+            applyStartsInEditingModeIfNeeded()
             return
         }
 
         guard let isbn = normalizedISBN else {
             isLoading = false
+            applyStartsInEditingModeIfNeeded()
             return
         }
 
@@ -91,9 +100,15 @@ final class BookRecordDetailViewModel {
             record = detail.record
             syncDraftWithRecord()
             hasLoadedDetail = true
+            applyStartsInEditingModeIfNeeded()
         } catch {
             errorMessage = error.localizedDescription
         }
+    }
+
+    private func applyStartsInEditingModeIfNeeded() {
+        guard startsInEditingMode, isSaveable else { return }
+        isEditing = true
     }
 
     @discardableResult
@@ -105,7 +120,7 @@ final class BookRecordDetailViewModel {
         else { return nil }
 
         let trimmedMemo = memo.trimmingCharacters(in: .whitespacesAndNewlines)
-        let savedRating = rating > 0 ? rating : nil
+        let savedRating = rating
         let savedMemo = trimmedMemo.isEmpty ? nil : trimmedMemo
 
         isSaving = true
