@@ -119,6 +119,11 @@
 				TargetAttributes = {
 					6CC2D3F52FEC2E1C006EEB29 = {
 						CreatedOnToolsVersion = 26.5;
+						SystemCapabilities = {
+							com.apple.SignInWithApple = {
+								enabled = 1;
+							};
+						};
 					};
 				};
 			};
