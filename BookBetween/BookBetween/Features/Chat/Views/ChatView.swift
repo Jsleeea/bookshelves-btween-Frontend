@@ -309,6 +309,17 @@ struct ChatView: View {
         }
       }
     }
+    .overlay {
+      if self.viewModel.isReported {
+        ZStack {
+          Color.black.opacity(0.4)
+            .ignoresSafeArea()
+          ReportModalView {
+            self.viewModel.isReported = false
+          }
+        }
+      }
+    }
   }
 
   // MARK: - Header
@@ -386,19 +397,25 @@ struct ChatView: View {
         )
         .clipShape(Capsule())
 
-        Image("siren_icon")
-          .resizable()
-          .renderingMode(.template)
-          .scaledToFit()
-          .frame(width: Metric.sirenIconWidth, height: Metric.sirenIconHeight)
-          .foregroundStyle(.gray500)
-          .shadow(
-            color: .black.opacity(Metric.sirenShadowOpacity),
-            radius: Metric.sirenShadowRadius,
-            x: 0,
-            y: Metric.sirenShadowYOffset
-          )
-          .padding(.leading, Metric.sirenLeadingPadding)
+        Button {
+          Task {
+            await self.viewModel.reportChatRoom()
+          }
+        } label: {
+          Image("siren_icon")
+            .resizable()
+            .renderingMode(.template)
+            .scaledToFit()
+            .frame(width: Metric.sirenIconWidth, height: Metric.sirenIconHeight)
+            .foregroundStyle(.gray500)
+            .shadow(
+              color: .black.opacity(Metric.sirenShadowOpacity),
+              radius: Metric.sirenShadowRadius,
+              x: 0,
+              y: Metric.sirenShadowYOffset
+            )
+            .padding(.leading, Metric.sirenLeadingPadding)
+        }
       }
     }
     .padding(.horizontal, Metric.wideHorizontalPadding)
