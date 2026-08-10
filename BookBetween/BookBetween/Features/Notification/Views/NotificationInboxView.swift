@@ -70,7 +70,7 @@ struct NotificationInboxView: View {
                 .zIndex(1)
             }
         }
-        .animation(.spring(response: 0.35, dampingFraction: 0.7), value: isMeetingEndedModalPresented)
+        .animation(.easeInOut(duration: 0.2), value: isMeetingEndedModalPresented)
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
         .enableSwipeBack()
