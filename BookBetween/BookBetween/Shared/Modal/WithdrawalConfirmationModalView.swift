@@ -14,7 +14,7 @@ struct WithdrawalConfirmationModalView: View {
       VStack(spacing: 0) {
         self.iconSection
 
-        Text("탈퇴하기 클릭 후 30일이 지나면\n계정 복구가 불가능합니다.")
+        Text("탈퇴하기 클릭 후 30일이 지나면\n계정 복구가 불가능합니다")
           .body2SemiBoldStyle
           .foregroundStyle(Color.gray500)
           .multilineTextAlignment(.center)
