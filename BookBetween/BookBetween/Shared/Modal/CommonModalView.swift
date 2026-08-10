@@ -50,7 +50,7 @@ struct CommonModalView<Icon: View>: View {
       self.buttonSection
         .padding(.top, 24)
     }
-    .padding(.horizontal, 30)
+    .padding(.horizontal, 40)
     .padding(.vertical, 20)
     .frame(width: 300, height: self.modalHeight, alignment: .center)
     .background(Color.beige100)
@@ -117,7 +117,7 @@ struct CommonModalView<Icon: View>: View {
         .foregroundStyle(Color.beige100)
         .frame(maxWidth: .infinity, minHeight: 40)
         .background(self.confirmColor)
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
   }
 }

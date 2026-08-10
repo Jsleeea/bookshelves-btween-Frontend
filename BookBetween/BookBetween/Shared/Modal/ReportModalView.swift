@@ -17,7 +17,7 @@ struct ReportModalView: View {
       modalHeight: 220,
       onConfirm: self.onConfirm
     ) {
-      Image("icon_exclamation_mark")
+      Image("icon_siren")
         .resizable()
         .scaledToFit()
         .frame(width: 56, height: 56)
