@@ -37,6 +37,7 @@ struct ChatView: View {
     static let softGradientEndLocation: CGFloat = 1.5517
 
     static let headerTitleSpacing: CGFloat = 2
+    static let bookTitleMaxLength = 8
     static let headerTopPadding: CGFloat = 8.5
     static let headerBottomPadding: CGFloat = 12
     static let headerSpacerMinLength: CGFloat = 76
@@ -320,6 +321,12 @@ struct ChatView: View {
 
   // MARK: - Header
 
+  private var truncatedBookTitle: String {
+    let bookTitle = self.viewModel.chatRoom?.bookTitle ?? ""
+    guard bookTitle.count > Metric.bookTitleMaxLength else { return bookTitle }
+    return "\(bookTitle.prefix(Metric.bookTitleMaxLength))..."
+  }
+
   private var headerView: some View {
     HStack {
       Button {
@@ -334,11 +341,13 @@ struct ChatView: View {
       .padding(.trailing, Metric.backButtonTrailingPadding)
 
       VStack(alignment: .leading, spacing: Metric.headerTitleSpacing) {
-        Text(self.viewModel.chatRoom?.bookTitle ?? "")
+        Text(self.truncatedBookTitle)
           .font(.body2SemiBold)
           .tracking(Metric.bodyTextTracking)
           .lineSpacing(Metric.bodyTextLineSpacing)
           .foregroundStyle(.gray600)
+          .lineLimit(1)
+          .fixedSize(horizontal: true, vertical: false)
         Text(self.bookAuthor)
           .caption1RegularStyle
           .foregroundStyle(.gray500)
@@ -543,6 +552,28 @@ struct ChatView: View {
   }
 }
 
+// MARK: - Preview Socket Service
+
+private struct PreviewChatSocketService: ChatSocketServiceProtocol {
+  func connect() async throws {}
+
+  func subscribe(chatroomId: Int) async throws -> AsyncThrowingStream<ChatSocketEvent, Error> {
+    AsyncThrowingStream { _ in }
+  }
+
+  func send(chatroomId: Int, content: String) async throws {}
+
+  func disconnect() async {}
+}
+
 #Preview {
-  ChatView(chatroomId: 3, meetingId: 10, bookAuthor: "성해나")
+  ChatView(
+    viewModel: ChatViewModel(
+      chatroomId: 3,
+      meetingId: 10,
+      chatService: ChatService.stubbed(),
+      socketService: PreviewChatSocketService()
+    ),
+    bookAuthor: "성해나"
+  )
 }
