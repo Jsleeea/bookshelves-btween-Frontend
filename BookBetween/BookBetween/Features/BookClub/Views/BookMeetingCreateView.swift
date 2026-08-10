@@ -2,7 +2,7 @@ import SwiftUI
 
 struct BookMeetingCreateView: View {
 	@Environment(\.dismiss) private var dismiss
-	@State private var meetingDate = Date()
+	@State private var meetingDate = Calendar.current.date(byAdding: .hour, value: 7, to: Date()) ?? Date()
 	@State private var timerMinutes = 5
 	@State private var maxParticipants = 3
 	@State private var showingMeetingDatePicker = false
@@ -113,8 +113,11 @@ struct BookMeetingCreateView: View {
 				if showSuccessModal {
 					Color.black.opacity(0.4).ignoresSafeArea()
 					SuccessModalView(title: "모임을 생성했습니다") {
-						dismiss()
-						onMeetingCreated?()
+						if let onMeetingCreated {
+							onMeetingCreated()
+						} else {
+							dismiss()
+						}
 					}
 				}
 			}
@@ -263,25 +266,17 @@ struct BookMeetingCreateView: View {
 					}
 				},
 				picker: {
-					HStack(spacing: 0) {
-						Picker("월", selection: monthBinding) {
-							ForEach(1...12, id: \.self) { m in
-								Text("\(m)월").tag(m)
-							}
-						}
-						.pickerStyle(.wheel)
-						.frame(maxWidth: .infinity)
-
-						Picker("일", selection: dayBinding) {
-							ForEach(1...daysInSelectedMonth, id: \.self) { d in
-								Text("\(d)일").tag(d)
-							}
-						}
-						.pickerStyle(.wheel)
-						.frame(maxWidth: .infinity)
-					}
-					.frame(height: 150)
-					.padding(.horizontal, 8)
+					DatePicker(
+						"",
+						selection: $meetingDate,
+						in: minimumAllowedDate...,
+						displayedComponents: [.date]
+					)
+					.datePickerStyle(.graphical)
+					.labelsHidden()
+					.tint(Color.green600)
+					.environment(\.locale, Locale(identifier: "ko_KR"))
+					.padding(.horizontal, 4)
 				}
 			)
 			.padding(.top, 9)
@@ -306,16 +301,16 @@ struct BookMeetingCreateView: View {
 				picker: {
 					HStack(spacing: 0) {
 						Picker("시", selection: hourBinding) {
-							ForEach(0...23, id: \.self) { h in
-								Text(String(format: "%02d시", h)).tag(h)
+							ForEach(minimumHour...23, id: \.self) { h in
+								Text(String(format: "%02d", h)).tag(h)
 							}
 						}
 						.pickerStyle(.wheel)
 						.frame(maxWidth: .infinity)
 
 						Picker("분", selection: minuteBinding) {
-							ForEach(0...59, id: \.self) { m in
-								Text(String(format: "%02d분", m)).tag(m)
+							ForEach(minimumMinute...59, id: \.self) { m in
+								Text(String(format: "%02d", m)).tag(m)
 							}
 						}
 						.pickerStyle(.wheel)
@@ -440,27 +435,8 @@ struct BookMeetingCreateView: View {
 
 	// MARK: - Date Picker Helpers
 
-	private var monthBinding: Binding<Int> {
-		Binding(
-			get: { Calendar.current.component(.month, from: meetingDate) },
-			set: { newMonth in
-				var comps = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: meetingDate)
-				comps.month = newMonth
-				comps.day = min(comps.day ?? 1, maxDays(year: comps.year ?? 2026, month: newMonth))
-				meetingDate = Calendar.current.date(from: comps) ?? meetingDate
-			}
-		)
-	}
-
-	private var dayBinding: Binding<Int> {
-		Binding(
-			get: { Calendar.current.component(.day, from: meetingDate) },
-			set: { newDay in
-				var comps = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: meetingDate)
-				comps.day = newDay
-				meetingDate = Calendar.current.date(from: comps) ?? meetingDate
-			}
-		)
+	private var minimumAllowedDate: Date {
+		Calendar.current.date(byAdding: .hour, value: 7, to: Date()) ?? Date()
 	}
 
 	private var hourBinding: Binding<Int> {
@@ -485,17 +461,19 @@ struct BookMeetingCreateView: View {
 		)
 	}
 
-	private var daysInSelectedMonth: Int {
-		maxDays(
-			year: Calendar.current.component(.year, from: meetingDate),
-			month: Calendar.current.component(.month, from: meetingDate)
-		)
+	private var minimumHour: Int {
+		Calendar.current.isDate(meetingDate, inSameDayAs: minimumAllowedDate)
+			? Calendar.current.component(.hour, from: minimumAllowedDate)
+			: 0
 	}
 
-	private func maxDays(year: Int, month: Int) -> Int {
-		let comps = DateComponents(year: year, month: month)
-		guard let date = Calendar.current.date(from: comps) else { return 30 }
-		return Calendar.current.range(of: .day, in: .month, for: date)?.count ?? 30
+	private var minimumMinute: Int {
+		let cal = Calendar.current
+		let min = minimumAllowedDate
+		guard cal.isDate(meetingDate, inSameDayAs: min),
+			  cal.component(.hour, from: meetingDate) == cal.component(.hour, from: min)
+		else { return 0 }
+		return cal.component(.minute, from: min)
 	}
 
 	// MARK: - Notice

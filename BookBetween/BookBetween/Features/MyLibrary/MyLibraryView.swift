@@ -24,35 +24,41 @@ struct MyLibraryView: View {
 
 			tabSelector
 
-			List {
-				ForEach(viewModel.filteredRecords, id: \.id) { record in
-					Button {
-						selectedRecord = record
-					} label: {
-						MyLibraryBookCardView(record: record)
-					}
-					.buttonStyle(.plain)
-					.listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
-					.listRowSeparator(.hidden)
-					.listRowBackground(Color.clear)
-					.swipeActions(edge: .trailing, allowsFullSwipe: true) {
-						Button(role: .destructive) {
-							Task { await viewModel.deleteRecord(record) }
-						} label: {
-							Label("삭제", systemImage: "trash")
-						}
-					}
-				}
-			}
-			.listStyle(.plain)
-			.scrollContentBackground(.hidden)
-			.refreshable {
-                await viewModel.fetchRecords()
+            if viewModel.filteredRecords.isEmpty {
+                emptyStateView
+                    .frame(height: 522)
+            } else {
+                List {
+                    ForEach(viewModel.filteredRecords, id: \.id) { record in
+                        Button {
+                            selectedRecord = record
+                        } label: {
+                            MyLibraryBookCardView(record: record)
+                        }
+                        .buttonStyle(.plain)
+                        .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 8, trailing: 0))
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
+                        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                            Button(role: .destructive) {
+                                Task { await viewModel.deleteRecord(record) }
+                            } label: {
+                                Label("삭제", systemImage: "trash")
+                            }
+                        }
+                    }
+                }
+                .listStyle(.plain)
+                .scrollContentBackground(.hidden)
+                .refreshable {
+                    await viewModel.fetchRecords()
+                }
+                .scrollBounceBehavior(.basedOnSize)
+                .contentMargins(.top, 6, for: .scrollContent)
+                .contentMargins(.bottom, 84, for: .scrollContent)
             }
-			.scrollBounceBehavior(.basedOnSize)
-			.contentMargins(.top, 6, for: .scrollContent)
-			.contentMargins(.bottom, 84, for: .scrollContent)
 		}
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
 		.toolbar(.hidden, for: .navigationBar)
         .navigationDestination(isPresented: Binding(
             get: { selectedRecord != nil },
@@ -107,6 +113,48 @@ struct MyLibraryView: View {
 				}
 		}
 	}
+
+    // MARK: - Empty State
+
+    private var emptyStateView: some View {
+        GeometryReader { geo in
+            let w = geo.size.width
+            let h = geo.size.height
+            ZStack {
+                RadialGradient(
+                    stops: [
+                        Gradient.Stop(color: Color.green01.opacity(0.4), location: 0.2982),
+                        Gradient.Stop(color: Color.green01.opacity(0.0), location: 0.7019)
+                    ],
+                    center: .center,
+                    startRadius: 0,
+                    endRadius: w * 0.5951
+                )
+
+                Image("leaf_left")
+                    .resizable().scaledToFit()
+                    .frame(width: 100, height: 108)
+                    .position(x: 30, y: h * 0.13)
+
+                Image("leaf_right")
+                    .resizable().scaledToFit()
+                    .frame(width: 100, height: 108)
+                    .position(x: w - 30, y: h * 0.22)
+
+                Image("search_logo")
+                    .resizable().scaledToFit()
+                    .frame(width: 152, height: 131)
+                    .position(x: w / 2, y: h * 0.46)
+
+                Text("저장된 도서가 없어요")
+                    .pointText5Style
+                    .foregroundStyle(Color.green900)
+                    .position(x: w / 2, y: h * 0.67)
+            }
+            .allowsHitTesting(false)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
 }
 
 #Preview {
