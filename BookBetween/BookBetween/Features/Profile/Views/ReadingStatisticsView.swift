@@ -71,7 +71,7 @@ struct ReadingStatisticsView: View {
         }
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
-        .enableSwipeBack()
+        .simultaneousGesture(self.backSwipeGesture)
         .task {
             guard viewModel.statistics == nil else {
                 return
@@ -79,6 +79,20 @@ struct ReadingStatisticsView: View {
 
             await viewModel.fetchStatistics()
         }
+    }
+
+    private var backSwipeGesture: some Gesture {
+        DragGesture(minimumDistance: 20)
+            .onEnded { value in
+                guard value.startLocation.x <= 30,
+                      value.translation.width > 0,
+                      abs(value.translation.width) > abs(value.translation.height)
+                else {
+                    return
+                }
+
+                self.dismiss()
+            }
     }
 }
 
