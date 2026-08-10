@@ -13,11 +13,11 @@ private struct BookClubErrorOverlay: ViewModifier {
                     Color.black.opacity(0.4)
                         .ignoresSafeArea()
                     if showFetchError {
-                        ErrorModalView(title: fetchErrorTitle, titleStyle: .head4) {
+                        ErrorModalView(title: fetchErrorTitle) {
                             showFetchError = false
                         }
                     } else {
-                        ErrorModalView(title: summaryPendingTitle, titleStyle: .head4) {
+                        ErrorModalView(title: summaryPendingTitle) {
                             showSummaryPending = false
                         }
                     }

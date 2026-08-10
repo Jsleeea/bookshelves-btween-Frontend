@@ -6,14 +6,12 @@
 import SwiftUI
 
 struct ReportModalView: View {
-  var titleStyle: CommonModalTitleStyle = .head2
   var onConfirm: () -> Void = {}
 
   var body: some View {
     CommonModalView(
       title: "신고되었습니다",
       confirmTitle: "확인",
-      titleStyle: self.titleStyle,
       confirmColor: .red700,
       iconGradientStyle: .error,
       modalHeight: 220,
