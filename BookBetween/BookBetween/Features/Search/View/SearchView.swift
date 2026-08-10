@@ -61,6 +61,7 @@ struct SearchView: View {
                         SearchResultSectionView(
                             idleHeight: idleHeight
                         )
+                        .padding(.top, 1)
                         .padding(.horizontal, 19)
                         .padding(.bottom, 80)
                     }

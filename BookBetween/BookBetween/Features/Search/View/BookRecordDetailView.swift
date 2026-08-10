@@ -121,7 +121,7 @@ struct BookRecordDetailView: View {
                 }
             }
             .animation(.easeInOut(duration: 0.25), value: viewModel.isLoading)
-            .animation(.spring(response: 0.35, dampingFraction: 0.7), value: isShowingSaveSuccess)
+            .animation(.easeInOut(duration: 0.2), value: isShowingSaveSuccess)
         }
         .task {
             await viewModel.loadBookDetail()
