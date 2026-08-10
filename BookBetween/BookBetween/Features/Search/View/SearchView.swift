@@ -96,6 +96,9 @@ struct SearchView: View {
         .ignoresSafeArea(.keyboard, edges: .bottom)
         .task {
             await viewModel.loadRecentSearches()
+            if !viewModel.searchText.isEmpty {
+                await viewModel.submitSearch()
+            }
         }
         .alert(
             "도서 정보를 불러오지 못했습니다.",

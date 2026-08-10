@@ -12,6 +12,7 @@ struct MainTabView: View {
     @State private var hideTabBar = false
     @State private var homeNavigationPath = NavigationPath()
     @State private var bookClubPath = NavigationPath()
+    @State private var pendingBookSearch = ""
     @State private var summaryCompletedMeeting: BookMeeting?
     @State private var summaryResultMeeting: BookMeeting?
     @State private var showSummaryResult = false
@@ -104,7 +105,8 @@ struct MainTabView: View {
                     NavigationStack {
                         SearchView(
                             viewModel: SearchViewModel(
-                                service: bookService
+                                service: bookService,
+                                initialQuery: pendingBookSearch
                             ),
                             meetingService: meetingService,
                             onMeetingCreated: {
@@ -121,7 +123,11 @@ struct MainTabView: View {
                             memberService: memberService,
                             chatService: chatService,
                             chatSocketService: chatSocketService,
-                            navigationPath: $bookClubPath
+                            navigationPath: $bookClubPath,
+                            onNavigateToBookSearch: { query in
+                                pendingBookSearch = query
+                                selectedTab = .search
+                            }
                         )
                     }
                 case .myLibrary:
@@ -213,7 +219,12 @@ struct MainTabView: View {
         }
         .animation(.easeInOut(duration: 0.2), value: shouldShowTabBar)
         .ignoresSafeArea(.keyboard, edges: .bottom)
-        .onChange(of: selectedTab) { hideTabBar = false }
+        .onChange(of: selectedTab) { oldValue, _ in
+            hideTabBar = false
+            if oldValue == .search {
+                pendingBookSearch = ""
+            }
+        }
     }
 
     private var shouldShowTabBar: Bool {
@@ -249,6 +260,16 @@ struct MainTabView: View {
                 else { continue }
 
                 meetingStartedMeeting = meeting
+            }
+
+            for notification in batch.notifications where notification.type == .aiSummaryReady {
+                guard
+                    let meetingId = notification.targetId,
+                    let meetingService,
+                    let meeting = try? await meetingService.fetchMeetingDetail(meetingId: meetingId)
+                else { continue }
+
+                summaryCompletedMeeting = meeting
             }
         }
     }

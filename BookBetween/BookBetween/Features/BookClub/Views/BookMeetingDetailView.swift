@@ -10,7 +10,7 @@ struct BookMeetingDetailView: View {
     @State private var isLoading = false
     @State private var isParticipating = false
     @State private var participationError: String?
-    @State private var meetingDismissed = false
+    @State private var fetchError = false
     @State private var showSuccessModal = false
 
     init(meeting: BookMeeting, service: (any MeetingServiceProtocol)? = nil, isParticipant: Bool = false, onParticipated: (() -> Void)? = nil) {
@@ -61,8 +61,10 @@ struct BookMeetingDetailView: View {
                             .disabled(isParticipating)
                         }
 					}
+                    .frame(maxWidth: .infinity)
 				}
 				.scrollBounceBehavior(.basedOnSize)
+                .scrollDisabled(isParticipant)
 			}
 		}
         .enableSwipeBack()
@@ -87,7 +89,7 @@ struct BookMeetingDetailView: View {
         }
 		.toolbar(.hidden, for: .navigationBar)
 		.hideTabBar()
-		.alert("모임 참여 실패", isPresented: Binding(
+		.alert("모임에 참여하지 못했습니다", isPresented: Binding(
 			get: { participationError != nil },
 			set: { if !$0 { participationError = nil } }
 		)) {
@@ -102,13 +104,13 @@ struct BookMeetingDetailView: View {
 			do {
 				meeting = try await service.fetchMeetingDetail(meetingId: meeting.id)
 			} catch {
-				meetingDismissed = true
+				fetchError = true
 			}
 		}
-		.alert("모임이 폭파됐어요", isPresented: $meetingDismissed) {
+		.alert("모임 정보를 불러오지 못했습니다", isPresented: $fetchError) {
 			Button("확인") { dismiss() }
 		} message: {
-			Text("인원 미달로 모임이 자동으로 폭파됐습니다.")
+			Text("잠시 후 다시 시도해주세요.")
 		}
 	}
 
@@ -222,7 +224,7 @@ struct BookMeetingDetailView: View {
 	// MARK: - Meeting Info
 
 	private var meetingInfoSection: some View {
-		VStack(alignment: .leading, spacing: 20) {
+		VStack(alignment: .leading, spacing: 0) {
 			HStack(spacing: 4.5) {
 				Image("icon_calendar")
 					.resizable()
@@ -231,10 +233,17 @@ struct BookMeetingDetailView: View {
 					.clipped()
 					.foregroundStyle(Color.gray600)
 				Text("모임정보")
-					.head2Style
+                    .font(.head2)
 					.foregroundStyle(Color.gray600)
 			}
+            .padding(.bottom, 8)
 			.padding(.horizontal, 6)
+            
+            Text("모임은 현재 시간 기준 7시간 이후부터 생성할 수 있어요.")
+                .font(.caption1SemiBold)
+                .foregroundStyle(Color.green700)
+                .padding(.bottom, 20)
+                .padding(.horizontal, 6)
 
 			meetingInfoCard
 				.padding(.horizontal, 4)
