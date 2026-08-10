@@ -321,7 +321,7 @@ struct BookRecordDetailView: View {
                     )
                 }
                 .frame(width: starsRowWidth, height: starSize)
-                .padding(.top, 3)
+                .padding(.top, 4)
             }
         }
         .simultaneousGesture(TapGesture().onEnded { requestEditHint() })
@@ -355,6 +355,7 @@ struct BookRecordDetailView: View {
                 Text("한줄평")
                     .body1SemiBoldStyle
                     .foregroundStyle(.gray800)
+                    .padding(.top, 4)
 
                 ZStack(alignment: .topLeading) {
                     TextEditor(text: $viewModel.memo)
@@ -371,7 +372,8 @@ struct BookRecordDetailView: View {
                         Text(viewModel.reviewPlaceholderText)
                             .font(.caption1Regular)
                             .foregroundStyle(viewModel.isEditing ? Color.gray800 : Color.gray500)
-                            .padding(.vertical, 8)
+                            .padding(.vertical, 4)
+                            
                             .allowsHitTesting(false)
                     }
                 }
@@ -380,7 +382,7 @@ struct BookRecordDetailView: View {
                     HStack {
                         Spacer()
                         Text("\(viewModel.memo.count) / \(BookRecordDetailViewModel.maxMemoLength)")
-                            .caption2RegularStyle
+                            .caption1RegularStyle
                             .foregroundStyle(
                                 viewModel.memo.count >= BookRecordDetailViewModel.maxMemoLength
                                     ? Color.red
@@ -439,8 +441,8 @@ struct BookRecordDetailView: View {
         borderWidth: CGFloat = 0.5,
         @ViewBuilder content: () -> Content) -> some View {
         content()
-            .padding(.horizontal, 15)
-            .padding(.vertical, 16)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(.white)
             .clipShape(RoundedRectangle(cornerRadius: 12))

@@ -54,7 +54,7 @@ struct BookProgressView: View {
     }
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 18) {
             GeometryReader { geo in
                 let measuredWidth = geo.size.width
                 let fullWidth = measuredWidth.isFinite ? max(measuredWidth, 0) : 0
