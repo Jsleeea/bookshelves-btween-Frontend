@@ -125,7 +125,7 @@ struct BookMeetingCreateView: View {
 		}
 		.toolbar(.hidden, for: .navigationBar)
 		.hideTabBar()
-		.alert("모임 생성 실패", isPresented: Binding(
+		.alert("모임을 생성하지 못했습니다", isPresented: Binding(
 			get: { creationError != nil },
 			set: { if !$0 { creationError = nil } }
 		)) {
@@ -230,7 +230,7 @@ struct BookMeetingCreateView: View {
 	// MARK: - Meeting Info
 
 	private var meetingInfoSection: some View {
-		VStack(alignment: .leading, spacing: 20) {
+		VStack(alignment: .leading, spacing: 0) {
 			HStack(spacing: 4.5) {
 				Image("icon_calendar")
 					.resizable()
@@ -239,11 +239,18 @@ struct BookMeetingCreateView: View {
 					.clipped()
 					.foregroundStyle(Color.gray600)
 				Text("모임정보")
-					.head2Style
+                    .font(.head2)
 					.foregroundStyle(Color.gray600)
 			}
+            .padding(.bottom, 8)
 			.padding(.horizontal, 6)
 
+            Text("모임은 현재 시간 기준 7시간 이후부터 생성할 수 있어요.")
+                .font(.caption1SemiBold)
+                .foregroundStyle(Color.green700)
+                .padding(.bottom, 20)
+                .padding(.horizontal, 6)
+            
 			meetingInfoCard
 				.padding(.horizontal, 4)
 		}

@@ -13,8 +13,12 @@ struct SearchIdleView: View {
 
     let height: CGFloat
     var mode: Mode = .idle
+    var customTitle: String? = nil
+    var actionTitle: String? = nil
+    var onAction: (() -> Void)? = nil
 
     private var titleText: String {
+        if let customTitle { return customTitle }
         switch mode {
         case .idle:
             return "원하는 책을 찾아보세요"
@@ -24,6 +28,7 @@ struct SearchIdleView: View {
     }
 
     private var subtitleText: String? {
+        guard customTitle == nil else { return nil }
         switch mode {
         case .idle:
             return "책 제목, 저자, 키워드로\n쉽고 빠르게 검색할 수 있어요"
@@ -48,24 +53,28 @@ struct SearchIdleView: View {
                 )
                 .frame(width: 270 * 2, height: 270 * 2)
                 .position(x: width / 2, y: height * 0.36)
+                .allowsHitTesting(false)
 
                 Image("leaf_left")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 100, height: 108)
                     .position(x: 30, y: height * 0.07)
+                    .allowsHitTesting(false)
 
                 Image("leaf_right")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 100, height: 108)
                     .position(x: width - 30, y: height * 0.17)
+                    .allowsHitTesting(false)
 
                 VStack(spacing: 0) {
                     Image("search_logo")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 152, height: 134)
+                        .allowsHitTesting(false)
 
                     VStack(spacing: 24) {
                         Text(titleText)
@@ -80,11 +89,21 @@ struct SearchIdleView: View {
                         }
                     }
                     .padding(.top, 32)
+                    .allowsHitTesting(false)
+
+                    if let actionTitle, let onAction {
+                        Button(action: onAction) {
+                            Text(actionTitle)
+                                .body2RegularStyle
+                                .foregroundStyle(Color.gray600)
+                                .underline()
+                        }
+                        .padding(.top, 20)
+                    }
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.top, height * 0.36 - 134 / 2)
             }
-            .allowsHitTesting(false)
         }
         .frame(height: height)
     }

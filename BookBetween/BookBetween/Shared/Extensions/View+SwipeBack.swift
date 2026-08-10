@@ -50,7 +50,6 @@ private struct SwipeBackEnabler: UIViewControllerRepresentable {
         }
 
         func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
-            // 루트 화면에서 스와이프하면 네비게이션 상태가 깨지므로 막는다.
             (navigationController?.viewControllers.count ?? 0) > 1
         }
     }
