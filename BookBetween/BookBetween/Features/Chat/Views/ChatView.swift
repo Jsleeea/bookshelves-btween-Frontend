@@ -59,6 +59,9 @@ struct ChatView: View {
     static let sirenShadowRadius: CGFloat = 4
     static let sirenShadowYOffset: CGFloat = 4
 
+    static let backButtonSize: CGFloat = 22
+    static let backButtonTrailingPadding: CGFloat = 8
+
     static let starIconSize: CGFloat = 14
     static let starIconTrailingPadding: CGFloat = 4
     static let chevronWidth: CGFloat = 14
@@ -91,6 +94,7 @@ struct ChatView: View {
   // MARK: - Properties
 
   @State private var viewModel: ChatViewModel
+  private let bookAuthor: String
   @State private var messageText: String = ""
   @State private var isQuestionExpanded: Bool = false
   @State private var showsScrollToBottomButton: Bool = false
@@ -101,14 +105,16 @@ struct ChatView: View {
 
   // MARK: - Init
 
-  init(viewModel: ChatViewModel) {
+  init(viewModel: ChatViewModel, bookAuthor: String) {
     _viewModel = State(initialValue: viewModel)
+    self.bookAuthor = bookAuthor
   }
 
   init(
     chatroomId: Int,
     meetingId: Int,
-    meetingService: (any MeetingServiceProtocol)? = nil
+    meetingService: (any MeetingServiceProtocol)? = nil,
+    bookAuthor: String
   ) {
     _viewModel = State(
       initialValue: ChatViewModel(
@@ -123,6 +129,7 @@ struct ChatView: View {
         meetingService: meetingService
       )
     )
+    self.bookAuthor = bookAuthor
   }
 
   // MARK: - Body
@@ -315,13 +322,24 @@ struct ChatView: View {
 
   private var headerView: some View {
     HStack {
+      Button {
+        self.dismiss()
+      } label: {
+        Image("icon_arrow_left")
+          .resizable()
+          .scaledToFit()
+          .frame(width: Metric.backButtonSize, height: Metric.backButtonSize)
+      }
+      .buttonStyle(.plain)
+      .padding(.trailing, Metric.backButtonTrailingPadding)
+
       VStack(alignment: .leading, spacing: Metric.headerTitleSpacing) {
-        Text("익명 독서 대화방")
+        Text(self.viewModel.chatRoom?.bookTitle ?? "")
           .font(.body2SemiBold)
           .tracking(Metric.bodyTextTracking)
           .lineSpacing(Metric.bodyTextLineSpacing)
           .foregroundStyle(.gray600)
-        Text(self.viewModel.chatRoom?.bookTitle ?? "")
+        Text(self.bookAuthor)
           .caption1RegularStyle
           .foregroundStyle(.gray500)
       }
@@ -526,5 +544,5 @@ struct ChatView: View {
 }
 
 #Preview {
-  ChatView(chatroomId: 3, meetingId: 10)
+  ChatView(chatroomId: 3, meetingId: 10, bookAuthor: "성해나")
 }
