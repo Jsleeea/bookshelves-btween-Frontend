@@ -86,12 +86,9 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
             @escaping (UNNotificationPresentationOptions) -> Void
     ) {
 
-        // 앱 실행 중에도 알림 표시
-        completionHandler([
-            .banner,
-            .sound,
-            .badge
-        ])
+        // 포그라운드 상태에서는 알림 배너를 표시하지 않는다.
+        // (앱이 백그라운드일 때는 이 메서드가 호출되지 않고 시스템이 알림을 그대로 표시한다.)
+        completionHandler([])
     }
 }
 

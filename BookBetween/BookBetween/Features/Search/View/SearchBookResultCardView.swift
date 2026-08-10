@@ -145,7 +145,7 @@ struct SearchBookResultCardView: View {
             NavigationLink(value: SearchRoute.bookDetail(item)) {
                 actionMenuRow(
                     iconName: "icon_search_tag",
-                    title: "내 서재에 추가하기",
+                    title: "내 서재에 저장하기",
                     subtitle: "내 서재에 책을 저장해 보세요"
                 )
             }
@@ -154,7 +154,7 @@ struct SearchBookResultCardView: View {
                 isActionMenuPresented = false
             })
         }
-        .frame(width: 210)//216
+        .frame(width: 207)//216
         .frame(height: Self.menuHeight)
         .background(Color.white)
         .clipShape(RoundedRectangle(cornerRadius: 10))
@@ -178,7 +178,7 @@ struct SearchBookResultCardView: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
-                    .caption2SemiBoldStyle
+                    .body2SemiBoldStyle
                     .foregroundStyle(Color.gray800)
 
                 Text(subtitle)

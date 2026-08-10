@@ -12,6 +12,7 @@ struct ProfileView: View {
 
     @State private var viewModel: ProfileViewModel
     @State private var statisticsViewModel: ReadingStatisticsViewModel
+    @State private var isProfileEditPresented = false
     @State private var isReadingStatisticsPresented = false
     private let onLogout: () async throws -> Void
     private let onWithdraw: () async throws -> Void
@@ -121,6 +122,16 @@ struct ProfileView: View {
             ReadingStatisticsView(
                 viewModel: statisticsViewModel,
                 joinedAt: joinedAt
+            )
+        }
+        .navigationDestination(isPresented: $isProfileEditPresented) {
+            ProfileEditView(
+                profile: viewModel.profile,
+                onSave: { request in
+                    try await viewModel.updateMyProfile(request: request)
+                },
+                onLogout: onLogout,
+                onWithdraw: onWithdraw
             )
         }
         .alert(
@@ -286,17 +297,8 @@ struct ProfileView: View {
     }
 
     private var editProfileButton: some View {
-        NavigationLink {
-            ProfileEditView(
-                profile: viewModel.profile,
-                onSave: { request in
-                    try await viewModel.updateMyProfile(
-                        request: request
-                    )
-                },
-                onLogout: onLogout,
-                onWithdraw: onWithdraw
-            )
+        Button {
+            isProfileEditPresented = true
         } label: {
             HStack(spacing: 4) {
                 Image("icon_pencil")

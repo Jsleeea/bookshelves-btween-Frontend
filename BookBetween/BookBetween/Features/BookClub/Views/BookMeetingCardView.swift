@@ -47,16 +47,6 @@ struct BookMeetingCardView: View {
 				Spacer()
 			}
 
-			VStack {
-				HStack {
-					Spacer()
-					moreButtonLabel
-				}
-				Spacer()
-			}
-			.padding(.top, 11)
-			.padding(.trailing, 19.86)
-
 			if meeting.status == .completed {
 				Color.clear
 					.contentShape(Rectangle())
@@ -177,20 +167,6 @@ struct BookMeetingCardView: View {
 	}
 
     // MARK: - moreButtonLabel
-
-    private var moreButtonLabel: some View {
-        HStack(spacing: 4) {
-            Text("더보기")
-                .caption2RegularStyle
-
-            Image("icon_chevron_right_gray")
-                .resizable()
-                .scaledToFill()
-                .frame(width: 4, height: 8)
-                .clipped()
-        }
-        .foregroundStyle(Color.gray600)
-    }
 
     private var routeValue: BookClubRoute {
         switch meeting.status {

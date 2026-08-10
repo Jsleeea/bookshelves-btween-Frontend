@@ -20,7 +20,7 @@ struct SuccessModalView: View {
       Image("icon_check_mark")
         .resizable()
         .scaledToFit()
-        .frame(width: 56, height: 56)
+        .frame(width: 50, height: 50)
     }
   }
 }

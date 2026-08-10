@@ -133,7 +133,7 @@ struct BookMeetingResultView: View {
     }
     
 	// MARK: - Navigation Header
-
+    
 	private var navigationHeader: some View {
 		HStack(spacing: 8) {
 			Button { dismiss() } label: {
@@ -166,27 +166,27 @@ struct BookMeetingResultView: View {
 
 			VStack(alignment: .leading, spacing: 0) {
 				Text(meeting.book.title)
-					.head3Style
+                    .font(.head3)
                     .foregroundStyle(Color.gray800)
-                    .padding(.top, 2.6)
+                    .lineLimit(1)
                     .padding(.bottom, 8)
 
 				Text(meeting.book.publisher.map { "\(meeting.book.author) | \($0)" } ?? meeting.book.author)
-					.body2RegularStyle
+                    .font(.body2Regular)
 					.foregroundStyle(Color.gray500)
-                
-                Spacer()
+                    .lineLimit(1)
+                    .padding(.bottom, 20)
                 
 				compactInfoRows
-                    .padding(.bottom, 2.6)
 			}
+            .padding(.vertical, 26.7)
 		}
         .padding(.top, 8)
 		.padding(.horizontal, 20)
 	}
 
 	private var compactInfoRows: some View {
-		VStack(alignment: .leading, spacing: 8) {
+		VStack(alignment: .leading, spacing: 4) {
 			compactInfoRow(icon: { Image("icon_calendar").resizable().scaledToFill().frame(width: 12, height: 12).clipped()  },
 						   text: "모임 날짜: \(Self.dateTimeFormatter.string(from: meeting.meetingDate))")
 			compactInfoRow(icon: { Image("icon_clock").resizable().scaledToFill().frame(width: 12, height: 12).clipped() },

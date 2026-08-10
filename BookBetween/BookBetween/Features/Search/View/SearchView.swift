@@ -13,20 +13,24 @@ struct SearchView: View {
     @State private var presentedActionMenuItemID: UUID?
     @FocusState private var isSearchFocused: Bool
     private let meetingService: (any MeetingServiceProtocol)?
+    private let onMeetingCreated: (() -> Void)?
 
     init(meetingService: (any MeetingServiceProtocol)? = nil) {
         _viewModel = State(
             initialValue: SearchViewModel(service: BookService.stubbed())
         )
         self.meetingService = meetingService
+        self.onMeetingCreated = nil
     }
 
     init(
         viewModel: SearchViewModel,
-        meetingService: (any MeetingServiceProtocol)? = nil
+        meetingService: (any MeetingServiceProtocol)? = nil,
+        onMeetingCreated: (() -> Void)? = nil
     ) {
         _viewModel = State(initialValue: viewModel)
         self.meetingService = meetingService
+        self.onMeetingCreated = onMeetingCreated
     }
 
     var body: some View {
@@ -35,7 +39,12 @@ struct SearchView: View {
 
             ZStack(alignment: .top) {
                 if !viewModel.isSearching && !viewModel.hasSearched {
-                    SearchIdleView(height: idleHeight)
+                    SearchIdleView(height: idleHeight, mode: .idle)
+                        .padding(.horizontal, 19)
+                        .offset(y: 145)
+                        .transition(.opacity)
+                } else if viewModel.hasSearched && viewModel.searchResults.isEmpty {
+                    SearchIdleView(height: idleHeight, mode: .emptyResult)
                         .padding(.horizontal, 19)
                         .offset(y: 145)
                         .transition(.opacity)
@@ -52,6 +61,7 @@ struct SearchView: View {
                         SearchResultSectionView(
                             idleHeight: idleHeight
                         )
+                        .padding(.top, 1)
                         .padding(.horizontal, 19)
                         .padding(.bottom, 80)
                     }
@@ -72,13 +82,14 @@ struct SearchView: View {
         .navigationDestination(for: SearchRoute.self) { route in
             switch route {
             case .createMeeting(let book):
-                BookMeetingCreateView(book: book, service: meetingService)
+                BookMeetingCreateView(book: book, service: meetingService, onMeetingCreated: onMeetingCreated)
             case .bookDetail(let item):
                 BookRecordDetailView(
                     book: item.book,
                     isSaveable: item.isSaveable,
                     service: viewModel.bookService,
-                    loadsRemoteDetail: true
+                    loadsRemoteDetail: true,
+                    startsInEditingMode: true
                 )
             }
         }
@@ -86,6 +97,9 @@ struct SearchView: View {
         .ignoresSafeArea(.keyboard, edges: .bottom)
         .task {
             await viewModel.loadRecentSearches()
+            if !viewModel.searchText.isEmpty {
+                await viewModel.submitSearch()
+            }
         }
         .alert(
             "도서 정보를 불러오지 못했습니다.",
@@ -219,10 +233,8 @@ struct SearchView: View {
                     .frame(height: idleHeight)
                     .transition(.opacity)
             } else if viewModel.hasSearched && viewModel.searchResults.isEmpty {
-                Text("검색 결과가 없어요")
-                    .body2RegularStyle
-                    .foregroundStyle(.gray500)
-                    .padding(.top, 24)
+                Color.clear
+                    .frame(height: idleHeight)
                     .transition(.opacity)
             } else {
                 ForEach(viewModel.searchResults, id: \.listID) { item in
@@ -260,57 +272,6 @@ struct SearchView: View {
         )
     }
 
-    private func SearchIdleView(height: CGFloat) -> some View {
-        GeometryReader { geometry in
-            let width = geometry.size.width
-
-            ZStack {
-                RadialGradient(
-                    colors: [
-                        Color(hex: "DCEBE1").opacity(0.58),
-                        Color.white.opacity(0)
-                    ],
-                    center: .center,
-                    startRadius: 12,
-                    endRadius: 270
-                )
-                .frame(width: 270 * 2, height: 270 * 2)
-                .position(x: width / 2, y: height * 0.36)
-
-                Image("leaf_left")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 100, height: 108)
-                    .position(x: 30, y: height * 0.13)
-
-                Image("leaf_right")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 100, height: 108)
-                    .position(x: width - 30, y: height * 0.22)
-
-                Image("search_logo")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 152, height: 134)
-                    .position(x: width / 2, y: height * 0.36)
-
-                VStack(spacing: 10) {
-                    Text("원하는 책을 찾아보세요")
-                        .pointText4Style
-                        .foregroundStyle(Color.green900)
-
-                    Text("책 제목, 저자, 키워드로\n쉽고 빠르게 검색할 수 있어요")
-                        .body2RegularStyle
-                        .foregroundStyle(Color.gray600)
-                        .multilineTextAlignment(.center)
-                }
-                .position(x: width / 2, y: height * 0.57)
-            }
-            .allowsHitTesting(false)
-        }
-        .frame(height: height)
-    }
 }
 
 private struct RecentKeywordRow: View {

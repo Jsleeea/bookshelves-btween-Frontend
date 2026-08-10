@@ -32,10 +32,12 @@ final class SearchViewModel {
 
     init(
         service: any BookServiceProtocol,
-        pageSize: Int = 15
+        pageSize: Int = 15,
+        initialQuery: String = ""
     ) {
         self.service = service
         self.pageSize = pageSize
+        self.searchText = initialQuery
     }
 
     func loadRecentSearches() async {

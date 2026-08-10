@@ -23,7 +23,7 @@ struct MeetingBookDTO: Decodable {
     let id: Int?
     let isbn: String?
     let title: String
-    let author: String
+    let author: String?
     let publisher: String?
     let description: String?
     let coverImageUrl: String?
@@ -53,7 +53,7 @@ extension MeetingResultDTO {
                 id: book.id,
                 isbn: book.isbn,
                 title: book.title,
-                author: book.author,
+                author: book.author ?? "저자 미상",
                 publisher: book.publisher,
                 description: book.description,
                 coverImageUrl: book.coverImageUrl,
@@ -124,7 +124,7 @@ extension MeetingListResultDTO {
             return BookMeeting(
                 id: item.id,
                 chatroomId: item.chatroomId ?? 0,
-                book: Book(id: item.book.id, title: item.book.title, author: "", coverImageUrl: item.book.coverImageUrl),
+                book: Book(id: item.book.id, title: item.book.title, author: "저자 미상", coverImageUrl: item.book.coverImageUrl),
                 meetingDate: meetingDate,
                 timerMinutes: item.duration,
                 maxParticipants: item.maxParticipants,

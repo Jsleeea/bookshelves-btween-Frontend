@@ -149,10 +149,7 @@ struct ProfileEditView: View {
                         }
 
                     case .logoutConfirmation:
-                        AccountActionModalView(
-                            title: "로그아웃 하시겠습니까?",
-                            description: "해당 기기에서 로그아웃 됩니다.",
-                            confirmTitle: "로그아웃",
+                        LogoutConfirmationModalView(
                             onCancel: {
                                 guard !isLoggingOut else {
                                     return
@@ -168,10 +165,7 @@ struct ProfileEditView: View {
                         )
 
                     case .withdrawalConfirmation:
-                        AccountActionModalView(
-                            title: "탈퇴하시겠습니까?",
-                            description: "탈퇴하기 클릭 후 30일이 지나면\n계정 복구가 불가능합니다.",
-                            confirmTitle: "탈퇴하기",
+                        WithdrawalConfirmationModalView(
                             onCancel: {
                                 guard !isWithdrawing else {
                                     return
@@ -195,7 +189,7 @@ struct ProfileEditView: View {
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
         .hideTabBar()
-        .enableSwipeBack()
+        .simultaneousGesture(self.backSwipeGesture)
         .alert(
             "회원 정보를 수정하지 못했습니다.",
             isPresented: Binding(
@@ -247,6 +241,20 @@ struct ProfileEditView: View {
         } message: {
             Text(withdrawalErrorMessage ?? "")
         }
+    }
+
+    private var backSwipeGesture: some Gesture {
+        DragGesture(minimumDistance: 20)
+            .onEnded { value in
+                guard value.startLocation.x <= 30,
+                      value.translation.width > 0,
+                      abs(value.translation.width) > abs(value.translation.height)
+                else {
+                    return
+                }
+
+                self.dismiss()
+            }
     }
 
     private func saveProfile() async {

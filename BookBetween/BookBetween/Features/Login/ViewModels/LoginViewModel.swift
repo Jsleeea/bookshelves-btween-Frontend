@@ -24,6 +24,7 @@ enum LoginViewState: Equatable {
 final class LoginViewModel {
     private let kakaoLoginService: KakaoLoginServiceProtocol
     private let googleLoginService: GoogleLoginServiceProtocol
+    private let appleLoginService: AppleLoginServiceProtocol
     private let authService: AuthServiceProtocol
     private let authTokenStore: AuthTokenStoreProtocol
     private let authSessionStore: AuthSessionStoreProtocol
@@ -49,15 +50,21 @@ final class LoginViewModel {
         isLoading && activeLoginProvider == .google
     }
 
+    var isAppleLoading: Bool {
+        isLoading && activeLoginProvider == .apple
+    }
+
     init(
         kakaoLoginService: KakaoLoginServiceProtocol,
         googleLoginService: GoogleLoginServiceProtocol,
+        appleLoginService: AppleLoginServiceProtocol,
         authService: AuthServiceProtocol,
         authTokenStore: AuthTokenStoreProtocol = AuthTokenStore(),
         authSessionStore: AuthSessionStoreProtocol = AuthSessionStore()
     ) {
         self.kakaoLoginService = kakaoLoginService
         self.googleLoginService = googleLoginService
+        self.appleLoginService = appleLoginService
         self.authService = authService
         self.authTokenStore = authTokenStore
         self.authSessionStore = authSessionStore
@@ -97,6 +104,26 @@ final class LoginViewModel {
             let providerToken = try await googleLoginService.login()
             state = try await requestSocialLogin(
                 provider: .google,
+                providerToken: providerToken
+            )
+        } catch {
+            state = .failure(error.localizedDescription)
+        }
+    }
+
+    func loginWithApple() async {
+        guard !isLoading else {
+            return
+        }
+
+        state = .loading
+        activeLoginProvider = .apple
+        defer { activeLoginProvider = nil }
+
+        do {
+            let providerToken = try await appleLoginService.login()
+            state = try await requestSocialLogin(
+                provider: .apple,
                 providerToken: providerToken
             )
         } catch {

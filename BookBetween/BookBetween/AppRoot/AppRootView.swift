@@ -124,21 +124,7 @@ struct AppRootView: View {
             }
 
         case .success(.main):
-            MainTabView(
-                memberService: memberService,
-                bookService: bookService,
-                homeService: homeService,
-                meetingService: meetingService,
-                notificationService: notificationService,
-                chatService: chatService,
-                chatSocketService: chatSocketService,
-                onLogout: {
-                    try await loginViewModel.logout()
-                },
-                onWithdraw: {
-                    try await withdrawAccount()
-                }
-            )
+            mainTabContent
 
         case .success(.accountRecovery):
             accountRecoveryContent
@@ -195,6 +181,24 @@ struct AppRootView: View {
         }
     }
 
+    private var mainTabContent: some View {
+        MainTabView(
+            memberService: memberService,
+            bookService: bookService,
+            homeService: homeService,
+            meetingService: meetingService,
+            notificationService: notificationService,
+            chatService: chatService,
+            chatSocketService: chatSocketService,
+            onLogout: {
+                try await loginViewModel.logout()
+            },
+            onWithdraw: {
+                try await withdrawAccount()
+            }
+        )
+    }
+
     private func withdrawAccount() async throws {
         guard let memberService else {
             throw NetworkError.emptyResult
@@ -217,6 +221,7 @@ private enum AppLaunchPhase: Equatable {
         loginViewModel: LoginViewModel(
             kakaoLoginService: PreviewKakaoLoginService(),
             googleLoginService: PreviewGoogleLoginService(),
+            appleLoginService: PreviewAppleLoginService(),
             authService: AuthService(
                 baseURL: URL(string: "https://stub.bookbetween.local")!,
                 provider: AuthStubProviderFactory.make(
@@ -239,5 +244,11 @@ private final class PreviewKakaoLoginService: KakaoLoginServiceProtocol {
 private final class PreviewGoogleLoginService: GoogleLoginServiceProtocol {
     func login() async throws -> String {
         "preview-google-provider-token"
+    }
+}
+
+private final class PreviewAppleLoginService: AppleLoginServiceProtocol {
+    func login() async throws -> String {
+        "preview-apple-provider-token"
     }
 }
