@@ -6,20 +6,18 @@
 import SwiftUI
 
 struct ReportModalView: View {
-  var titleStyle: CommonModalTitleStyle = .head2
   var onConfirm: () -> Void = {}
 
   var body: some View {
     CommonModalView(
       title: "신고되었습니다",
       confirmTitle: "확인",
-      titleStyle: self.titleStyle,
       confirmColor: .red700,
       iconGradientStyle: .error,
       modalHeight: 220,
       onConfirm: self.onConfirm
     ) {
-      Image("icon_exclamation_mark")
+      Image("icon_siren")
         .resizable()
         .scaledToFit()
         .frame(width: 56, height: 56)

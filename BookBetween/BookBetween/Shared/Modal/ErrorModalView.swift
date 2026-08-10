@@ -7,14 +7,12 @@ import SwiftUI
 
 struct ErrorModalView: View {
   let title: String
-  var titleStyle: CommonModalTitleStyle = .head2
   var onConfirm: () -> Void = {}
 
   var body: some View {
     CommonModalView(
       title: self.title,
       confirmTitle: "확인",
-      titleStyle: self.titleStyle,
       confirmColor: .red700,
       iconGradientStyle: .error,
       modalHeight: 220,
@@ -23,7 +21,7 @@ struct ErrorModalView: View {
       Image("icon_exclamation_mark")
         .resizable()
         .scaledToFit()
-        .frame(width: 56, height: 56)
+        .frame(width: 50, height: 50)
     }
   }
 }

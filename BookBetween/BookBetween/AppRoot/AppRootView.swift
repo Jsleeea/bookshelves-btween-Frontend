@@ -124,21 +124,7 @@ struct AppRootView: View {
             }
 
         case .success(.main):
-            MainTabView(
-                memberService: memberService,
-                bookService: bookService,
-                homeService: homeService,
-                meetingService: meetingService,
-                notificationService: notificationService,
-                chatService: chatService,
-                chatSocketService: chatSocketService,
-                onLogout: {
-                    try await loginViewModel.logout()
-                },
-                onWithdraw: {
-                    try await withdrawAccount()
-                }
-            )
+            mainTabContent
 
         case .success(.accountRecovery):
             accountRecoveryContent
@@ -193,6 +179,24 @@ struct AppRootView: View {
                     ?? "다시 시도해주세요."
             )
         }
+    }
+
+    private var mainTabContent: some View {
+        MainTabView(
+            memberService: memberService,
+            bookService: bookService,
+            homeService: homeService,
+            meetingService: meetingService,
+            notificationService: notificationService,
+            chatService: chatService,
+            chatSocketService: chatSocketService,
+            onLogout: {
+                try await loginViewModel.logout()
+            },
+            onWithdraw: {
+                try await withdrawAccount()
+            }
+        )
     }
 
     private func withdrawAccount() async throws {
