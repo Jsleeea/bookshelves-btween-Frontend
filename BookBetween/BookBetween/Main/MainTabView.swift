@@ -197,7 +197,11 @@ struct MainTabView: View {
                     onParticipate: {
                         meetingStartedMeeting = nil
                         bookClubPath.append(
-                            BookClubRoute.chat(chatroomId: meeting.chatroomId, meetingId: meeting.id)
+                            BookClubRoute.chat(
+                                chatroomId: meeting.chatroomId,
+                                meetingId: meeting.id,
+                                bookAuthor: meeting.book.author
+                            )
                         )
                         selectedTab = .bookClub
                     }

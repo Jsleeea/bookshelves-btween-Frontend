@@ -101,20 +101,24 @@ struct BookClubView: View {
                         Task { await viewModel.fetchMyMeetings() }
                     }
                 )
-            case .chat(let chatroomId, let meetingId):
+            case .chat(let chatroomId, let meetingId, let bookAuthor):
                 if let chatService = viewModel.chatService, let chatSocketService = viewModel.chatSocketService {
-                    ChatView(viewModel: ChatViewModel(
-                        chatroomId: chatroomId,
-                        meetingId: meetingId,
-                        chatService: chatService,
-                        socketService: chatSocketService,
-                        meetingService: viewModel.meetingService
-                    ))
+                    ChatView(
+                        viewModel: ChatViewModel(
+                            chatroomId: chatroomId,
+                            meetingId: meetingId,
+                            chatService: chatService,
+                            socketService: chatSocketService,
+                            meetingService: viewModel.meetingService
+                        ),
+                        bookAuthor: bookAuthor
+                    )
                 } else {
                     ChatView(
                         chatroomId: chatroomId,
                         meetingId: meetingId,
-                        meetingService: viewModel.meetingService
+                        meetingService: viewModel.meetingService,
+                        bookAuthor: bookAuthor
                     )
                 }
             case .result(let meeting):

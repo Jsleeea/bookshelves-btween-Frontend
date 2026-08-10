@@ -171,7 +171,11 @@ struct BookMeetingCardView: View {
     private var routeValue: BookClubRoute {
         switch meeting.status {
         case .inProgress:
-            return .chat(chatroomId: meeting.chatroomId, meetingId: meeting.id)
+            return .chat(
+                chatroomId: meeting.chatroomId,
+                meetingId: meeting.id,
+                bookAuthor: meeting.book.author
+            )
         default:
             return .detail(meeting, isParticipant: isParticipant)
         }

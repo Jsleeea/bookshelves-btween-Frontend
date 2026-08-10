@@ -192,13 +192,15 @@ struct NotificationInboxView: View {
                         chatService: chatService,
                         socketService: chatSocketService,
                         meetingService: meetingService
-                    )
+                    ),
+                    bookAuthor: meeting.book.author
                 )
             } else {
                 ChatView(
                     chatroomId: meeting.chatroomId,
                     meetingId: meeting.id,
-                    meetingService: meetingService
+                    meetingService: meetingService,
+                    bookAuthor: meeting.book.author
                 )
             }
         case nil:

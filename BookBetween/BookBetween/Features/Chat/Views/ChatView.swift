@@ -14,6 +14,7 @@ struct ChatView: View {
   private enum Metric {
     static let horizontalPadding: CGFloat = 20
     static let wideHorizontalPadding: CGFloat = 30
+    static let questionViewTopPadding: CGFloat = 9.5
     static let cardCornerRadius: CGFloat = 12
     static let cardBorderWidth: CGFloat = 1
 
@@ -37,8 +38,9 @@ struct ChatView: View {
     static let softGradientEndLocation: CGFloat = 1.5517
 
     static let headerTitleSpacing: CGFloat = 2
+    static let bookTitleMaxLength = 8
     static let headerTopPadding: CGFloat = 8.5
-    static let headerBottomPadding: CGFloat = 12
+    static let headerBottomPadding: CGFloat = 0
     static let headerSpacerMinLength: CGFloat = 76
     static let bodyTextTracking: CGFloat = -0.042
     static let bodyTextLineSpacing: CGFloat = 6
@@ -58,6 +60,11 @@ struct ChatView: View {
     static let sirenShadowOpacity: CGFloat = 0.25
     static let sirenShadowRadius: CGFloat = 4
     static let sirenShadowYOffset: CGFloat = 4
+
+    static let backButtonSize: CGFloat = 20
+    static let backButtonLeadingPadding: CGFloat = 30
+    static let backButtonTopPadding: CGFloat = 8
+    static let backButtonTrailingPadding: CGFloat = 12
 
     static let starIconSize: CGFloat = 14
     static let starIconTrailingPadding: CGFloat = 4
@@ -91,6 +98,7 @@ struct ChatView: View {
   // MARK: - Properties
 
   @State private var viewModel: ChatViewModel
+  private let bookAuthor: String
   @State private var messageText: String = ""
   @State private var isQuestionExpanded: Bool = false
   @State private var showsScrollToBottomButton: Bool = false
@@ -101,14 +109,16 @@ struct ChatView: View {
 
   // MARK: - Init
 
-  init(viewModel: ChatViewModel) {
+  init(viewModel: ChatViewModel, bookAuthor: String) {
     _viewModel = State(initialValue: viewModel)
+    self.bookAuthor = bookAuthor
   }
 
   init(
     chatroomId: Int,
     meetingId: Int,
-    meetingService: (any MeetingServiceProtocol)? = nil
+    meetingService: (any MeetingServiceProtocol)? = nil,
+    bookAuthor: String
   ) {
     _viewModel = State(
       initialValue: ChatViewModel(
@@ -123,6 +133,7 @@ struct ChatView: View {
         meetingService: meetingService
       )
     )
+    self.bookAuthor = bookAuthor
   }
 
   // MARK: - Body
@@ -220,7 +231,7 @@ struct ChatView: View {
         if self.isQuestionExpanded {
           self.expandedQuestionView
             .padding(.horizontal, Metric.horizontalPadding)
-            .padding(.top, Metric.horizontalPadding)
+            .padding(.top, Metric.questionViewTopPadding)
         }
       }
 
@@ -324,102 +335,123 @@ struct ChatView: View {
 
   // MARK: - Header
 
+  private var truncatedBookTitle: String {
+    let bookTitle = self.viewModel.chatRoom?.bookTitle ?? ""
+    guard bookTitle.count > Metric.bookTitleMaxLength else { return bookTitle }
+    return "\(bookTitle.prefix(Metric.bookTitleMaxLength))..."
+  }
+
   private var headerView: some View {
-    HStack {
-      VStack(alignment: .leading, spacing: Metric.headerTitleSpacing) {
-        Text("익명 독서 대화방")
-          .font(.body2SemiBold)
-          .tracking(Metric.bodyTextTracking)
-          .lineSpacing(Metric.bodyTextLineSpacing)
-          .foregroundStyle(.gray600)
-        Text(self.viewModel.chatRoom?.bookTitle ?? "")
-          .caption1RegularStyle
-          .foregroundStyle(.gray500)
+    HStack(spacing: 0) {
+      Button {
+        self.dismiss()
+      } label: {
+        Image("icon_arrow_left")
+          .resizable()
+          .scaledToFit()
+          .frame(width: Metric.backButtonSize, height: Metric.backButtonSize)
       }
+      .buttonStyle(.plain)
+      .padding(.leading, Metric.backButtonLeadingPadding)
+      .padding(.top, Metric.backButtonTopPadding)
+      .padding(.trailing, Metric.backButtonTrailingPadding)
 
-      Spacer(minLength: Metric.headerSpacerMinLength)
-
-      HStack(spacing: Metric.badgeGroupSpacing) {
-        HStack(spacing: Metric.badgeGroupSpacing) {
-          Image("people_icon")
-            .resizable()
-            .renderingMode(.template)
-            .scaledToFit()
-            .frame(width: Metric.peopleIconWidth, height: Metric.peopleIconHeight)
-          Text("\(self.viewModel.appliedCount)/\(self.viewModel.chatRoom?.maxParticipants ?? 0)")
-            .font(.caption1SemiBold)
-            .tracking(Metric.captionTracking)
-            .lineSpacing(Metric.captionLineSpacing)
-        }
-        .foregroundStyle(.gray600)
-        .frame(width: Metric.badgeWidth, height: Metric.badgeHeight)
-        .background(
-          LinearGradient(
-            gradient: Gradient(stops: [
-              .init(color: .white, location: Metric.softGradientStartLocation),
-              .init(color: .white.opacity(0.2), location: Metric.softGradientEndLocation)
-            ]),
-            startPoint: .bottom,
-            endPoint: .top
-          )
-        )
-        .clipShape(Capsule())
-
-        HStack(spacing: Metric.badgeGroupSpacing) {
-          Image("icon_clock")
-            .resizable()
-            .renderingMode(.template)
-            .scaledToFit()
-            .frame(width: Metric.timeIconSize, height: Metric.timeIconSize)
-          if let endsAt = self.viewModel.chatRoom?.endsAt, endsAt > Date.now {
-            Text(timerInterval: Date.now...endsAt, countsDown: true)
-              .font(.caption1SemiBold)
-              .tracking(Metric.captionTracking)
-              .lineSpacing(Metric.captionLineSpacing)
-          } else {
-            Text("00:00")
-              .font(.caption1SemiBold)
-              .tracking(Metric.captionTracking)
-              .lineSpacing(Metric.captionLineSpacing)
-          }
-        }
-        .foregroundStyle(.gray600)
-        .frame(width: Metric.badgeWidth, height: Metric.badgeHeight)
-        .background(
-          LinearGradient(
-            gradient: Gradient(stops: [
-              .init(color: .white, location: Metric.softGradientStartLocation),
-              .init(color: .white.opacity(0.2), location: Metric.softGradientEndLocation)
-            ]),
-            startPoint: .bottom,
-            endPoint: .top
-          )
-        )
-        .clipShape(Capsule())
-
-        Button {
-          Task {
-            await self.viewModel.reportChatRoom()
-          }
-        } label: {
-          Image("siren_icon")
-            .resizable()
-            .renderingMode(.template)
-            .scaledToFit()
-            .frame(width: Metric.sirenIconWidth, height: Metric.sirenIconHeight)
+      HStack {
+        VStack(alignment: .leading, spacing: Metric.headerTitleSpacing) {
+          Text(self.truncatedBookTitle)
+            .body1SemiBoldStyle
+            .foregroundStyle(.gray600)
+            .lineLimit(1)
+            .fixedSize(horizontal: true, vertical: false)
+          Text(self.bookAuthor)
+            .caption1RegularStyle
             .foregroundStyle(.gray500)
-            .shadow(
-              color: .black.opacity(Metric.sirenShadowOpacity),
-              radius: Metric.sirenShadowRadius,
-              x: 0,
-              y: Metric.sirenShadowYOffset
+        }
+
+        Spacer(minLength: Metric.headerSpacerMinLength)
+
+        HStack(spacing: Metric.badgeGroupSpacing) {
+          HStack(spacing: Metric.badgeGroupSpacing) {
+            Image("people_icon")
+              .resizable()
+              .renderingMode(.template)
+              .scaledToFit()
+              .frame(width: Metric.peopleIconWidth, height: Metric.peopleIconHeight)
+            Text("\(self.viewModel.appliedCount)/\(self.viewModel.chatRoom?.maxParticipants ?? 0)")
+              .font(.caption1SemiBold)
+              .tracking(Metric.captionTracking)
+              .lineSpacing(Metric.captionLineSpacing)
+          }
+          .foregroundStyle(.gray600)
+          .frame(width: Metric.badgeWidth, height: Metric.badgeHeight)
+          .background(
+            LinearGradient(
+              gradient: Gradient(stops: [
+                .init(color: .white, location: Metric.softGradientStartLocation),
+                .init(color: .white.opacity(0.2), location: Metric.softGradientEndLocation)
+              ]),
+              startPoint: .bottom,
+              endPoint: .top
             )
-            .padding(.leading, Metric.sirenLeadingPadding)
+          )
+          .clipShape(Capsule())
+
+          HStack(spacing: Metric.badgeGroupSpacing) {
+            Image("icon_clock")
+              .resizable()
+              .renderingMode(.template)
+              .scaledToFit()
+              .frame(width: Metric.timeIconSize, height: Metric.timeIconSize)
+            if let endsAt = self.viewModel.chatRoom?.endsAt, endsAt > Date.now {
+              Text(timerInterval: Date.now...endsAt, countsDown: true)
+                .font(.caption1SemiBold)
+                .tracking(Metric.captionTracking)
+                .lineSpacing(Metric.captionLineSpacing)
+            } else {
+              Text("00:00")
+                .font(.caption1SemiBold)
+                .tracking(Metric.captionTracking)
+                .lineSpacing(Metric.captionLineSpacing)
+            }
+          }
+          .foregroundStyle(.gray600)
+          .frame(width: Metric.badgeWidth, height: Metric.badgeHeight)
+          .background(
+            LinearGradient(
+              gradient: Gradient(stops: [
+                .init(color: .white, location: Metric.softGradientStartLocation),
+                .init(color: .white.opacity(0.2), location: Metric.softGradientEndLocation)
+              ]),
+              startPoint: .bottom,
+              endPoint: .top
+            )
+          )
+          .clipShape(Capsule())
+
+          Button {
+            Task {
+              await self.viewModel.reportChatRoom()
+            }
+          } label: {
+            Image("siren_icon")
+              .resizable()
+              .renderingMode(.template)
+              .scaledToFit()
+              .frame(width: Metric.sirenIconWidth, height: Metric.sirenIconHeight)
+              .foregroundStyle(.gray500)
+              .shadow(
+                color: .black.opacity(Metric.sirenShadowOpacity),
+                radius: Metric.sirenShadowRadius,
+                x: 0,
+                y: Metric.sirenShadowYOffset
+              )
+              .padding(.leading, Metric.sirenLeadingPadding)
+          }
         }
       }
+      .padding(.top, Metric.headerTopPadding)
+      .padding(.trailing, Metric.wideHorizontalPadding)
     }
-    .padding(.horizontal, Metric.wideHorizontalPadding)
-    .padding(.top, Metric.headerTopPadding)
     .padding(.bottom, Metric.headerBottomPadding)
   }
 
@@ -487,7 +519,7 @@ struct ChatView: View {
       }
     }
     .padding(.horizontal, Metric.horizontalPadding)
-    .padding(.top, Metric.horizontalPadding)
+    .padding(.top, Metric.questionViewTopPadding)
   }
 
   // MARK: - Expanded Question
@@ -542,6 +574,28 @@ struct ChatView: View {
   }
 }
 
+// MARK: - Preview Socket Service
+
+private struct PreviewChatSocketService: ChatSocketServiceProtocol {
+  func connect() async throws {}
+
+  func subscribe(chatroomId: Int) async throws -> AsyncThrowingStream<ChatSocketEvent, Error> {
+    AsyncThrowingStream { _ in }
+  }
+
+  func send(chatroomId: Int, content: String) async throws {}
+
+  func disconnect() async {}
+}
+
 #Preview {
-  ChatView(chatroomId: 3, meetingId: 10)
+  ChatView(
+    viewModel: ChatViewModel(
+      chatroomId: 3,
+      meetingId: 10,
+      chatService: ChatService.stubbed(),
+      socketService: PreviewChatSocketService()
+    ),
+    bookAuthor: "성해나"
+  )
 }
