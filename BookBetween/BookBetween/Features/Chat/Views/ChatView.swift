@@ -14,7 +14,7 @@ struct ChatView: View {
   private enum Metric {
     static let horizontalPadding: CGFloat = 20
     static let wideHorizontalPadding: CGFloat = 30
-    static let questionViewTopPadding: CGFloat = 10
+    static let questionViewTopPadding: CGFloat = 9.5
     static let cardCornerRadius: CGFloat = 12
     static let cardBorderWidth: CGFloat = 1
 
@@ -40,7 +40,7 @@ struct ChatView: View {
     static let headerTitleSpacing: CGFloat = 2
     static let bookTitleMaxLength = 8
     static let headerTopPadding: CGFloat = 8.5
-    static let headerBottomPadding: CGFloat = 12
+    static let headerBottomPadding: CGFloat = 0
     static let headerSpacerMinLength: CGFloat = 76
     static let bodyTextTracking: CGFloat = -0.042
     static let bodyTextLineSpacing: CGFloat = 6
@@ -63,7 +63,7 @@ struct ChatView: View {
 
     static let backButtonSize: CGFloat = 20
     static let backButtonLeadingPadding: CGFloat = 30
-    static let backButtonTopPadding: CGFloat = 18
+    static let backButtonTopPadding: CGFloat = 8
     static let backButtonTrailingPadding: CGFloat = 12
 
     static let starIconSize: CGFloat = 14
@@ -231,7 +231,7 @@ struct ChatView: View {
         if self.isQuestionExpanded {
           self.expandedQuestionView
             .padding(.horizontal, Metric.horizontalPadding)
-            .padding(.top, Metric.horizontalPadding)
+            .padding(.top, Metric.questionViewTopPadding)
         }
       }
 
