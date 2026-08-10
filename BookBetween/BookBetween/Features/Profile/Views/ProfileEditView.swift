@@ -189,7 +189,7 @@ struct ProfileEditView: View {
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
         .hideTabBar()
-        .enableSwipeBack()
+        .simultaneousGesture(self.backSwipeGesture)
         .alert(
             "회원 정보를 수정하지 못했습니다.",
             isPresented: Binding(
@@ -241,6 +241,20 @@ struct ProfileEditView: View {
         } message: {
             Text(withdrawalErrorMessage ?? "")
         }
+    }
+
+    private var backSwipeGesture: some Gesture {
+        DragGesture(minimumDistance: 20)
+            .onEnded { value in
+                guard value.startLocation.x <= 30,
+                      value.translation.width > 0,
+                      abs(value.translation.width) > abs(value.translation.height)
+                else {
+                    return
+                }
+
+                self.dismiss()
+            }
     }
 
     private func saveProfile() async {
