@@ -2,7 +2,6 @@ import SwiftUI
 
 struct BookClubView: View {
 	@State private var viewModel: BookClubViewModel
-	@State private var currentMeetingPage = 0
 	@FocusState private var isSearchFocused: Bool
     @State private var showFetchErrorModal = false
     @State private var showSummaryPendingModal = false
@@ -116,6 +115,7 @@ struct BookClubView: View {
                 BookMeetingResultView(meeting: meeting, service: viewModel.meetingService)
             case .create(let book):
                 BookMeetingCreateView(book: book, service: viewModel.meetingService) {
+                    navigationPath.wrappedValue = NavigationPath()
                     viewModel.selectedTab = .myMeetings
                     Task { await viewModel.fetchMyMeetings() }
                 }
@@ -189,14 +189,15 @@ struct BookClubView: View {
 
 			ScrollView(showsIndicators: false) {
 				VStack(alignment: .leading, spacing: 0) {
-					ZStack(alignment: .top) {
-						if viewModel.meetingSearchResults.isEmpty {
-							emptyStateView(message: "검색된 모임이 없습니다")
-						} else {
-							meetingResultsSection
-						}
+					if viewModel.searchText.isEmpty {
+						emptyStateView(message: "검색어를 입력해주세요")
+							.frame(height: 522)
+					} else if viewModel.meetingSearchResults.isEmpty {
+						emptyStateView(message: "검색된 모임이 없습니다")
+							.frame(height: 522)
+					} else {
+						meetingResultsSection
 					}
-					.frame(height: 522)
 				}
 				.padding(.top, 8)
 				.contentShape(Rectangle())
@@ -206,7 +207,6 @@ struct BookClubView: View {
 			.scrollBounceBehavior(.basedOnSize)
 		}
 		.onChange(of: viewModel.searchText) {
-			currentMeetingPage = 0
 			Task {
 				await viewModel.searchMeetings(query: viewModel.searchText)
 			}
@@ -285,96 +285,22 @@ struct BookClubView: View {
 
 	// MARK: - Meeting Results
 
-	private var meetingPages: [[BookMeeting]] {
-		let pages = stride(from: 0, to: viewModel.meetingSearchResults.count, by: 3).map { start in
-			Array(viewModel.meetingSearchResults[start..<min(start + 3, viewModel.meetingSearchResults.count)])
-		}
-		return Array(pages.prefix(3))
-	}
-
 	@ViewBuilder
 	private var meetingResultsSection: some View {
-		if !viewModel.meetingSearchResults.isEmpty {
-			VStack(alignment: .leading, spacing: 0) {
-                ZStack(alignment: .top) {
-                    VStack(spacing: 12) {
-                        ForEach(meetingPages[currentMeetingPage], id: \.id) { meeting in
-                            BookMeetingCardView(
-                                meeting: meeting,
-                                service: viewModel.meetingService,
-                                onCompletedNavigate: { fetched in
-                                    navigationPath.wrappedValue.append(BookClubRoute.result(fetched))
-                                },
-                                onFetchError: { showFetchErrorModal = true },
-                                onSummaryPending: { showSummaryPendingModal = true }
-                            )
-                        }
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                }
-
-				pageIndicator
-                    .padding(.top, 92)
-                    .padding(.bottom, 40)
-			}
-            .background(alignment: .topLeading) {
-                Ellipse()
-                    .fill(
-                        RadialGradient(
-                            colors: [Color.green01, Color.green01.opacity(0)],
-                            center: .center,
-                            startRadius: 0,
-                            endRadius: 281
-                        )
-                    )
-                    .frame(width: 562, height: 454)
-                    .opacity(0.40)
-                    .offset(x: -175, y: 575)
-                    .allowsHitTesting(false)
-            }
-		}
-	}
-
-	private var pageIndicator: some View {
-		HStack(spacing: 12) {
-			Button {
-				if currentMeetingPage > 0 { currentMeetingPage -= 1 }
-			} label: {
-                Image(.iconChevronLeft)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 6, height: 12)
-                    .clipped()
-                    .foregroundStyle(Color.gray600)
-			}
-
-			HStack(spacing: 6) {
-				ForEach(0..<meetingPages.count, id: \.self) { page in
-					Button {
-						currentMeetingPage = page
-					} label: {
-						Text("\(page + 1)")
-							.font(.body2Regular)
-							.foregroundStyle(page == currentMeetingPage ? Color.gray50 : Color.gray600)
-							.frame(width: 20, height: 20)
-							.background(page == currentMeetingPage ? Color.green700 : Color.clear)
-							.clipShape(Circle())
-					}
-				}
-			}
-
-			Button {
-				if currentMeetingPage < meetingPages.count - 1 { currentMeetingPage += 1 }
-			} label: {
-                Image(.iconChevronRight)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 6, height: 12)
-                    .clipped()
-                    .foregroundStyle(Color.gray600)
+		VStack(spacing: 12) {
+			ForEach(viewModel.meetingSearchResults, id: \.id) { meeting in
+				BookMeetingCardView(
+					meeting: meeting,
+					service: viewModel.meetingService,
+					onCompletedNavigate: { fetched in
+						navigationPath.wrappedValue.append(BookClubRoute.result(fetched))
+					},
+					onFetchError: { showFetchErrorModal = true },
+					onSummaryPending: { showSummaryPendingModal = true }
+				)
 			}
 		}
-		.frame(maxWidth: .infinity)
+		.padding(.bottom, 100)
 	}
 
 }

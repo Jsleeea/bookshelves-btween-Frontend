@@ -13,20 +13,24 @@ struct SearchView: View {
     @State private var presentedActionMenuItemID: UUID?
     @FocusState private var isSearchFocused: Bool
     private let meetingService: (any MeetingServiceProtocol)?
+    private let onMeetingCreated: (() -> Void)?
 
     init(meetingService: (any MeetingServiceProtocol)? = nil) {
         _viewModel = State(
             initialValue: SearchViewModel(service: BookService.stubbed())
         )
         self.meetingService = meetingService
+        self.onMeetingCreated = nil
     }
 
     init(
         viewModel: SearchViewModel,
-        meetingService: (any MeetingServiceProtocol)? = nil
+        meetingService: (any MeetingServiceProtocol)? = nil,
+        onMeetingCreated: (() -> Void)? = nil
     ) {
         _viewModel = State(initialValue: viewModel)
         self.meetingService = meetingService
+        self.onMeetingCreated = onMeetingCreated
     }
 
     var body: some View {
@@ -77,7 +81,7 @@ struct SearchView: View {
         .navigationDestination(for: SearchRoute.self) { route in
             switch route {
             case .createMeeting(let book):
-                BookMeetingCreateView(book: book, service: meetingService)
+                BookMeetingCreateView(book: book, service: meetingService, onMeetingCreated: onMeetingCreated)
             case .bookDetail(let item):
                 BookRecordDetailView(
                     book: item.book,

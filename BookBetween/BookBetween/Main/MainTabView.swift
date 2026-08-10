@@ -78,7 +78,11 @@ struct MainTabView: View {
                                 case .meetingDetail(let meeting):
                                     BookMeetingDetailView(
                                         meeting: meeting,
-                                        service: meetingService
+                                        service: meetingService,
+                                        onParticipated: {
+                                            selectedTab = .bookClub
+                                            bookClubPath = NavigationPath()
+                                        }
                                     )
                                 case .bookDetail(let book):
                                     BookRecordDetailView(
@@ -102,7 +106,11 @@ struct MainTabView: View {
                             viewModel: SearchViewModel(
                                 service: bookService
                             ),
-                            meetingService: meetingService
+                            meetingService: meetingService,
+                            onMeetingCreated: {
+                                selectedTab = .bookClub
+                                bookClubPath = NavigationPath()
+                            }
                         )
                     }
                 case .bookClub:
