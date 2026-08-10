@@ -123,7 +123,7 @@ struct CommonNoticeModalView: View {
 #Preview("Notice Modals") {
   VStack(spacing: 20) {
     CommonNoticeModalView(type: .success, title: "저장되었습니다")
-    CommonNoticeModalView(type: .error, title: "모임이 종료되었습니다")
+    CommonNoticeModalView(type: .error, title: "종료된 모임입니다")
     CommonNoticeModalView(type: .report, title: "신고되었습니다")
   }
   .padding()

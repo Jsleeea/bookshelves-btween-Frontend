@@ -14,7 +14,7 @@ enum CommonActionModalType {
   var iconName: String {
     switch self {
     case .withdraw, .logout:
-      "door"
+      "icon_door"
     case .recovery:
       "icon_key"
     case .report:
