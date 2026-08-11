@@ -75,6 +75,8 @@ final class ChatViewModel {
 
       let chatRoom = try await self.chatService.fetchChatRoom(chatroomId: self.chatroomId)
       self.applyInitialState(from: chatRoom)
+    } catch let NetworkError.server(statusCode, _, _) where statusCode == 410 {
+      self.handleMeetingEnded()
     } catch {
       self.errorMessage = error.localizedDescription
     }
