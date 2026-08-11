@@ -53,6 +53,7 @@ struct ChatView: View {
     static let timeIconSize: CGFloat = 12
     static let captionTracking: CGFloat = -0.036
     static let captionLineSpacing: CGFloat = 8
+    static let urgentTimeThreshold: TimeInterval = 180
 
     static let sirenIconWidth: CGFloat = 18
     static let sirenIconHeight: CGFloat = 22
@@ -335,6 +336,12 @@ struct ChatView: View {
 
   // MARK: - Header
 
+  private func isTimeUrgent(at date: Date) -> Bool {
+    guard let endsAt = self.viewModel.chatRoom?.endsAt else { return false }
+    let remainingSeconds = endsAt.timeIntervalSince(date)
+    return remainingSeconds > 0 && remainingSeconds <= Metric.urgentTimeThreshold
+  }
+
   private var truncatedBookTitle: String {
     let bookTitle = self.viewModel.chatRoom?.bookTitle ?? ""
     guard bookTitle.count > Metric.bookTitleMaxLength else { return bookTitle }
@@ -396,37 +403,45 @@ struct ChatView: View {
           )
           .clipShape(Capsule())
 
-          HStack(spacing: Metric.badgeGroupSpacing) {
-            Image("icon_clock")
-              .resizable()
-              .renderingMode(.template)
-              .scaledToFit()
-              .frame(width: Metric.timeIconSize, height: Metric.timeIconSize)
-            if let endsAt = self.viewModel.chatRoom?.endsAt, endsAt > Date.now {
-              Text(timerInterval: Date.now...endsAt, countsDown: true)
-                .font(.caption1SemiBold)
-                .tracking(Metric.captionTracking)
-                .lineSpacing(Metric.captionLineSpacing)
-            } else {
-              Text("00:00")
-                .font(.caption1SemiBold)
-                .tracking(Metric.captionTracking)
-                .lineSpacing(Metric.captionLineSpacing)
+          TimelineView(.periodic(from: .now, by: 1)) { context in
+            let isTimeUrgent = self.isTimeUrgent(at: context.date)
+
+            HStack(spacing: Metric.badgeGroupSpacing) {
+              Image("icon_clock")
+                .resizable()
+                .renderingMode(.template)
+                .scaledToFit()
+                .frame(width: Metric.timeIconSize, height: Metric.timeIconSize)
+              if let endsAt = self.viewModel.chatRoom?.endsAt, endsAt > Date.now {
+                Text(timerInterval: Date.now...endsAt, countsDown: true)
+                  .font(.caption1SemiBold)
+                  .tracking(Metric.captionTracking)
+                  .lineSpacing(Metric.captionLineSpacing)
+              } else {
+                Text("00:00")
+                  .font(.caption1SemiBold)
+                  .tracking(Metric.captionTracking)
+                  .lineSpacing(Metric.captionLineSpacing)
+              }
             }
+            .foregroundStyle(isTimeUrgent ? Color.red700 : Color.gray600)
+            .frame(width: Metric.badgeWidth, height: Metric.badgeHeight)
+            .background {
+              if isTimeUrgent {
+                Color.red50
+              } else {
+                LinearGradient(
+                  gradient: Gradient(stops: [
+                    .init(color: .white, location: Metric.softGradientStartLocation),
+                    .init(color: .white.opacity(0.2), location: Metric.softGradientEndLocation)
+                  ]),
+                  startPoint: .bottom,
+                  endPoint: .top
+                )
+              }
+            }
+            .clipShape(Capsule())
           }
-          .foregroundStyle(.gray600)
-          .frame(width: Metric.badgeWidth, height: Metric.badgeHeight)
-          .background(
-            LinearGradient(
-              gradient: Gradient(stops: [
-                .init(color: .white, location: Metric.softGradientStartLocation),
-                .init(color: .white.opacity(0.2), location: Metric.softGradientEndLocation)
-              ]),
-              startPoint: .bottom,
-              endPoint: .top
-            )
-          )
-          .clipShape(Capsule())
 
           Button {
             Task {
