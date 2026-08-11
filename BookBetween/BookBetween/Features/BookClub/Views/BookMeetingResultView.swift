@@ -54,6 +54,7 @@ struct BookMeetingResultView: View {
 			}
 		}
 		.toolbar(.hidden, for: .navigationBar)
+        .hideTabBar()
 		.task {
 			guard let service else { return }
             isLoading = true

@@ -185,20 +185,22 @@ struct BookMeetingDetailView: View {
 
 			VStack(alignment: .leading, spacing: 4) {
 				Text(meeting.book.title)
-					.head1Style
+					.head2Style
 					.foregroundStyle(Color.gray800)
 					.padding(.bottom, 4)
+                    .lineLimit(2)
 
 				Text(meeting.book.publisher.map { "\(meeting.book.author) | \($0)" } ?? meeting.book.author)
 					.body2RegularStyle
 					.foregroundStyle(Color.gray500)
+                    .lineLimit(1)
 
 				if let kdcName = meeting.book.kdcName {
-					Text(kdcName)
-						.caption1SemiBoldStyle
+					Text("#\(kdcName)")
+						.body2SemiBoldStyle
 						.foregroundStyle(Color.white)
 						.padding(.horizontal, 10)
-						.padding(.vertical, 2)
+						.padding(.vertical, 5)
 						.background(Color.green600)
 						.clipShape(Capsule())
 				}
