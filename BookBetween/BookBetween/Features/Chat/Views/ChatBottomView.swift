@@ -42,19 +42,27 @@ struct ChatBottomView: View {
     static let textFieldVerticalPadding: CGFloat = 9.5
     static let sendButtonSize: CGFloat = 35
     static let sendButtonVerticalPadding: CGFloat = 2
+    static let sendButtonDisabledOpacity: CGFloat = 0.4
     static let messageInputLeadingPadding: CGFloat = 16
     static let messageInputTrailingPadding: CGFloat = 4
+    static let textEditorMinHeight: CGFloat = 36
+    static let textEditorMaxHeight: CGFloat = 120
   }
 
   // MARK: - Properties
 
   @Binding var messageText: String
+  @State private var attributedText = AttributedString()
   var isFocused: FocusState<Bool>.Binding
   let currentQuestionCount: Int
   let maxQuestionCount: Int
   let onRequestQuestionTap: () -> Void
   let onSendTap: () -> Void
   let isRequestQuestionDisabled: Bool
+
+  private var isMessageOverLimit: Bool {
+    self.messageText.count > ChatViewModel.messageMaxLength
+  }
 
   // MARK: - Body
 
@@ -149,14 +157,37 @@ struct ChatBottomView: View {
   // MARK: - Message Input
 
   private var messageInputRow: some View {
-    HStack(spacing: Metric.messageInputSpacing) {
-      TextField("메시지 입력", text: self.$messageText)
-        .font(.caption1SemiBold)
-        .tracking(Metric.smallCaptionTracking) // 자간 -0.3%
-        .lineSpacing(Metric.smallCaptionLineSpacing) // 행간 20pt (12pt 기준 +8)
-        .foregroundStyle(.gray300)
-        .padding(.vertical, Metric.textFieldVerticalPadding)
-        .focused(self.isFocused)
+    HStack(alignment: .bottom, spacing: Metric.messageInputSpacing) {
+      ZStack(alignment: .topLeading) {
+        if self.messageText.isEmpty {
+          Text("메시지 입력")
+            .font(.caption1SemiBold)
+            .tracking(Metric.smallCaptionTracking) // 자간 -0.3%
+            .lineSpacing(Metric.smallCaptionLineSpacing) // 행간 20pt (12pt 기준 +8)
+            .foregroundStyle(.gray300)
+            .allowsHitTesting(false)
+        }
+
+        TextEditor(text: self.$attributedText)
+          .font(.caption1SemiBold)
+          .tracking(Metric.smallCaptionTracking) // 자간 -0.3%
+          .lineSpacing(Metric.smallCaptionLineSpacing) // 행간 20pt (12pt 기준 +8)
+          .foregroundStyle(.gray300)
+          .scrollContentBackground(.hidden)
+          .padding(.horizontal, -4)
+          .focused(self.isFocused)
+      }
+      .frame(minHeight: Metric.textEditorMinHeight, maxHeight: Metric.textEditorMaxHeight)
+      .padding(.vertical, Metric.textFieldVerticalPadding)
+      .onChange(of: self.attributedText) { _, newValue in
+        let plainText = String(newValue.characters)
+        self.messageText = plainText
+        self.attributedText = self.highlightedAttributedText(from: plainText)
+      }
+      .onChange(of: self.messageText) { _, newValue in
+        guard newValue != String(self.attributedText.characters) else { return }
+        self.attributedText = self.highlightedAttributedText(from: newValue)
+      }
 
       Button(action: self.onSendTap) {
         Image("direct_icon")
@@ -165,6 +196,8 @@ struct ChatBottomView: View {
           .frame(width: Metric.sendButtonSize, height: Metric.sendButtonSize)
       }
       .padding(.vertical, Metric.sendButtonVerticalPadding)
+      .disabled(self.isMessageOverLimit)
+      .opacity(self.isMessageOverLimit ? Metric.sendButtonDisabledOpacity : 1)
     }
     .padding(.leading, Metric.messageInputLeadingPadding)
     .padding(.trailing, Metric.messageInputTrailingPadding)
@@ -174,6 +207,21 @@ struct ChatBottomView: View {
       RoundedRectangle(cornerRadius: Metric.cornerRadius)
         .stroke(.gray300, lineWidth: Metric.thinBorderWidth)
     }
+  }
+
+  // MARK: - Highlight
+
+  private func highlightedAttributedText(from text: String) -> AttributedString {
+    var attributed = AttributedString(text)
+    guard text.count > ChatViewModel.messageMaxLength else { return attributed }
+
+    let overflowStart = attributed.index(
+      attributed.startIndex,
+      offsetByCharacters: ChatViewModel.messageMaxLength
+    )
+    attributed[overflowStart...].backgroundColor = .red50
+    attributed[overflowStart...].foregroundColor = .red700
+    return attributed
   }
 }
 
