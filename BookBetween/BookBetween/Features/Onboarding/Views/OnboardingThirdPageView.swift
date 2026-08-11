@@ -71,11 +71,13 @@ struct OnboardingThirdPageView: View {
   // MARK: - 오른쪽 나뭇잎 이미지
 
   private var rightLeafImage: some View {
-    Image("onboarding3LeafRight")
-      .resizable()
-      .scaledToFit()
-      .frame(width: 120, height: 142)
-      .position(x: 342, y: 255)
+    GeometryReader { geometry in
+      Image("onboarding3LeafRight")
+        .resizable()
+        .scaledToFit()
+        .frame(width: 120, height: 142)
+        .position(x: geometry.size.width - (120 / 2), y: 255)
+    }
   }
 
   // MARK: - 초록색 배경 그라데이션

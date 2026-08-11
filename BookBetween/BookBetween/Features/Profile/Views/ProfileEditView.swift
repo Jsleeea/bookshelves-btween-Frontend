@@ -84,9 +84,9 @@ struct ProfileEditView: View {
                 Image("onboarding3LeafRight")
                     .resizable()
                     .scaledToFit()
-                    .frame(width: 130, height: 139)
+                    .frame(width: 117.5, height: 139)
                     .position(
-                        x: 342,
+                        x: geometry.size.width - (117.5 / 2),
                         y: 144.5 - geometry.safeAreaInsets.top
                     )
             }
