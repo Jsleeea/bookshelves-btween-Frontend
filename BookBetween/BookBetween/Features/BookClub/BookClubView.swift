@@ -3,6 +3,7 @@ import SwiftUI
 struct BookClubView: View {
 	@State private var viewModel: BookClubViewModel
 	@FocusState private var isSearchFocused: Bool
+    @State private var searchSubmitted = false
     @State private var showFetchErrorModal = false
     @State private var showSummaryPendingModal = false
     private let navigationPath: Binding<NavigationPath>
@@ -80,7 +81,6 @@ struct BookClubView: View {
                             .refreshable {
                                 await viewModel.fetchMyMeetings()
                             }
-                            .scrollBounceBehavior(.basedOnSize)
                         }
                     }
                     .animation(.easeInOut(duration: 0.2), value: meetings.isEmpty && !viewModel.isLoadingMeetings)
@@ -131,7 +131,21 @@ struct BookClubView: View {
                 }
             }
         }
-        .bookClubErrorOverlay(showFetchError: $showFetchErrorModal, showSummaryPending: $showSummaryPendingModal)
+        .alert("데이터를 불러오지 못했습니다", isPresented: $showFetchErrorModal) {
+            Button("확인", role: .cancel) {}
+        }
+        .overlay {
+            ZStack {
+                if showSummaryPendingModal {
+                    Color.black.opacity(0.4)
+                        .ignoresSafeArea()
+                    CommonNoticeModalView(type: .error, title: "요약이 완료되지 않았습니다") {
+                        showSummaryPendingModal = false
+                    }
+                }
+            }
+            .animation(.easeInOut(duration: 0.2), value: showSummaryPendingModal)
+        }
 		.task {
             await viewModel.fetchJoinedYear()
 			await viewModel.fetchMyMeetings()
@@ -199,7 +213,7 @@ struct BookClubView: View {
 
             GeometryReader { contentGeo in
                 ZStack {
-                    if viewModel.searchText.isEmpty {
+                    if viewModel.searchText.isEmpty || !searchSubmitted {
                         SearchIdleView(height: contentGeo.size.height, customTitle: "검색어를 입력해주세요")
                             .padding(.horizontal, 19)
                             .transition(.opacity)
@@ -224,14 +238,15 @@ struct BookClubView: View {
                         .scrollBounceBehavior(.basedOnSize)
                     }
                 }
+                .contentShape(Rectangle())
+                .onTapGesture { isSearchFocused = false }
                 .animation(.easeInOut(duration: 0.2), value: viewModel.searchText.isEmpty)
+                .animation(.easeInOut(duration: 0.2), value: searchSubmitted)
             }
             .ignoresSafeArea(.keyboard, edges: .bottom)
 		}
 		.onChange(of: viewModel.searchText) {
-			Task {
-				await viewModel.searchMeetings(query: viewModel.searchText)
-			}
+            searchSubmitted = false
 		}
 	}
 
@@ -250,6 +265,11 @@ struct BookClubView: View {
 				.font(.body1Regular)
                 .foregroundStyle(Color.gray500)
 				.focused($isSearchFocused)
+                .onSubmit {
+                    guard !viewModel.searchText.isEmpty else { return }
+                    searchSubmitted = true
+                    Task { await viewModel.searchMeetings(query: viewModel.searchText) }
+                }
 		}
         .frame(height: 46)
 		.padding(.horizontal, 11)

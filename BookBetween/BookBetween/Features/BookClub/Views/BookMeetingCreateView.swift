@@ -112,7 +112,7 @@ struct BookMeetingCreateView: View {
 				}
 				if showSuccessModal {
 					Color.black.opacity(0.4).ignoresSafeArea()
-					SuccessModalView(title: "모임을 생성했습니다") {
+					CommonNoticeModalView(type: .success, title: "모임을 생성했습니다") {
 						if let onMeetingCreated {
 							onMeetingCreated()
 						} else {

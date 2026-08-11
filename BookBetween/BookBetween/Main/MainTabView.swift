@@ -171,12 +171,13 @@ struct MainTabView: View {
                 Color.black.opacity(0.4)
                     .ignoresSafeArea()
                     .transition(.opacity)
-                SummaryCompletedModalView(
+                MeetingEventModalView(
+                    type: .summaryCompleted,
                     meeting: meeting,
                     onClose: {
                         summaryCompletedMeeting = nil
                     },
-                    onConfirm: {
+                    onPrimaryAction: {
                         summaryCompletedMeeting = nil
                         summaryResultMeeting = meeting
                         showSummaryResult = true
