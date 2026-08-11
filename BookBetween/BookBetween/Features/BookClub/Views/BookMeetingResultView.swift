@@ -233,10 +233,12 @@ struct BookMeetingResultView: View {
 				Text("AI 요약")
 					.caption1SemiBoldStyle
 					.foregroundStyle(Color.green900)
+					.padding(.vertical, 2.7)
 
 				Text("AI가 오늘 모임의 대화를 분석하여\n핵심 내용을 3가지 주제로 정리했어요.")
 					.caption2RegularStyle
 					.foregroundStyle(Color.gray700)
+					.padding(.vertical, 2.25)
 			}
             Spacer()
 		}

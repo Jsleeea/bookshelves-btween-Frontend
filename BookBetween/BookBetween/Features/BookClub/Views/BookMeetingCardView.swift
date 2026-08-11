@@ -90,7 +90,7 @@ struct BookMeetingCardView: View {
 		Text(meeting.status.title)
 			.caption2SemiBoldStyle
 			.foregroundStyle(badgeForegroundColor)
-            .padding(.vertical, 2)
+            .padding(.vertical, 4.25)
 			.padding(.horizontal, (meeting.status == .inProgress || meeting.status == .recruiting) ? 12 : 6)
 			.background(badgeBackgroundColor)
 			.clipShape(Capsule())
