@@ -63,7 +63,7 @@ struct ChatBottomView: View {
   let isRequestQuestionDisabled: Bool
 
   private var isMessageOverLimit: Bool {
-    self.messageText.count > ChatViewModel.messageMaxLength
+    self.messageText.utf16.count > ChatViewModel.messageMaxLength
   }
 
   // MARK: - Body
@@ -245,11 +245,18 @@ struct ChatBottomView: View {
 
   private func highlightedAttributedText(from text: String) -> AttributedString {
     var attributed = AttributedString(text)
-    guard text.count > ChatViewModel.messageMaxLength else { return attributed }
+    guard text.utf16.count > ChatViewModel.messageMaxLength else { return attributed }
 
+    guard let utf16OverflowIndex = text.utf16.index(
+      text.utf16.startIndex,
+      offsetBy: ChatViewModel.messageMaxLength,
+      limitedBy: text.utf16.endIndex
+    ) else { return attributed }
+
+    let characterOffset = text.distance(from: text.startIndex, to: utf16OverflowIndex)
     let overflowStart = attributed.index(
       attributed.startIndex,
-      offsetByCharacters: ChatViewModel.messageMaxLength
+      offsetByCharacters: characterOffset
     )
     attributed[overflowStart...].backgroundColor = .red50
     attributed[overflowStart...].foregroundColor = .red700
