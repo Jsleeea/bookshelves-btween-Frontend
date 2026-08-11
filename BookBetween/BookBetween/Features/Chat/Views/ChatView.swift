@@ -267,7 +267,7 @@ struct ChatView: View {
           self.viewModel.currentQuestion?.questionOrder == self.viewModel.maxQuestions
       )
       .padding(.horizontal, Metric.horizontalPadding)
-      .padding(.bottom, Metric.chatBottomBottomPadding)
+      .padding(.bottom, self.isMessageFieldFocused ? 0 : Metric.chatBottomBottomPadding)
       .disabled(self.viewModel.isMeetingEnded)
     }
     .contentShape(Rectangle())
