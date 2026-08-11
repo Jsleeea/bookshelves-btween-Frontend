@@ -77,23 +77,22 @@ struct BookMeetingResultView: View {
                     ProgressView()
                         .transition(.opacity)
                 }
-                if showFetchErrorModal || showSummaryPendingModal {
+                if showSummaryPendingModal {
                     Color.black.opacity(0.4)
                         .ignoresSafeArea()
-                    if showFetchErrorModal {
-                        ErrorModalView(title: "데이터를 불러오지 못했습니다") {
-                            showFetchErrorModal = false
-                            dismiss()
-                        }
-                    } else if showSummaryPendingModal {
-                        ErrorModalView(title: "요약이 완료되지 않았습니다") {
-                            showSummaryPendingModal = false
-                        }
+                    CommonNoticeModalView(type: .error, title: "요약이 완료되지 않았습니다") {
+                        showSummaryPendingModal = false
                     }
                 }
             }
             .animation(.easeInOut(duration: 0.25), value: isLoading)
+            .animation(.easeInOut(duration: 0.2), value: showSummaryPendingModal)
 		}
+        .alert("데이터를 불러오지 못했습니다", isPresented: $showFetchErrorModal) {
+            Button("확인") { dismiss() }
+        } message: {
+            Text("잠시 후 다시 시도해주세요.")
+        }
 	}
 
     // MARK: - Background

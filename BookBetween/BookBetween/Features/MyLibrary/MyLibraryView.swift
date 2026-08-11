@@ -63,7 +63,6 @@ struct MyLibraryView: View {
                         .refreshable {
                             await viewModel.fetchRecords()
                         }
-                        .scrollBounceBehavior(.basedOnSize)
                         .contentMargins(.top, 6, for: .scrollContent)
                         .contentMargins(.bottom, 84, for: .scrollContent)
                     }

@@ -79,7 +79,7 @@ struct BookMeetingDetailView: View {
                 }
                 if showSuccessModal {
                     Color.black.opacity(0.4).ignoresSafeArea()
-                    SuccessModalView(title: "모임에 참여했습니다") {
+                    CommonNoticeModalView(type: .success, title: "모임에 참여했습니다") {
                         dismiss()
                         onParticipated?()
                     }

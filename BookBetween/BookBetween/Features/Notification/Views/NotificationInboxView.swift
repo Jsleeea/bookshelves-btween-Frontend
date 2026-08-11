@@ -59,11 +59,8 @@ struct NotificationInboxView: View {
             if isMeetingEndedModalPresented {
                 Color.black.opacity(0.3)
                     .ignoresSafeArea()
-                    .onTapGesture {
-                        isMeetingEndedModalPresented = false
-                    }
 
-                ErrorModalView(title: "종료된 모임입니다") {
+                CommonNoticeModalView(type: .error, title: "종료된 모임입니다") {
                     isMeetingEndedModalPresented = false
                 }
                 .transition(.scale.combined(with: .opacity))

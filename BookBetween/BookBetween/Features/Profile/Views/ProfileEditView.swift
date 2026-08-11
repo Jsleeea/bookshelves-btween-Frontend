@@ -141,9 +141,7 @@ struct ProfileEditView: View {
                 Group {
                     switch activeModal {
                     case .saveCompleted:
-                        SuccessModalView(
-                            title: "저장되었습니다"
-                        ) {
+                        CommonNoticeModalView(type: .success, title: "저장되었습니다") {
                             self.activeModal = nil
                             dismiss()
                         }

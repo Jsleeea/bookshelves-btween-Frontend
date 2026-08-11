@@ -113,7 +113,7 @@ struct BookRecordDetailView: View {
                         .ignoresSafeArea()
                         .transition(.opacity)
 
-                    SuccessModalView(title: "저장되었습니다.") {
+                    CommonNoticeModalView(type: .success, title: "저장되었습니다.") {
                         isShowingSaveSuccess = false
                     }
                     .transition(.scale.combined(with: .opacity))
