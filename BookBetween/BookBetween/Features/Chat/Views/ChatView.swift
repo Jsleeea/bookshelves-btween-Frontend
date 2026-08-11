@@ -402,7 +402,7 @@ struct ChatView: View {
               .renderingMode(.template)
               .scaledToFit()
               .frame(width: Metric.peopleIconWidth, height: Metric.peopleIconHeight)
-            Text("\(self.viewModel.appliedCount)/\(self.viewModel.chatRoom?.maxParticipants ?? 0)")
+            Text("\(self.viewModel.connectedCount)/\(self.viewModel.appliedCount)")
               .font(.caption1SemiBold)
               .tracking(Metric.captionTracking)
               .lineSpacing(Metric.captionLineSpacing)
