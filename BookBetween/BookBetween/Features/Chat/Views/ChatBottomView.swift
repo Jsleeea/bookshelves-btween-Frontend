@@ -163,13 +163,13 @@ struct ChatBottomView: View {
 
   private var messageInputRow: some View {
     HStack(alignment: .bottom, spacing: Metric.messageInputSpacing) {
-      ZStack(alignment: .leading) {
-        if self.messageText.isEmpty {
+      ZStack(alignment: .topLeading) {
+        if self.messageText.isEmpty && !self.isFocused.wrappedValue {
           Text("메시지 입력")
             .font(.caption1SemiBold)
             .tracking(Metric.smallCaptionTracking) // 자간 -0.3%
             .lineSpacing(Metric.smallCaptionLineSpacing) // 행간 20pt (12pt 기준 +8)
-            .padding(.vertical, Metric.textEditorContentVerticalInset)
+            .padding(.top, Metric.textEditorContentVerticalInset)
             .foregroundStyle(.gray200)
             .allowsHitTesting(false)
         }
@@ -205,12 +205,15 @@ struct ChatBottomView: View {
           .contentMargins(.horizontal, 0, for: .scrollContent)
           .focused(self.isFocused)
       }
+      .frame(height: min(self.measuredContentHeight, Metric.textEditorMaxHeight))
       .frame(
         height: min(
           max(self.measuredContentHeight, Metric.textEditorMinHeight),
           Metric.textEditorMaxHeight
-        )
+        ),
+        alignment: .center
       )
+      .animation(.easeInOut(duration: 0.2), value: self.measuredContentHeight)
       .onChange(of: self.attributedText) { _, newValue in
         let plainText = String(newValue.characters)
         self.messageText = plainText
