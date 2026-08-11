@@ -156,7 +156,8 @@ struct ChatView: View {
                   message: message.content,
                   time: Self.timeFormatter.string(from: message.createdAt),
                   isMyMessage: message.senderMemberId == self.viewModel.myMemberId,
-                  profileImageName: nil
+                  profileAnimalName: message.senderNicknameAnimal,
+                  profileBackgroundColor: message.senderProfileBackgroundColor
                 )
               }
 

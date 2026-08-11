@@ -11,6 +11,8 @@ struct ChatMessage: Identifiable {
   let messageId: Int
   let senderMemberId: Int
   let senderNickname: String
+  let senderNicknameAnimal: String
+  let senderProfileBackgroundColor: ProfileBackgroundColorCode
   let content: String
   let createdAt: Date
 

@@ -57,14 +57,18 @@ enum ChatStubData {
           {
             "messageId": 153,
             "senderMemberId": 18,
-            "senderNickname": "꾸벅이는 고양이",
+            "senderNickname": "책 먹는 곰",
+            "senderNicknameAnimal": "곰",
+            "senderProfileBackgroundColor": "BROWN",
             "content": "다들 어느 장면이 기억에 남으세요?",
             "createdAt": "2026-07-15T19:11:40+09:00"
           },
           {
             "messageId": 154,
             "senderMemberId": 21,
-            "senderNickname": "책 먹는 여우",
+            "senderNickname": "문장 모으는 펭귄",
+            "senderNicknameAnimal": "펭귄",
+            "senderProfileBackgroundColor": "BLUE",
             "content": "저는 2부가 제일 인상 깊었어요",
             "createdAt": "2026-07-15T19:12:03+09:00"
           }
