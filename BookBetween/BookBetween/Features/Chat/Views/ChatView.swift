@@ -288,11 +288,6 @@ struct ChatView: View {
         await self.viewModel.reconnect()
       }
     }
-    .onChange(of: self.messageText) { _, newValue in
-      if newValue.count > ChatViewModel.messageMaxLength {
-        self.messageText = String(newValue.prefix(ChatViewModel.messageMaxLength))
-      }
-    }
     .alert(
       "오류가 발생했습니다.",
       isPresented: Binding(
