@@ -149,7 +149,8 @@ struct ProfileEditView: View {
                         }
 
                     case .logoutConfirmation:
-                        LogoutConfirmationModalView(
+                        CommonActionModalView(
+                            type: .logout,
                             onCancel: {
                                 guard !isLoggingOut else {
                                     return
@@ -165,7 +166,8 @@ struct ProfileEditView: View {
                         )
 
                     case .withdrawalConfirmation:
-                        WithdrawalConfirmationModalView(
+                        CommonActionModalView(
+                            type: .withdraw,
                             onCancel: {
                                 guard !isWithdrawing else {
                                     return
