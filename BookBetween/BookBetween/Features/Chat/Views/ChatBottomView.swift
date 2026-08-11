@@ -38,21 +38,23 @@ struct ChatBottomView: View {
     static let requestRowGradientColorHex: String = "DFEBFC"
     static let thinBorderWidth: CGFloat = 0.5
 
-    static let messageInputSpacing: CGFloat = 12
+    static let messageInputSpacing: CGFloat = 9
     static let textFieldVerticalPadding: CGFloat = 9.5
     static let sendButtonSize: CGFloat = 35
     static let sendButtonVerticalPadding: CGFloat = 2
     static let sendButtonDisabledOpacity: CGFloat = 0.4
     static let messageInputLeadingPadding: CGFloat = 16
     static let messageInputTrailingPadding: CGFloat = 4
-    static let textEditorMinHeight: CGFloat = 36
+    static let textEditorMinHeight: CGFloat = 40
     static let textEditorMaxHeight: CGFloat = 120
+    static let textEditorContentVerticalInset: CGFloat = 9
   }
 
   // MARK: - Properties
 
   @Binding var messageText: String
   @State private var attributedText = AttributedString()
+  @State private var measuredContentHeight: CGFloat = Metric.textEditorMinHeight
   var isFocused: FocusState<Bool>.Binding
   let currentQuestionCount: Int
   let maxQuestionCount: Int
@@ -68,9 +70,12 @@ struct ChatBottomView: View {
 
   var body: some View {
     VStack(spacing: Metric.containerSpacing) {
-      self.questionRequestRow
+      if !self.isFocused.wrappedValue {
+        self.questionRequestRow
+      }
       self.messageInputRow
     }
+    .animation(.default, value: self.isFocused.wrappedValue)
     .padding(.horizontal, Metric.containerHorizontalPadding)
     .padding(.top, Metric.containerVerticalPadding)
     .padding(.bottom, Metric.containerVerticalPadding)
@@ -158,27 +163,54 @@ struct ChatBottomView: View {
 
   private var messageInputRow: some View {
     HStack(alignment: .bottom, spacing: Metric.messageInputSpacing) {
-      ZStack(alignment: .topLeading) {
+      ZStack(alignment: .leading) {
         if self.messageText.isEmpty {
           Text("메시지 입력")
             .font(.caption1SemiBold)
             .tracking(Metric.smallCaptionTracking) // 자간 -0.3%
             .lineSpacing(Metric.smallCaptionLineSpacing) // 행간 20pt (12pt 기준 +8)
-            .foregroundStyle(.gray300)
+            .padding(.vertical, Metric.textEditorContentVerticalInset)
+            .foregroundStyle(.gray200)
             .allowsHitTesting(false)
         }
+
+        Text(self.messageText.isEmpty ? " " : self.messageText)
+          .font(.caption1SemiBold)
+          .tracking(Metric.smallCaptionTracking) // 자간 -0.3%
+          .lineSpacing(Metric.smallCaptionLineSpacing) // 행간 20pt (12pt 기준 +8)
+          .padding(.vertical, Metric.textEditorContentVerticalInset)
+          .opacity(0)
+          .allowsHitTesting(false)
+          .background {
+            GeometryReader { geometry in
+              Color.clear
+                .onAppear { self.measuredContentHeight = geometry.size.height }
+                .onChange(of: geometry.size.height) { _, newHeight in
+                  self.measuredContentHeight = newHeight
+                }
+            }
+          }
 
         TextEditor(text: self.$attributedText)
           .font(.caption1SemiBold)
           .tracking(Metric.smallCaptionTracking) // 자간 -0.3%
           .lineSpacing(Metric.smallCaptionLineSpacing) // 행간 20pt (12pt 기준 +8)
-          .foregroundStyle(.gray300)
+          .foregroundStyle(.gray200)
           .scrollContentBackground(.hidden)
-          .padding(.horizontal, -4)
+          .contentMargins(
+            .vertical,
+            Metric.textEditorContentVerticalInset,
+            for: .scrollContent
+          )
+          .contentMargins(.horizontal, 0, for: .scrollContent)
           .focused(self.isFocused)
       }
-      .frame(minHeight: Metric.textEditorMinHeight, maxHeight: Metric.textEditorMaxHeight)
-      .padding(.vertical, Metric.textFieldVerticalPadding)
+      .frame(
+        height: min(
+          max(self.measuredContentHeight, Metric.textEditorMinHeight),
+          Metric.textEditorMaxHeight
+        )
+      )
       .onChange(of: self.attributedText) { _, newValue in
         let plainText = String(newValue.characters)
         self.messageText = plainText
