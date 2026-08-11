@@ -44,6 +44,8 @@ struct ChatMessageDTO: Decodable {
   let messageId: Int
   let senderMemberId: Int
   let senderNickname: String
+  let senderNicknameAnimal: String?
+  let senderProfileBackgroundColor: String?
   let content: String
   let createdAt: String
 }
@@ -83,10 +85,18 @@ extension ChatRoomResultDTO {
 
 extension ChatMessageDTO {
   func toDomain() throws -> ChatMessage {
-    ChatMessage(
+    let animal = senderNicknameAnimal
+      ?? NicknameGenerator.animalName(fromNickname: senderNickname)
+    let backgroundColor = senderProfileBackgroundColor
+      .flatMap(ProfileBackgroundColorCode.init(rawValue:))
+      ?? NicknameGenerator.defaultBackgroundColor(for: animal)
+
+    return ChatMessage(
       messageId: messageId,
       senderMemberId: senderMemberId,
       senderNickname: senderNickname,
+      senderNicknameAnimal: animal,
+      senderProfileBackgroundColor: backgroundColor,
       content: content,
       createdAt: try parseChatAPIDate(createdAt)
     )

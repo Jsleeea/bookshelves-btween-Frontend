@@ -4,6 +4,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 // MARK: - 랜덤 닉네임 생성기
 
@@ -34,6 +35,38 @@ nonisolated enum ProfileBackgroundColorCode: String, Codable {
     case green = "GREEN"
     case red = "RED"
     case yellow = "YELLOW"
+}
+
+// MARK: - 프로필 배경 그라데이션
+
+extension ProfileBackgroundColorCode {
+    private var endColor: Color {
+        switch self {
+        case .purple:
+            Color(red: 0.47, green: 0.47, blue: 0.75)
+        case .blue:
+            Color(red: 0.51, green: 0.73, blue: 0.96)
+        case .green:
+            Color(red: 0.6, green: 0.76, blue: 0.65)
+        case .red:
+            Color(red: 1, green: 0.46, blue: 0.3)
+        case .yellow:
+            Color(red: 0.94, green: 0.79, blue: 0.37)
+        case .brown:
+            Color(red: 0.69, green: 0.5, blue: 0.28)
+        }
+    }
+
+    var profileGradient: LinearGradient {
+        LinearGradient(
+            stops: [
+                Gradient.Stop(color: Color.white.opacity(0.4), location: 0),
+                Gradient.Stop(color: self.endColor, location: 1)
+            ],
+            startPoint: UnitPoint(x: -0.17, y: 0.17),
+            endPoint: UnitPoint(x: 1.17, y: 0.83)
+        )
+    }
 }
 
 enum NicknameGenerator {
@@ -85,6 +118,15 @@ enum NicknameGenerator {
     static func animalImageName(for animalName: String) -> String {
         animals.first { $0.name == animalName }?.imageName
             ?? GeneratedNickname.placeholder.animalImageName
+    }
+
+    static func defaultBackgroundColor(for animalName: String) -> ProfileBackgroundColorCode {
+        animals.first { $0.name == animalName }?.backgroundColor
+            ?? GeneratedNickname.placeholder.profileBackgroundColor
+    }
+
+    static func animalName(fromNickname nickname: String) -> String {
+        nickname.split(separator: " ").last.map(String.init) ?? nickname
     }
 
     static func generate(excluding currentNickname: String? = nil) -> GeneratedNickname {

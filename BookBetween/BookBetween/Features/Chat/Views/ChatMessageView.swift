@@ -39,7 +39,8 @@ struct ChatMessageView: View {
   let message: String
   let time: String
   let isMyMessage: Bool
-  let profileImageName: String?
+  let profileAnimalName: String
+  let profileBackgroundColor: ProfileBackgroundColorCode
 
   // MARK: - Body
 
@@ -85,16 +86,14 @@ struct ChatMessageView: View {
   private var otherMessageView: some View {
     HStack(alignment: .top, spacing: Metric.rowSpacing) {
       Circle()
-        .fill(.gray300)
+        .fill(self.profileBackgroundColor.profileGradient)
         .frame(width: Metric.profileImageSize, height: Metric.profileImageSize)
         .overlay {
-          if let imageName = self.profileImageName {
-            Image(imageName)
-              .resizable()
-              .scaledToFill()
-              .clipShape(Circle())
-          }
+          Image(NicknameGenerator.animalImageName(for: self.profileAnimalName))
+            .resizable()
+            .scaledToFit()
         }
+        .clipShape(Circle())
         .shadow1()
 
       VStack(alignment: .leading, spacing: Metric.contentSpacing) {
@@ -149,32 +148,36 @@ struct ChatMessageView: View {
 #Preview {
   VStack(spacing: 44) {
     ChatMessageView(
-      nickname: "조용한 두루미",
+      nickname: "책 먹는 곰",
       message: "모든 것이 하나로 흐르는 소리 같아요.",
       time: "06:27",
       isMyMessage: false,
-      profileImageName: nil
+      profileAnimalName: "곰",
+      profileBackgroundColor: .brown
     )
     ChatMessageView(
       nickname: "",
       message: "저는 '쉼'이라는 단어가 떠올랐어요.",
       time: "06:27",
       isMyMessage: true,
-      profileImageName: nil
+      profileAnimalName: "",
+      profileBackgroundColor: .brown
     )
     ChatMessageView(
-      nickname: "밤의 사슴",
+      nickname: "문장 모으는 펭귄",
       message: "저는 강을 다시 읽고 싶어졌어요.",
       time: "06:27",
       isMyMessage: false,
-      profileImageName: nil
+      profileAnimalName: "펭귄",
+      profileBackgroundColor: .blue
     )
     ChatMessageView(
-      nickname: "새벽 고양이",
+      nickname: "책갈피 훔치는 판다",
       message: "저도 강을 다시 읽고 싶어졌어요.",
       time: "06:27",
       isMyMessage: false,
-      profileImageName: nil
+      profileAnimalName: "판다",
+      profileBackgroundColor: .purple
     )
   }
   .padding()
