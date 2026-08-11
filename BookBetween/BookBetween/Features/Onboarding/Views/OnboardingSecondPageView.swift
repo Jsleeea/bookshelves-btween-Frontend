@@ -71,11 +71,13 @@ struct OnboardingSecondPageView: View {
   // MARK: - 오른쪽 나뭇잎 이미지
 
   private var rightLeafImage: some View {
-    Image("onboarding2LeafRight")
-      .resizable()
-      .scaledToFit()
-      .frame(width: 129, height: 296)
-      .position(x: 342.5, y: 296)
+    GeometryReader { geometry in
+      Image("onboarding2LeafRight")
+        .resizable()
+        .scaledToFit()
+        .frame(width: 129, height: 296)
+        .position(x: geometry.size.width - (129 / 2), y: 296)
+    }
   }
 
   // MARK: - 파란색 배경 그라데이션
