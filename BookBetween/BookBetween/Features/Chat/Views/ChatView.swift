@@ -38,7 +38,6 @@ struct ChatView: View {
     static let softGradientEndLocation: CGFloat = 1.5517
 
     static let headerTitleSpacing: CGFloat = 2
-    static let bookTitleMaxLength = 8
     static let headerTopPadding: CGFloat = 8.5
     static let headerBottomPadding: CGFloat = 0
     static let headerSpacerMinLength: CGFloat = 76
@@ -360,12 +359,6 @@ struct ChatView: View {
     return remainingSeconds > 0 && remainingSeconds <= Metric.urgentTimeThreshold
   }
 
-  private var truncatedBookTitle: String {
-    let bookTitle = self.viewModel.chatRoom?.bookTitle ?? ""
-    guard bookTitle.count > Metric.bookTitleMaxLength else { return bookTitle }
-    return "\(bookTitle.prefix(Metric.bookTitleMaxLength))..."
-  }
-
   private var headerView: some View {
     HStack(spacing: 0) {
       Button {
@@ -383,14 +376,14 @@ struct ChatView: View {
 
       HStack {
         VStack(alignment: .leading, spacing: Metric.headerTitleSpacing) {
-          Text(self.truncatedBookTitle)
+          Text(self.viewModel.chatRoom?.bookTitle ?? "")
             .body1SemiBoldStyle
             .foregroundStyle(.gray600)
             .lineLimit(1)
-            .fixedSize(horizontal: true, vertical: false)
           Text(self.bookAuthor)
             .caption1RegularStyle
             .foregroundStyle(.gray500)
+            .lineLimit(1)
         }
 
         Spacer(minLength: Metric.headerSpacerMinLength)
