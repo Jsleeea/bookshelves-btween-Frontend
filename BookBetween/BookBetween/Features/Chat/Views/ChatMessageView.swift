@@ -18,7 +18,7 @@ struct ChatMessageView: View {
     static let timeOffsetY: CGFloat = 1.57
 
     static let bubbleHorizontalPadding: CGFloat = 10
-    static let bubbleVerticalPadding: CGFloat = 5
+    static let bubbleVerticalPadding: CGFloat = 8
     static let bubbleRoundedCornerRadius: CGFloat = 18.64
     static let bubbleSharpCornerRadius: CGFloat = 6.21
 
@@ -28,7 +28,6 @@ struct ChatMessageView: View {
     static let captionLineSpacing: CGFloat = 8
     static let nicknameLeadingPadding: CGFloat = 4.14
 
-    static let bubbleMinHeight: CGFloat = 32
     static let otherBubbleBorderWidth: CGFloat = 1
     static let otherBubbleTextColorHex: String = "1E2B34"
   }
@@ -67,7 +66,6 @@ struct ChatMessageView: View {
         .foregroundStyle(.white)
         .padding(.horizontal, Metric.bubbleHorizontalPadding)
         .padding(.vertical, Metric.bubbleVerticalPadding)
-        .frame(minHeight: Metric.bubbleMinHeight)
         .background(.green500)
         .clipShape(
           UnevenRoundedRectangle(
@@ -112,7 +110,6 @@ struct ChatMessageView: View {
             .foregroundStyle(Color(hex: Metric.otherBubbleTextColorHex))
             .padding(.horizontal, Metric.bubbleHorizontalPadding)
             .padding(.vertical, Metric.bubbleVerticalPadding)
-            .frame(minHeight: Metric.bubbleMinHeight)
             .background(.white)
             .clipShape(
               UnevenRoundedRectangle(
