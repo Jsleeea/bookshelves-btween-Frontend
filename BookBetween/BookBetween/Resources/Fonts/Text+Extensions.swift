@@ -25,6 +25,7 @@ extension Text {
             .font(font)
             .tracking(trackingValue)
             .lineSpacing(spacingValue)
+            .padding(.vertical, spacingValue / 2)
     }
     
     // Head 시리즈 (Line Height: 130%)

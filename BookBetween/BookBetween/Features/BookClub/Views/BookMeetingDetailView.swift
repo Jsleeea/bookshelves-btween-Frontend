@@ -205,9 +205,8 @@ struct BookMeetingDetailView: View {
 						.clipShape(Capsule())
 				}
 			}
-
-			Spacer()
 		}
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.top, 6)
 		.padding(.horizontal, 28.5)
 	}
