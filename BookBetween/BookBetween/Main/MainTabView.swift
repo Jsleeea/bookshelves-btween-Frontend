@@ -14,8 +14,6 @@ struct MainTabView: View {
     @State private var bookClubPath = NavigationPath()
     @State private var pendingBookSearch = ""
     @State private var summaryCompletedMeeting: BookMeeting?
-    @State private var summaryResultMeeting: BookMeeting?
-    @State private var showSummaryResult = false
     @State private var meetingStartedMeeting: BookMeeting?
     @State private var meetingStartedNotificationCursor = 0
 
@@ -179,10 +177,11 @@ struct MainTabView: View {
                     },
                     onPrimaryAction: {
                         summaryCompletedMeeting = nil
-                        summaryResultMeeting = meeting
-                        showSummaryResult = true
+                        bookClubPath.append(BookClubRoute.result(meeting))
+                        selectedTab = .bookClub
                     }
                 )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .transition(.scale(scale: 0.9).combined(with: .opacity))
             }
 
@@ -214,13 +213,6 @@ struct MainTabView: View {
         .animation(.easeInOut(duration: 0.2), value: meetingStartedMeeting != nil)
         .task {
             await watchMeetingStartedNotifications()
-        }
-        .sheet(isPresented: $showSummaryResult) {
-            if let meeting = summaryResultMeeting {
-                NavigationStack {
-                    BookMeetingResultView(meeting: meeting, service: meetingService)
-                }
-            }
         }
         .animation(.easeInOut(duration: 0.2), value: shouldShowTabBar)
         .ignoresSafeArea(.keyboard, edges: .bottom)
