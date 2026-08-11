@@ -78,8 +78,9 @@ struct BookRecordDetailView: View {
                 }
                 .animation(.easeInOut(duration: 0.2), value: viewModel.isLoading)
                 .padding(.horizontal, 30)
-                .padding(.bottom, 140)// 기록 저장하기 잘림 수정 140 - 40
+                .padding(.bottom, 40)
             }
+            .scrollBounceBehavior(.basedOnSize)
             .scrollDismissesKeyboard(.interactively)
         }
         .padding(.top, 8)
@@ -97,6 +98,7 @@ struct BookRecordDetailView: View {
                 .allowsHitTesting(false)
             }
         .toolbar(.hidden, for: .navigationBar)
+        .hideTabBar()
         .enableSwipeBack()
         .overlay {
             ZStack {
@@ -211,7 +213,7 @@ struct BookRecordDetailView: View {
                     .lineLimit(2)
 
                 Text(authorAndPublisherText)
-                    .body1RegularStyle
+                    .body2RegularStyle
                     .foregroundStyle(.gray500)
 
                 Text(categoryText)
