@@ -286,6 +286,12 @@ struct ChatView: View {
     .task {
       await self.viewModel.enterChatRoom()
     }
+    .task {
+      while !Task.isCancelled {
+        self.viewModel.checkMeetingEndedByTime()
+        try? await Task.sleep(for: .seconds(1))
+      }
+    }
     .onChange(of: self.viewModel.questionUpdateTrigger) { _, _ in
       withAnimation {
         self.isQuestionExpanded = true

@@ -119,6 +119,13 @@ final class ChatViewModel {
     }
   }
 
+  // MARK: - Meeting End Timer
+
+  func checkMeetingEndedByTime(at date: Date = .now) {
+    guard let endsAt = self.chatRoom?.endsAt, date >= endsAt else { return }
+    self.handleMeetingEnded()
+  }
+
   // MARK: - Initial State
 
   private func applyInitialState(from chatRoom: ChatRoom) {
@@ -172,18 +179,24 @@ final class ChatViewModel {
       self.voteCurrentCount = update.currentVotes
 
     case .meetingEnded:
-      self.isMeetingEnded = true
-      let socketService = self.socketService
-      Task {
-        await socketService.disconnect()
-      }
+      self.handleMeetingEnded()
+    }
+  }
 
-      if let meetingService {
-        let meetingId = self.meetingId
-        Task { [weak self] in
-          let meeting = try? await meetingService.fetchMeetingDetail(meetingId: meetingId)
-          self?.endedMeeting = meeting
-        }
+  private func handleMeetingEnded() {
+    guard !self.isMeetingEnded else { return }
+    self.isMeetingEnded = true
+
+    let socketService = self.socketService
+    Task {
+      await socketService.disconnect()
+    }
+
+    if let meetingService {
+      let meetingId = self.meetingId
+      Task { [weak self] in
+        let meeting = try? await meetingService.fetchMeetingDetail(meetingId: meetingId)
+        self?.endedMeeting = meeting
       }
     }
   }
