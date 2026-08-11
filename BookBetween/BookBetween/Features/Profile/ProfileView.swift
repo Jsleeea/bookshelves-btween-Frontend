@@ -176,12 +176,12 @@ struct ProfileView: View {
     }
 
     private func profileCard(profile: MemberProfile) -> some View {
-        ZStack(alignment: .topLeading) {
+        ZStack(alignment: .topTrailing) {
             Image("profile_leaf")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 130, height: 126)
-                .offset(x: 261, y: 1)
+                .frame(width: 98, height: 126)
+                .offset(y: 1)
 
             HStack(spacing: 23) {
                 profileImage(profile: profile)
