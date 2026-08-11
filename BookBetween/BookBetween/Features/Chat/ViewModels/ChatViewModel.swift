@@ -92,7 +92,7 @@ final class ChatViewModel {
 
   func sendMessage(_ content: String) async {
     let trimmed = content.trimmingCharacters(in: .whitespacesAndNewlines)
-    guard !trimmed.isEmpty, trimmed.count <= Self.messageMaxLength else { return }
+    guard !trimmed.isEmpty, content.utf16.count <= Self.messageMaxLength else { return }
 
     do {
       try await self.socketService.send(chatroomId: self.chatroomId, content: trimmed)
