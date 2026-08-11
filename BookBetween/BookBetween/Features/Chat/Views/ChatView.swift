@@ -284,6 +284,13 @@ struct ChatView: View {
     )
     .toolbar(.hidden, for: .navigationBar)
     .hideTabBar()
+    .onAppear {
+      ActiveChatSession.shared.activeMeetingId = self.viewModel.meetingId
+    }
+    .onDisappear {
+      guard ActiveChatSession.shared.activeMeetingId == self.viewModel.meetingId else { return }
+      ActiveChatSession.shared.activeMeetingId = nil
+    }
     .task {
       await self.viewModel.enterChatRoom()
     }

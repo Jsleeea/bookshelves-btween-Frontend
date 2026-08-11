@@ -259,6 +259,7 @@ struct MainTabView: View {
             for notification in batch.notifications where notification.type == .meetingStarted {
                 guard
                     let meetingId = notification.targetId,
+                    ActiveChatSession.shared.activeMeetingId != meetingId,
                     let meetingService,
                     let meeting = try? await meetingService.fetchMeetingDetail(meetingId: meetingId)
                 else { continue }

@@ -38,7 +38,7 @@ final class ChatViewModel {
   // MARK: - Properties
 
   private let chatroomId: Int
-  private let meetingId: Int
+  let meetingId: Int
   private let chatService: any ChatServiceProtocol
   private let socketService: any ChatSocketServiceProtocol
   private let meetingService: (any MeetingServiceProtocol)?
