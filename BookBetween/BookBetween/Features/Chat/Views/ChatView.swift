@@ -103,6 +103,7 @@ struct ChatView: View {
   @State private var messageText: String = ""
   @State private var isQuestionExpanded: Bool = false
   @State private var showsScrollToBottomButton: Bool = false
+  @State private var hasScrolledToInitialBottom: Bool = false
   @FocusState private var isMessageFieldFocused: Bool
   @Environment(\.dismiss) private var dismiss
   @Environment(\.scenePhase) private var scenePhase
@@ -220,7 +221,15 @@ struct ChatView: View {
               .padding(.bottom, Metric.downButtonBottomPadding)
             }
           }
-          .onChange(of: self.viewModel.messages.count) { _, _ in
+          .onChange(of: self.viewModel.messages.count) { _, newValue in
+            guard newValue > 0 else { return }
+
+            guard self.hasScrolledToInitialBottom else {
+              self.hasScrolledToInitialBottom = true
+              proxy.scrollTo(Identifier.bottomAnchor, anchor: .bottom)
+              return
+            }
+
             guard !self.showsScrollToBottomButton else { return }
             withAnimation {
               proxy.scrollTo(Identifier.bottomAnchor, anchor: .bottom)
