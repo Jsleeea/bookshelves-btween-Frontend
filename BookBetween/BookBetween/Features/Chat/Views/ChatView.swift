@@ -310,6 +310,9 @@ struct ChatView: View {
     .onDisappear {
       guard ActiveChatSession.shared.activeMeetingId == self.viewModel.meetingId else { return }
       ActiveChatSession.shared.activeMeetingId = nil
+      Task {
+        await self.viewModel.leaveChatRoom()
+      }
     }
     .task {
       await self.viewModel.enterChatRoom()
