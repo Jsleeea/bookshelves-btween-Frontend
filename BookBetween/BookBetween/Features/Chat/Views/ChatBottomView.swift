@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct ChatBottomView: View {
 
@@ -47,15 +48,14 @@ struct ChatBottomView: View {
     static let messageInputTrailingPadding: CGFloat = 4
     static let textEditorMinHeight: CGFloat = 40
     static let textEditorMaxHeight: CGFloat = 120
-    static let textEditorContentVerticalInset: CGFloat = 9
+    static let textEditorPlaceholderTopPadding: CGFloat = 13
   }
 
   // MARK: - Properties
 
   @Binding var messageText: String
-  @State private var attributedText = AttributedString()
   @State private var measuredContentHeight: CGFloat = Metric.textEditorMinHeight
-  var isFocused: FocusState<Bool>.Binding
+  @Binding var isFocused: Bool
   let currentQuestionCount: Int
   let maxQuestionCount: Int
   let onRequestQuestionTap: () -> Void
@@ -70,12 +70,11 @@ struct ChatBottomView: View {
 
   var body: some View {
     VStack(spacing: Metric.containerSpacing) {
-      if !self.isFocused.wrappedValue {
+      if !self.isFocused {
         self.questionRequestRow
       }
       self.messageInputRow
     }
-    .animation(.default, value: self.isFocused.wrappedValue)
     .padding(.horizontal, Metric.containerHorizontalPadding)
     .padding(.top, Metric.containerVerticalPadding)
     .padding(.bottom, Metric.containerVerticalPadding)
@@ -164,47 +163,25 @@ struct ChatBottomView: View {
   private var messageInputRow: some View {
     HStack(alignment: .bottom, spacing: Metric.messageInputSpacing) {
       ZStack(alignment: .topLeading) {
-        if self.messageText.isEmpty && !self.isFocused.wrappedValue {
+        if self.messageText.isEmpty && !self.isFocused {
           Text("메시지 입력")
             .font(.caption1SemiBold)
             .tracking(Metric.smallCaptionTracking) // 자간 -0.3%
             .lineSpacing(Metric.smallCaptionLineSpacing) // 행간 20pt (12pt 기준 +8)
-            .padding(.top, Metric.textEditorContentVerticalInset)
+            .padding(.top, Metric.textEditorPlaceholderTopPadding)
             .foregroundStyle(.gray200)
             .allowsHitTesting(false)
         }
 
-        Text(self.messageText.isEmpty ? " " : self.messageText)
-          .font(.caption1SemiBold)
-          .tracking(Metric.smallCaptionTracking) // 자간 -0.3%
-          .lineSpacing(Metric.smallCaptionLineSpacing) // 행간 20pt (12pt 기준 +8)
-          .padding(.vertical, Metric.textEditorContentVerticalInset)
-          .opacity(0)
-          .allowsHitTesting(false)
-          .fixedSize(horizontal: false, vertical: true)
-          .background {
-            GeometryReader { geometry in
-              Color.clear
-                .onAppear { self.measuredContentHeight = geometry.size.height }
-                .onChange(of: geometry.size.height) { _, newHeight in
-                  self.measuredContentHeight = newHeight
-                }
-            }
-          }
-
-        TextEditor(text: self.$attributedText)
-          .font(.caption1SemiBold)
-          .tracking(Metric.smallCaptionTracking) // 자간 -0.3%
-          .lineSpacing(Metric.smallCaptionLineSpacing) // 행간 20pt (12pt 기준 +8)
-          .foregroundStyle(.gray200)
-          .scrollContentBackground(.hidden)
-          .contentMargins(
-            .vertical,
-            Metric.textEditorContentVerticalInset,
-            for: .scrollContent
-          )
-          .contentMargins(.horizontal, 0, for: .scrollContent)
-          .focused(self.isFocused)
+        ChatTextEditor(
+          text: self.$messageText,
+          isFocused: self.$isFocused,
+          measuredHeight: self.$measuredContentHeight,
+          minHeight: Metric.textEditorMinHeight,
+          maxHeight: Metric.textEditorMaxHeight,
+          lineSpacing: Metric.smallCaptionLineSpacing,
+          tracking: Metric.smallCaptionTracking
+        )
       }
       .frame(
         height: min(
@@ -213,17 +190,7 @@ struct ChatBottomView: View {
         ),
         alignment: .center
       )
-      .animation(.easeInOut(duration: 0.2), value: self.measuredContentHeight)
-      .onChange(of: self.attributedText) { _, newValue in
-        self.messageText = String(newValue.characters)
-        let highlighted = self.highlightedAttributedText(from: newValue)
-        guard highlighted != newValue else { return }
-        self.attributedText = highlighted
-      }
-      .onChange(of: self.messageText) { _, newValue in
-        guard newValue != String(self.attributedText.characters) else { return }
-        self.attributedText = self.highlightedAttributedText(from: AttributedString(newValue))
-      }
+      .frame(maxWidth: .infinity)
 
       Button(action: self.onSendTap) {
         Image("direct_icon")
@@ -245,35 +212,258 @@ struct ChatBottomView: View {
     }
   }
 
-  // MARK: - Highlight
+}
 
-  private func highlightedAttributedText(from attributed: AttributedString) -> AttributedString {
-    var result = attributed
-    result.backgroundColor = nil
-    result.foregroundColor = nil
+// MARK: - Chat Text Editor
 
-    let text = String(attributed.characters)
-    guard text.utf16.count > ChatViewModel.messageMaxLength else { return result }
+private struct ChatTextEditor: UIViewRepresentable {
+  @Binding var text: String
+  @Binding var isFocused: Bool
+  @Binding var measuredHeight: CGFloat
+  let minHeight: CGFloat
+  let maxHeight: CGFloat
+  let lineSpacing: CGFloat
+  let tracking: CGFloat
 
-    guard let utf16OverflowIndex = text.utf16.index(
-      text.utf16.startIndex,
-      offsetBy: ChatViewModel.messageMaxLength,
-      limitedBy: text.utf16.endIndex
-    ) else { return result }
+  func makeCoordinator() -> Coordinator {
+    Coordinator(parent: self)
+  }
 
-    let characterOffset = text.distance(from: text.startIndex, to: utf16OverflowIndex)
-    let overflowStart = result.index(
-      result.startIndex,
-      offsetByCharacters: characterOffset
-    )
-    result[overflowStart...].backgroundColor = .red50
-    result[overflowStart...].foregroundColor = .red700
-    return result
+  func makeUIView(context: Context) -> StableCaretTextView {
+    let textView = StableCaretTextView()
+    textView.delegate = context.coordinator
+    textView.backgroundColor = .clear
+    textView.contentInset = .zero
+    textView.textContainer.lineFragmentPadding = 0
+    textView.textContainer.lineBreakMode = .byCharWrapping
+    textView.textContainer.maximumNumberOfLines = 0
+    textView.keyboardDismissMode = .interactive
+    textView.adjustsFontForContentSizeCategory = false
+    textView.isScrollEnabled = false
+    context.coordinator.configure(textView)
+
+    // 최초 레이아웃 시점에는 bounds.width가 0이라 높이를 잴 수 없다.
+    // 폭이 확정된 뒤(그리고 이후 폭이 바뀔 때마다) 다시 재도록 연결한다.
+    textView.onLayout = { [weak coordinator = context.coordinator] textView in
+      coordinator?.updateMeasuredHeight(of: textView, deferred: true)
+    }
+    return textView
+  }
+
+  func updateUIView(_ textView: StableCaretTextView, context: Context) {
+    context.coordinator.parent = self
+
+    if textView.text != self.text {
+      textView.text = self.text
+      context.coordinator.applyTextStyle(to: textView)
+    }
+
+    context.coordinator.updateFocus(of: textView)
+    context.coordinator.updateMeasuredHeight(of: textView, deferred: true)
+  }
+
+  func sizeThatFits(
+    _ proposal: ProposedViewSize,
+    uiView: StableCaretTextView,
+    context: Context
+  ) -> CGSize? {
+    let width = proposal.width ?? uiView.bounds.width
+    let height = min(max(self.measuredHeight, self.minHeight), self.maxHeight)
+    return CGSize(width: width, height: height)
+  }
+
+  final class Coordinator: NSObject, UITextViewDelegate {
+    var parent: ChatTextEditor
+    private var heightUpdateGeneration = 0
+    private var hasOverflowHighlight = false
+
+    private var font: UIFont {
+      UIFont(name: "Pretendard-SemiBold", size: 12)
+        ?? .systemFont(ofSize: 12, weight: .semibold)
+    }
+
+    private var paragraphStyle: NSParagraphStyle {
+      let style = NSMutableParagraphStyle()
+      style.lineSpacing = self.parent.lineSpacing
+      return style
+    }
+
+    private var baseAttributes: [NSAttributedString.Key: Any] {
+      [
+        .font: self.font,
+        .kern: self.parent.tracking,
+        .paragraphStyle: self.paragraphStyle,
+        .foregroundColor: UIColor(Color.gray200)
+      ]
+    }
+
+    init(parent: ChatTextEditor) {
+      self.parent = parent
+    }
+
+    func configure(_ textView: StableCaretTextView) {
+      let verticalInset = max(0, (self.parent.minHeight - self.font.lineHeight) / 2)
+      textView.font = self.font
+      textView.caretHeight = self.font.lineHeight
+      textView.textContainerInset = UIEdgeInsets(
+        top: verticalInset,
+        left: 0,
+        bottom: verticalInset,
+        right: 0
+      )
+      textView.typingAttributes = self.baseAttributes
+    }
+
+    func textViewDidBeginEditing(_ textView: UITextView) {
+      self.parent.isFocused = true
+    }
+
+    func textViewDidEndEditing(_ textView: UITextView) {
+      self.parent.isFocused = false
+    }
+
+    func textViewDidChange(_ textView: UITextView) {
+      if textView.markedTextRange == nil {
+        self.updateOverflowHighlight(in: textView)
+      }
+
+      self.updateMeasuredHeight(of: textView, deferred: false)
+      self.parent.text = textView.text
+    }
+
+    func updateFocus(of textView: UITextView) {
+      if self.parent.isFocused {
+        if !textView.isFirstResponder {
+          textView.becomeFirstResponder()
+        }
+      } else if textView.isFirstResponder {
+        textView.resignFirstResponder()
+      }
+    }
+
+    func applyTextStyle(to textView: UITextView) {
+      let selectedRange = textView.selectedRange
+      let fullRange = NSRange(location: 0, length: textView.text.utf16.count)
+
+      textView.textStorage.setAttributes(self.baseAttributes, range: fullRange)
+
+      if fullRange.length > ChatViewModel.messageMaxLength {
+        let overflowRange = NSRange(
+          location: ChatViewModel.messageMaxLength,
+          length: fullRange.length - ChatViewModel.messageMaxLength
+        )
+        textView.textStorage.addAttributes(
+          [
+            .backgroundColor: UIColor(Color.red50),
+            .foregroundColor: UIColor(Color.red700)
+          ],
+          range: overflowRange
+        )
+      }
+
+      self.hasOverflowHighlight = fullRange.length > ChatViewModel.messageMaxLength
+      textView.selectedRange = selectedRange
+      textView.typingAttributes = self.baseAttributes
+    }
+
+    private func updateOverflowHighlight(in textView: UITextView) {
+      let fullRange = NSRange(location: 0, length: textView.text.utf16.count)
+      let hasOverflow = fullRange.length > ChatViewModel.messageMaxLength
+      guard hasOverflow || self.hasOverflowHighlight else { return }
+
+      let selectedRange = textView.selectedRange
+      textView.textStorage.beginEditing()
+      textView.textStorage.removeAttribute(.backgroundColor, range: fullRange)
+      textView.textStorage.addAttribute(
+        .foregroundColor,
+        value: UIColor(Color.gray200),
+        range: fullRange
+      )
+
+      if hasOverflow {
+        let overflowRange = NSRange(
+          location: ChatViewModel.messageMaxLength,
+          length: fullRange.length - ChatViewModel.messageMaxLength
+        )
+        textView.textStorage.addAttributes(
+          [
+            .backgroundColor: UIColor(Color.red50),
+            .foregroundColor: UIColor(Color.red700)
+          ],
+          range: overflowRange
+        )
+      }
+
+      textView.textStorage.endEditing()
+      self.hasOverflowHighlight = hasOverflow
+      textView.selectedRange = selectedRange
+      textView.typingAttributes = self.baseAttributes
+    }
+
+    func updateMeasuredHeight(of textView: UITextView, deferred: Bool) {
+      let width = textView.bounds.width
+      guard width > 0 else { return }
+
+      // sizeThatFits는 textContainerInset과 개행으로 생긴 마지막 빈 줄까지 포함해
+      // 계산하므로, layoutManager로 직접 재는 것보다 정확하다.
+      let contentHeight = ceil(
+        textView.sizeThatFits(CGSize(width: width, height: .greatestFiniteMagnitude)).height
+      )
+      let height = min(
+        max(contentHeight, self.parent.minHeight),
+        self.parent.maxHeight
+      )
+      let shouldScroll = contentHeight > self.parent.maxHeight
+      if textView.isScrollEnabled != shouldScroll {
+        textView.isScrollEnabled = shouldScroll
+      }
+
+      guard abs(self.parent.measuredHeight - height) > 0.5 else { return }
+      self.heightUpdateGeneration += 1
+      let generation = self.heightUpdateGeneration
+
+      let applyHeight = { [weak self] in
+        guard let self, self.heightUpdateGeneration == generation else { return }
+        self.parent.measuredHeight = height
+      }
+
+      if deferred {
+        DispatchQueue.main.async(execute: applyHeight)
+      } else {
+        applyHeight()
+      }
+    }
+  }
+}
+
+private final class StableCaretTextView: UITextView {
+  var caretHeight: CGFloat = 0
+  /// 레이아웃으로 폭이 확정된 뒤 높이를 다시 재기 위한 콜백.
+  var onLayout: ((StableCaretTextView) -> Void)?
+
+  override func caretRect(for position: UITextPosition) -> CGRect {
+    var rect = super.caretRect(for: position)
+    guard self.caretHeight > 0, rect.height > self.caretHeight else { return rect }
+
+    // lineSpacing은 글자 아래쪽에 붙으므로, 캐럿을 라인 프래그먼트 위쪽에 맞춰야
+    // 실제 글자와 정렬된다. (가운데 정렬하면 lineSpacing의 절반만큼 내려간다)
+    rect.size.height = self.caretHeight
+    return rect
+  }
+
+  override func layoutSubviews() {
+    super.layoutSubviews()
+
+    if !self.isScrollEnabled && self.contentOffset != .zero {
+      self.contentOffset = .zero
+    }
+
+    self.onLayout?(self)
   }
 }
 
 #Preview {
-  @Previewable @FocusState var isFocused: Bool
+  @Previewable @State var isFocused = false
 
   ChatBottomView(
     messageText: .constant(""),
