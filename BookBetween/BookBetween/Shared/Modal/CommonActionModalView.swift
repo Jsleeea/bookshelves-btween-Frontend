@@ -70,18 +70,18 @@ enum CommonActionModalType {
     case .recovery:
       "복구하기"
     case .logout:
-      "계속하기"
+      "로그아웃"
     case .report:
       "신고하기"
     }
   }
 
   var cancelTitle: String {
-    self == .logout ? "나가기" : "취소하기"
+    "취소하기"
   }
 
   var confirmColor: Color {
-    self == .report ? .red700 : .green700
+    self == .report ? .red700 : .green600
   }
 
   var iconGradient: EllipticalGradient {
