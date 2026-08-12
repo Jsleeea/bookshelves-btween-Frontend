@@ -189,12 +189,13 @@ struct MainTabView: View {
                 Color.black.opacity(0.4)
                     .ignoresSafeArea()
                     .transition(.opacity)
-                MeetingStartedModalView(
+                MeetingEventModalView(
+                    type: .started,
                     meeting: meeting,
                     onClose: {
                         meetingStartedMeeting = nil
                     },
-                    onParticipate: {
+                    onPrimaryAction: {
                         meetingStartedMeeting = nil
                         bookClubPath.append(
                             BookClubRoute.chat(

@@ -204,19 +204,6 @@ struct MeetingEndedModalView: View {
   }
 }
 
-// MARK: - Environment Key
-
-private struct GoToHomeKey: EnvironmentKey {
-  static let defaultValue: () -> Void = {}
-}
-
-extension EnvironmentValues {
-  var goToHome: () -> Void {
-    get { self[GoToHomeKey.self] }
-    set { self[GoToHomeKey.self] = newValue }
-  }
-}
-
 #Preview {
   MeetingEndedModalView(
     meeting: BookMeeting(

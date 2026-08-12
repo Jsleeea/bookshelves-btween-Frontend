@@ -290,6 +290,17 @@ extension EnvironmentValues {
     }
 }
 
+private struct GoToHomeKey: EnvironmentKey {
+    static let defaultValue: () -> Void = {}
+}
+
+extension EnvironmentValues {
+    var goToHome: () -> Void {
+        get { self[GoToHomeKey.self] }
+        set { self[GoToHomeKey.self] = newValue }
+    }
+}
+
 #Preview("모임 시작") {
     MeetingEventModalView(
         type: .started,
