@@ -342,13 +342,24 @@ struct ChatView: View {
       Text(self.viewModel.errorMessage ?? "")
     }
     .overlay {
-      if let meeting = self.viewModel.endedMeeting {
+      if let meeting = self.viewModel.endedMeeting, !self.viewModel.showsEndedMeetingNotice {
         ZStack {
           Color.black.opacity(0.4)
             .ignoresSafeArea()
           MeetingEventModalView(type: .ended, meeting: meeting, onPrimaryAction: {
             self.goToHome()
           })
+        }
+      }
+    }
+    .overlay {
+      if self.viewModel.showsEndedMeetingNotice {
+        ZStack {
+          Color.black.opacity(0.4)
+            .ignoresSafeArea()
+          CommonNoticeModalView(type: .error, title: "종료된 모임입니다") {
+            self.goToHome()
+          }
         }
       }
     }
