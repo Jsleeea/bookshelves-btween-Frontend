@@ -41,7 +41,7 @@ struct ChatView: View {
     static let headerTitleSpacing: CGFloat = 2
     static let headerTopPadding: CGFloat = 8.5
     static let headerBottomPadding: CGFloat = 0
-    static let headerSpacerMinLength: CGFloat = 76
+    static let headerSpacerMinLength: CGFloat = 6
     static let bodyTextTracking: CGFloat = -0.042
     static let bodyTextLineSpacing: CGFloat = 6
 
