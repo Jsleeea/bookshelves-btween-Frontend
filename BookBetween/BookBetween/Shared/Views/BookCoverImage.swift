@@ -38,9 +38,15 @@ struct BookCoverImage: View {
     }
 
     private var placeholderImage: some View {
-        Image(placeholderImageName)
-            .resizable()
-            .scaledToFill()
+        ZStack {
+            Image(placeholderImageName)
+                .resizable()
+                .scaledToFill()
+
+            ProgressView()
+                .controlSize(.small)
+                .tint(Color.gray600)
+        }
     }
 
     private var fallbackImage: some View {
@@ -49,5 +55,4 @@ struct BookCoverImage: View {
             .scaledToFill()
     }
 }
-
 
