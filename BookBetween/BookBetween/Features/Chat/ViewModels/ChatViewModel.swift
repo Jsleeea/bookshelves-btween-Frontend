@@ -95,6 +95,10 @@ final class ChatViewModel {
     await self.enterChatRoom()
   }
 
+  func leaveChatRoom() async {
+    await self.socketService.disconnect()
+  }
+
   // MARK: - Actions
 
   func sendMessage(_ content: String) async {
