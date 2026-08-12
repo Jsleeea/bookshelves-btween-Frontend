@@ -30,7 +30,7 @@ final class BookClubViewModel {
 
 	var selectedTab: BookClubTab = .myMeetings
 	var meetingService: (any MeetingServiceProtocol)?
-    private let bookService: (any BookServiceProtocol)?
+    let bookService: (any BookServiceProtocol)?
     private let memberService: (any MemberServiceProtocol)?
     var chatService: (any ChatServiceProtocol)?
     var chatSocketService: (any ChatSocketServiceProtocol)?
@@ -103,6 +103,8 @@ final class BookClubViewModel {
 	var apiSearchResults: [BookMeeting] = []
 	var apiBookSearchResults: [Book] = []
 	var isSearchLoading = false
+    var searchError: String? = nil
+    var participateError: String? = nil
 
 	var meetingSearchResults: [BookMeeting] {
 		guard !searchText.isEmpty else { return [] }
@@ -283,6 +285,7 @@ final class BookClubViewModel {
 				apiSearchResults = try await svc.searchMeetings(name: query, page: 1, size: 20)
 			} catch {
 				apiSearchResults = []
+				searchError = error.localizedDescription
 			}
 		} else {
 			apiSearchResults = []
@@ -314,6 +317,7 @@ final class BookClubViewModel {
 			_ = try await meetingService.participateMeeting(meetingId: meetingId)
 			return true
 		} catch {
+			participateError = error.localizedDescription
 			return false
 		}
 	}

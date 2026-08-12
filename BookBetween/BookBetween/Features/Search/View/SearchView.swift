@@ -82,7 +82,7 @@ struct SearchView: View {
         .navigationDestination(for: SearchRoute.self) { route in
             switch route {
             case .createMeeting(let book):
-                BookMeetingCreateView(book: book, service: meetingService, onMeetingCreated: onMeetingCreated)
+                BookMeetingCreateView(book: book, service: meetingService, bookService: viewModel.bookService, onMeetingCreated: onMeetingCreated)
             case .bookDetail(let item):
                 BookRecordDetailView(
                     book: item.book,

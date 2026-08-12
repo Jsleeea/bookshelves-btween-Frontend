@@ -43,13 +43,15 @@ struct BookMeetingCreateView: View {
 	private static let participantsFloor = 3
 	private static let timerMinuteOptions = Array(stride(from: 5, through: 60, by: 5))
 
-	let book: Book
+	@State private var book: Book
 	private let service: (any MeetingServiceProtocol)?
+	private let bookService: (any BookServiceProtocol)?
 	private let onMeetingCreated: (() -> Void)?
 
-	init(book: Book, service: (any MeetingServiceProtocol)? = nil, onMeetingCreated: (() -> Void)? = nil) {
-		self.book = book
+	init(book: Book, service: (any MeetingServiceProtocol)? = nil, bookService: (any BookServiceProtocol)? = nil, onMeetingCreated: (() -> Void)? = nil) {
+		self._book = State(initialValue: book)
 		self.service = service
+		self.bookService = bookService
 		self.onMeetingCreated = onMeetingCreated
 	}
 
@@ -60,7 +62,7 @@ struct BookMeetingCreateView: View {
 			VStack(spacing: 0) {
 				navigationHeader
 					.padding(.top, 8)
-					.padding(.bottom, 7)
+					.padding(.bottom, 8)
 				subtitleHeader
 					.padding(.bottom, 6)
 
@@ -71,9 +73,9 @@ struct BookMeetingCreateView: View {
 						descriptionText
 							.padding(.bottom, 52)
 						meetingInfoSection
-							.padding(.bottom, 40)
+							.padding(.bottom, 16)
 						noticeSection
-							.padding(.bottom, 24)
+							.padding(.bottom, 12)
 						BottomActionButton(title: isCreating ? "생성 중..." : "+ 모임 생성하기") {
 							guard !isCreating, let isbn = book.isbn else { return }
 							Task {
@@ -93,7 +95,7 @@ struct BookMeetingCreateView: View {
 								}
 							}
 						}
-						.padding(.bottom, 42)
+						.padding(.bottom, 16)
 						.disabled(isCreating || book.isbn == nil)
 					}
 				}
@@ -125,6 +127,13 @@ struct BookMeetingCreateView: View {
 		}
 		.toolbar(.hidden, for: .navigationBar)
 		.hideTabBar()
+		.task {
+			guard book.kdcName == nil, let isbn = book.isbn, !isbn.isEmpty,
+				  let bookService else { return }
+			if let detail = try? await bookService.fetchBookDetail(isbn: isbn) {
+				book = detail.book
+			}
+		}
 		.alert("모임을 생성하지 못했습니다", isPresented: Binding(
 			get: { creationError != nil },
 			set: { if !$0 { creationError = nil } }
@@ -189,11 +198,10 @@ struct BookMeetingCreateView: View {
 						.stroke(Color.gray200, lineWidth: 0.5)
 				}
 
-			VStack(alignment: .leading, spacing: 4) {
+			VStack(alignment: .leading, spacing: 10) {
 				Text(book.title)
 					.head2Style
 					.foregroundStyle(Color.gray800)
-					.padding(.bottom, 4)
                     .lineLimit(2)
 
 				Text(book.publisher.map { "\(book.author) | \($0)" } ?? book.author)
@@ -214,7 +222,7 @@ struct BookMeetingCreateView: View {
 		}
 		.frame(maxWidth: .infinity, alignment: .leading)
 		.padding(.top, 6)
-		.padding(.horizontal, 28.5)
+		.padding(.horizontal, 28)
 	}
 
 	@ViewBuilder
@@ -223,7 +231,7 @@ struct BookMeetingCreateView: View {
 			Text(description)
 				.caption1RegularStyle
 				.foregroundStyle(Color.gray600)
-				.padding(.horizontal, 29.5)
+				.padding(.horizontal, 28)
 				.lineLimit(4)
 		}
 	}
@@ -244,18 +252,18 @@ struct BookMeetingCreateView: View {
 					.foregroundStyle(Color.gray600)
 			}
             .padding(.bottom, 8)
-			.padding(.horizontal, 6)
+			.padding(.horizontal, 5)
 
             Text("모임은 현재 시간 기준 7시간 이후부터 생성할 수 있어요.")
                 .font(.caption1SemiBold)
                 .foregroundStyle(Color.green700)
                 .padding(.bottom, 20)
-                .padding(.horizontal, 6)
+                .padding(.horizontal, 5)
             
 			meetingInfoCard
-				.padding(.horizontal, 4)
+				.padding(.horizontal, 3)
 		}
-		.padding(.horizontal, 19)
+		.padding(.horizontal, 20)
 	}
 
 	private var meetingInfoCard: some View {
@@ -395,7 +403,7 @@ struct BookMeetingCreateView: View {
 				.overlay(Color.gray300)
 		}
 		.padding(.vertical, 20)
-		.padding(.horizontal, 20)
+		.padding(.horizontal, 22)
 		.background(.white)
 		.clipShape(RoundedRectangle(cornerRadius: 12))
 		.overlay {
@@ -430,7 +438,7 @@ struct BookMeetingCreateView: View {
 						.clipped()
 						.foregroundStyle(Color.gray600)
 				}
-				.padding(.horizontal, 8)
+				.padding(.horizontal, 18)
 			}
 			.buttonStyle(.plain)
 

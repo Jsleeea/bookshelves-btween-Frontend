@@ -15,6 +15,8 @@ struct MainTabView: View {
     @State private var pendingBookSearch = ""
     @State private var summaryCompletedMeeting: BookMeeting?
     @State private var meetingStartedMeeting: BookMeeting?
+    @State private var showCancelledModal = false
+    @State private var cancelledSubtitle: String?
     @State private var meetingStartedNotificationCursor = 0
 
     private let memberService: MemberServiceProtocol?
@@ -79,6 +81,7 @@ struct MainTabView: View {
                                         meeting: meeting,
                                         service: meetingService,
                                         onParticipated: {
+                                            homeNavigationPath = NavigationPath()
                                             selectedTab = .bookClub
                                             bookClubPath = NavigationPath()
                                         }
@@ -160,9 +163,18 @@ struct MainTabView: View {
             }
 
             if shouldShowTabBar {
-                CustomTabBar(selectedTab: $selectedTab)
-                    .ignoresSafeArea(.keyboard, edges: .bottom)
-                    .transition(.move(edge: .bottom))
+                CustomTabBar(selectedTab: $selectedTab) { tab in
+                    switch tab {
+                    case .home:
+                        homeNavigationPath = NavigationPath()
+                    case .bookClub:
+                        bookClubPath = NavigationPath()
+                    default:
+                        break
+                    }
+                }
+                .ignoresSafeArea(.keyboard, edges: .bottom)
+                .transition(.move(edge: .bottom))
             }
 
             if let meeting = summaryCompletedMeeting {
@@ -210,9 +222,25 @@ struct MainTabView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .transition(.scale(scale: 0.9).combined(with: .opacity))
             }
+
+            if showCancelledModal {
+                Color.black.opacity(0.4)
+                    .ignoresSafeArea()
+                    .transition(.opacity)
+                BookMeetingCancelledModalView(
+                    subtitle: cancelledSubtitle,
+                    onConfirm: {
+                        showCancelledModal = false
+                        cancelledSubtitle = nil
+                    }
+                )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .transition(.scale(scale: 0.9).combined(with: .opacity))
+            }
         }
         .animation(.easeInOut(duration: 0.2), value: summaryCompletedMeeting != nil)
         .animation(.easeInOut(duration: 0.2), value: meetingStartedMeeting != nil)
+        .animation(.easeInOut(duration: 0.2), value: showCancelledModal)
         .task {
             await watchMeetingStartedNotifications()
         }
@@ -270,6 +298,11 @@ struct MainTabView: View {
                 else { continue }
 
                 summaryCompletedMeeting = meeting
+            }
+
+            for notification in batch.notifications where notification.type == .meetingCancelled {
+                cancelledSubtitle = notification.message.trimmingCharacters(in: .whitespacesAndNewlines)
+                showCancelledModal = true
             }
         }
     }

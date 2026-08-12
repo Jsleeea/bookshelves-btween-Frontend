@@ -91,6 +91,22 @@ struct MyLibraryView: View {
         .task(id: viewModel.selectedTab) {
             await viewModel.fetchRecords()
         }
+        .alert("도서 목록을 불러오지 못했습니다", isPresented: Binding(
+            get: { viewModel.fetchError != nil },
+            set: { if !$0 { viewModel.fetchError = nil } }
+        )) {
+            Button("확인", role: .cancel) { viewModel.fetchError = nil }
+        } message: {
+            Text(viewModel.fetchError ?? "")
+        }
+        .alert("삭제에 실패했습니다", isPresented: Binding(
+            get: { viewModel.deleteError != nil },
+            set: { if !$0 { viewModel.deleteError = nil } }
+        )) {
+            Button("확인", role: .cancel) { viewModel.deleteError = nil }
+        } message: {
+            Text(viewModel.deleteError ?? "")
+        }
 	}
 
 	// MARK: - Tab Selector

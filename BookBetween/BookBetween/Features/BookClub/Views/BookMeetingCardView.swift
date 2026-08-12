@@ -33,11 +33,11 @@ struct BookMeetingCardView: View {
 			HStack(alignment: .center, spacing: 20) {
 				bookCover
 
-				VStack(alignment: .leading, spacing: 4) {
+				VStack(alignment: .leading, spacing: 8) {
 					statusBadge
 
 					Text(meeting.book.title)
-						.head3Style
+						.head4Style
 						.lineLimit(1)
 						.foregroundStyle(Color.gray800)
 
@@ -60,7 +60,7 @@ struct BookMeetingCardView: View {
 				}
 			}
 		}
-		.padding(.leading, 22)
+		.padding(.horizontal, 22)
 		.background(.white)
 		.clipShape(RoundedRectangle(cornerRadius: 12))
 		.overlay {
@@ -75,7 +75,7 @@ struct BookMeetingCardView: View {
 
 	private var bookCover: some View {
 		BookCoverImage(book: meeting.book, placeholderImageName: "book_cover_mock")
-            .frame(width: 86.0 * 29.0 / 44.0, height: 86)
+            .frame(width: 88.0 * 29.0 / 44.0, height: 88)
             .clipped()
 			.clipShape(RoundedRectangle(cornerRadius: 8))
             .overlay {
@@ -91,7 +91,7 @@ struct BookMeetingCardView: View {
 			.caption2SemiBoldStyle
 			.foregroundStyle(badgeForegroundColor)
             .padding(.vertical, 4.25)
-			.padding(.horizontal, (meeting.status == .inProgress || meeting.status == .recruiting) ? 12 : 6)
+            .padding(.horizontal, (meeting.status == .inProgress || meeting.status == .recruiting) ? 12 : 6.5)
 			.background(badgeBackgroundColor)
 			.clipShape(Capsule())
 	}

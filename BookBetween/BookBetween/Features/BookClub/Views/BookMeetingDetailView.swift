@@ -29,7 +29,7 @@ struct BookMeetingDetailView: View {
 			VStack(spacing: 0) {
 				navigationHeader
                     .padding(.top, 8)
-                    .padding(.bottom, 7)
+                    .padding(.bottom, 8)
 				subtitleHeader
                     .padding(.bottom, 6)
 
@@ -40,9 +40,9 @@ struct BookMeetingDetailView: View {
 						descriptionText
 							.padding(.bottom, 52)
 						meetingInfoSection
-                            .padding(.bottom, 40)
+                            .padding(.bottom, (meeting.status == .recruiting && !isParticipant) ? 16 : 32)
                         noticeSection
-                            .padding(.bottom, 24)
+                            .padding(.bottom, 12)
                         if meeting.status == .recruiting && !isParticipant {
                             BottomActionButton(title: isParticipating ? "참여 중..." : "모임 참여하기") {
                                 guard !isParticipating else { return }
@@ -57,7 +57,7 @@ struct BookMeetingDetailView: View {
                                     }
                                 }
                             }
-                            .padding(.bottom, 42)
+                            .padding(.bottom, 16)
                             .disabled(isParticipating)
                         }
 					}
@@ -183,11 +183,10 @@ struct BookMeetingDetailView: View {
                         .stroke(Color.gray200, lineWidth: 0.5)
                 }
 
-			VStack(alignment: .leading, spacing: 4) {
+			VStack(alignment: .leading, spacing: 10) {
 				Text(meeting.book.title)
 					.head2Style
 					.foregroundStyle(Color.gray800)
-					.padding(.bottom, 4)
                     .lineLimit(2)
 
 				Text(meeting.book.publisher.map { "\(meeting.book.author) | \($0)" } ?? meeting.book.author)
@@ -208,7 +207,7 @@ struct BookMeetingDetailView: View {
 		}
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.top, 6)
-		.padding(.horizontal, 28.5)
+		.padding(.horizontal, 28)
 	}
 
 	@ViewBuilder
@@ -217,7 +216,7 @@ struct BookMeetingDetailView: View {
 			Text(description)
 				.caption1RegularStyle
 				.foregroundStyle(Color.gray600)
-				.padding(.horizontal, 29.5)
+				.padding(.horizontal, 28)
                 .lineLimit(4)
 		}
 	}
@@ -238,18 +237,18 @@ struct BookMeetingDetailView: View {
 					.foregroundStyle(Color.gray600)
 			}
             .padding(.bottom, 8)
-			.padding(.horizontal, 6)
+			.padding(.horizontal, 5)
             
             Text("모임은 현재 시간 기준 7시간 이후부터 생성할 수 있어요.")
                 .font(.caption1SemiBold)
                 .foregroundStyle(Color.green700)
                 .padding(.bottom, 20)
-                .padding(.horizontal, 6)
+                .padding(.horizontal, 5)
 
 			meetingInfoCard
-				.padding(.horizontal, 4)
+				.padding(.horizontal, 3)
 		}
-		.padding(.horizontal, 19)
+		.padding(.horizontal, 20)
 	}
 
 	private var meetingInfoCard: some View {
@@ -283,7 +282,7 @@ struct BookMeetingDetailView: View {
 				.overlay(Color.gray300)
 		}
 		.padding(.vertical, 20)
-		.padding(.horizontal, 20)
+		.padding(.horizontal, 22)
 		.background(.white)
 		.clipShape(RoundedRectangle(cornerRadius: 12))
 		.overlay {
@@ -306,7 +305,7 @@ struct BookMeetingDetailView: View {
 				.body2RegularStyle
 				.foregroundStyle(Color.gray600)
 		}
-		.padding(.horizontal, 8)
+		.padding(.horizontal, 18)
 	}
 
     // MARK: - Notice
