@@ -198,7 +198,7 @@ struct MainTabView: View {
                     }
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .transition(.scale(scale: 0.9).combined(with: .opacity))
+                .transition(.scale.combined(with: .opacity))
             }
 
             if let meeting = meetingStartedMeeting {
@@ -224,7 +224,7 @@ struct MainTabView: View {
                     }
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .transition(.scale(scale: 0.9).combined(with: .opacity))
+                .transition(.scale.combined(with: .opacity))
             }
 
             if showCancelledModal {
@@ -239,7 +239,7 @@ struct MainTabView: View {
                     }
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .transition(.scale(scale: 0.9).combined(with: .opacity))
+                .transition(.scale.combined(with: .opacity))
             }
         }
         .animation(.easeInOut(duration: 0.2), value: summaryCompletedMeeting != nil)

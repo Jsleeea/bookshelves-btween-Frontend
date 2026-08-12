@@ -83,9 +83,12 @@ struct BookMeetingDetailView: View {
                         dismiss()
                         onParticipated?()
                     }
+                    .transition(.scale.combined(with: .opacity))
+                    .zIndex(1)
                 }
             }
             .animation(.easeInOut(duration: 0.25), value: isLoading)
+            .animation(.easeInOut(duration: 0.2), value: showSuccessModal)
         }
 		.toolbar(.hidden, for: .navigationBar)
 		.hideTabBar()

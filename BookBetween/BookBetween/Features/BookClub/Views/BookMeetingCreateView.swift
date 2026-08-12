@@ -121,9 +121,12 @@ struct BookMeetingCreateView: View {
 							dismiss()
 						}
 					}
+					.transition(.scale.combined(with: .opacity))
+					.zIndex(1)
 				}
 			}
 			.animation(.easeInOut(duration: 0.25), value: isCreating)
+			.animation(.easeInOut(duration: 0.2), value: showSuccessModal)
 		}
 		.toolbar(.hidden, for: .navigationBar)
 		.hideTabBar()
