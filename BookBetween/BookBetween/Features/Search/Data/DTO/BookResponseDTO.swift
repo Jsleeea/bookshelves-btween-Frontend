@@ -34,6 +34,8 @@ struct BookSearchItemDTO: Decodable {
     let publishedDate: String?
     let description: String?
     let coverImageUrl: String?
+    let kdcCode: String?
+    let kdcName: String?
     let saveable: Bool
 
     private enum CodingKeys: String, CodingKey {
@@ -44,6 +46,8 @@ struct BookSearchItemDTO: Decodable {
         case publishedDate
         case description
         case coverImageUrl
+        case kdcCode
+        case kdcName
         case saveable
     }
 
@@ -71,6 +75,8 @@ struct BookSearchItemDTO: Decodable {
             String.self,
             forKey: .coverImageUrl
         )
+        kdcCode = try container.decodeIfPresent(String.self, forKey: .kdcCode)
+        kdcName = try container.decodeIfPresent(String.self, forKey: .kdcName)
         saveable = try container.decodeIfPresent(
             Bool.self,
             forKey: .saveable
@@ -214,7 +220,9 @@ extension BookSearchResultDTO {
                         publisher: item.publisher,
                         publishedDate: item.publishedDate,
                         description: item.description,
-                        coverImageUrl: item.coverImageUrl
+                        coverImageUrl: item.coverImageUrl,
+                        kdcCode: item.kdcCode,
+                        kdcName: item.kdcName
                     ),
                     isSaveable: item.saveable
                 )

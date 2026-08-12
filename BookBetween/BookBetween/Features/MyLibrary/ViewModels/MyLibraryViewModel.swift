@@ -39,6 +39,8 @@ final class MyLibraryViewModel {
 	var selectedTab: MyLibraryTab = .all
 	var records: [UserBookRecord] = []
     var isLoading = false
+    var fetchError: String? = nil
+    var deleteError: String? = nil
 
     private let bookService: (any BookServiceProtocol)?
 
@@ -120,7 +122,7 @@ final class MyLibraryViewModel {
                 size: 50
             )
         } catch {
-            records = []
+            fetchError = error.localizedDescription
         }
     }
 
@@ -129,7 +131,9 @@ final class MyLibraryViewModel {
         do {
             try await bookService.deleteMemberBook(isbn: isbn)
             records.removeAll { $0.id == record.id }
-        } catch {}
+        } catch {
+            deleteError = error.localizedDescription
+        }
     }
 
     func updateRecord(_ updatedRecord: UserBookRecord) {

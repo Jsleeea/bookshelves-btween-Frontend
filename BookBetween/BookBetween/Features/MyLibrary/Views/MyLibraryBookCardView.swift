@@ -7,16 +7,7 @@ struct MyLibraryBookCardView: View {
 		HStack(alignment: .top, spacing: 16) {
 			bookCover
 
-			VStack(alignment: .leading, spacing: 0) {
-				bookInfo
-
-				if let quote = record.memo, !quote.isEmpty {
-					Text("\u{201C}\(quote)\u{201D}")
-                        .font(.caption2Regular)
-						.foregroundStyle(Color.gray500)
-                        .lineSpacing(1.5)
-				}
-			}
+			bookInfo
 			Spacer()
 		}
         .padding(.vertical, 16)
@@ -45,20 +36,19 @@ struct MyLibraryBookCardView: View {
 	}
 
 	private var bookInfo: some View {
-		VStack(alignment: .leading, spacing: 0) {
+		VStack(alignment: .leading, spacing: 4) {
 			Text(record.book.title)
                 .font(.body1SemiBold)
                 .foregroundStyle(Color.gray800)
                 .padding(.top, 6.5)
                 .lineLimit(2)
+                .lineSpacing(2.5)
                 .fixedSize(horizontal: false, vertical: true)
-                .padding(.bottom, 4)
 
 			Text(authorPublisherText)
-                .font(.caption1Regular)
+                .caption1RegularStyle
 				.foregroundStyle(Color.gray500)
                 .lineLimit(1)
-                .padding(.bottom, 2)
 
 			HStack(spacing: 4) {
                 Image(.iconStar)
@@ -67,13 +57,20 @@ struct MyLibraryBookCardView: View {
                     .frame(width: 14, height: 14)
                     .clipped()
 				Text(ratingText)
-                    .font(.caption1Regular)
+                    .caption1RegularStyle
 					.foregroundStyle(Color.green600)
 			}
-            .padding(.bottom, 2)
 
 			BookProgressView(progress: record.progress, showsKnob: false)
                 .padding(.bottom, 2)
+
+			if let quote = record.memo, !quote.isEmpty {
+				Text("\u{201C}\(quote)\u{201D}")
+                    .font(.caption2Regular)
+					.foregroundStyle(Color.gray500)
+                    .lineLimit(2)
+					.lineSpacing(6)
+			}
 		}
 	}
 
@@ -100,7 +97,7 @@ struct MyLibraryBookCardView: View {
 				id: 1,
 				book: Book(
 					id: 1,
-					title: "싯다르타의 대표작. 인도를 배경으로 한 청년 싯다르타의 깨",
+					title: "싯다르타",
 					author: "헤르만 헤세",
 					publisher: "민음사",
 					description: "헤르만 헤세의 대표작. 인도를 배경으로 한 청년 싯다르타의 깨달음의 여정을 담은 소설.",

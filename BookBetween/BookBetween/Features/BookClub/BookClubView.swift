@@ -6,6 +6,7 @@ struct BookClubView: View {
     @State private var searchSubmitted = false
     @State private var showFetchErrorModal = false
     @State private var showSummaryPendingModal = false
+    @State private var meetingsListHeight: CGFloat = 400
     private let navigationPath: Binding<NavigationPath>
     private let onNavigateToBookSearch: ((String) -> Void)?
 
@@ -64,27 +65,28 @@ struct BookClubView: View {
                 .padding(.horizontal, 19)
                 .padding(.bottom, 15)
 
-                GeometryReader { contentGeo in
-                    ZStack {
+                ScrollView(showsIndicators: false) {
                         if meetings.isEmpty && !viewModel.isLoadingMeetings {
-                            SearchIdleView(height: contentGeo.size.height, customTitle: "모임이 없습니다")
+                            SearchIdleView(height: meetingsListHeight, customTitle: "모임이 없습니다")
                                 .padding(.horizontal, 19)
                                 .transition(.opacity)
                         } else {
-                            ScrollView(showsIndicators: false) {
-                                VStack(spacing: 12) {
-                                    meetingList(meetings)
-                                }
-                                .padding(.top, 1)
-                                .padding(.bottom, 100)
+                            VStack(spacing: 12) {
+                                meetingList(meetings)
                             }
-                            .refreshable {
-                                await viewModel.fetchMyMeetings()
-                            }
+                            .padding(.top, 1)
+                            .padding(.bottom, 100)
                         }
                     }
+                    .refreshable {
+                        await viewModel.fetchMyMeetings()
+                    }
                     .animation(.easeInOut(duration: 0.2), value: meetings.isEmpty && !viewModel.isLoadingMeetings)
-                }
+                    .background(
+                        GeometryReader { geo in
+                            Color.clear.onAppear { meetingsListHeight = geo.size.height }
+                        }
+                    )
 			}
 		}
 		.background(Color.beige100)
@@ -124,7 +126,7 @@ struct BookClubView: View {
             case .result(let meeting):
                 BookMeetingResultView(meeting: meeting, service: viewModel.meetingService)
             case .create(let book):
-                BookMeetingCreateView(book: book, service: viewModel.meetingService) {
+                BookMeetingCreateView(book: book, service: viewModel.meetingService, bookService: viewModel.bookService) {
                     navigationPath.wrappedValue = NavigationPath()
                     viewModel.selectedTab = .myMeetings
                     Task { await viewModel.fetchMyMeetings() }
@@ -133,6 +135,22 @@ struct BookClubView: View {
         }
         .alert("데이터를 불러오지 못했습니다", isPresented: $showFetchErrorModal) {
             Button("확인", role: .cancel) {}
+        }
+        .alert("검색에 실패했습니다", isPresented: Binding(
+            get: { viewModel.searchError != nil },
+            set: { if !$0 { viewModel.searchError = nil } }
+        )) {
+            Button("확인", role: .cancel) { viewModel.searchError = nil }
+        } message: {
+            Text(viewModel.searchError ?? "")
+        }
+        .alert("모임 참여에 실패했습니다", isPresented: Binding(
+            get: { viewModel.participateError != nil },
+            set: { if !$0 { viewModel.participateError = nil } }
+        )) {
+            Button("확인", role: .cancel) { viewModel.participateError = nil }
+        } message: {
+            Text(viewModel.participateError ?? "")
         }
         .overlay {
             ZStack {

@@ -211,7 +211,7 @@ struct BookMeetingResultView: View {
 	// MARK: - AI Summary
 
 	private var aiSummarySection: some View {
-		HStack(alignment: .top, spacing: 12) {
+		HStack(alignment: .center, spacing: 12) {
             Image(.star)
 				.resizable()
 				.scaledToFit()

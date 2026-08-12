@@ -22,6 +22,7 @@ extension View {
 
 struct CustomTabBar: View {
     @Binding var selectedTab: TabCase
+    var onSameTabTapped: ((TabCase) -> Void)?
 
     var body: some View {
         HStack(spacing: 0) {
@@ -29,7 +30,11 @@ struct CustomTabBar: View {
                 Spacer()
 
                 Button {
-                    selectedTab = tab
+                    if selectedTab == tab {
+                        onSameTabTapped?(tab)
+                    } else {
+                        selectedTab = tab
+                    }
                 } label: {
                     VStack(spacing: 6) {
                         Image(

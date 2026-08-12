@@ -54,14 +54,14 @@ struct MonthYearPickerView: View {
         Button {
             showPicker = true
         } label: {
-            HStack(spacing: 8) {
+            HStack(spacing: 9) {
                 Text(label)
                     .caption1RegularStyle
                     .foregroundStyle(Color.gray800)
                 Image(.iconChevronDown)
             }
             .padding(.horizontal, 8)
-            .padding(.vertical, 2)
+            .padding(.vertical, 7.75)
             .background(Color.white)
             .clipShape(RoundedRectangle(cornerRadius: 8))
             .overlay {

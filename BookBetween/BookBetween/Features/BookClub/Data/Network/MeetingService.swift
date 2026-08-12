@@ -76,14 +76,16 @@ final class MeetingService: MeetingServiceProtocol {
     }
 
     func fetchMyMeetings(isLeader: Bool, year: Int?, month: Int?, page: Int, size: Int) async throws -> [BookMeeting] {
-        do {
-            let response = try await provider.requestAsync(
-                MeetingTarget(baseURL: baseURL, endpoint: .fetchMyMeetings(isLeader: isLeader, year: year, month: month, page: page, size: size))
-            )
-            let result = try response.decodePayload(MeetingListResultDTO.self)
-            return result.toDomain()
-        } catch let error as MoyaError {
-            throw NetworkError.transport(error)
+        try await requestExecutor.execute {
+            do {
+                let response = try await self.provider.requestAsync(
+                    MeetingTarget(baseURL: self.baseURL, endpoint: .fetchMyMeetings(isLeader: isLeader, year: year, month: month, page: page, size: size))
+                )
+                let result = try response.decodePayload(MeetingListResultDTO.self)
+                return result.toDomain()
+            } catch let error as MoyaError {
+                throw NetworkError.transport(error)
+            }
         }
     }
 
