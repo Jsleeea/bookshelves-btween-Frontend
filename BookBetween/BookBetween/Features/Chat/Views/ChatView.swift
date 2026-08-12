@@ -235,7 +235,9 @@ struct ChatView: View {
               return
             }
 
-            guard !self.showsScrollToBottomButton else { return }
+            let isMyLatestMessage =
+              self.viewModel.messages.last?.senderMemberId == self.viewModel.myMemberId
+            guard isMyLatestMessage || !self.showsScrollToBottomButton else { return }
             withAnimation {
               proxy.scrollTo(Identifier.bottomAnchor, anchor: .bottom)
             }
