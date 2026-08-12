@@ -53,7 +53,6 @@ struct ChatBottomView: View {
   // MARK: - Properties
 
   @Binding var messageText: String
-  @State private var attributedText = AttributedString()
   @State private var measuredContentHeight: CGFloat = Metric.textEditorMinHeight
   var isFocused: FocusState<Bool>.Binding
   let currentQuestionCount: Int
@@ -181,6 +180,7 @@ struct ChatBottomView: View {
           .padding(.vertical, Metric.textEditorContentVerticalInset)
           .opacity(0)
           .allowsHitTesting(false)
+          .fixedSize(horizontal: false, vertical: true)
           .background {
             GeometryReader { geometry in
               Color.clear
@@ -191,11 +191,11 @@ struct ChatBottomView: View {
             }
           }
 
-        TextEditor(text: self.$attributedText)
+        TextEditor(text: self.$messageText)
           .font(.caption1SemiBold)
           .tracking(Metric.smallCaptionTracking) // 자간 -0.3%
           .lineSpacing(Metric.smallCaptionLineSpacing) // 행간 20pt (12pt 기준 +8)
-          .foregroundStyle(.gray200)
+          .foregroundStyle(.clear)
           .scrollContentBackground(.hidden)
           .contentMargins(
             .vertical,
@@ -204,8 +204,15 @@ struct ChatBottomView: View {
           )
           .contentMargins(.horizontal, 0, for: .scrollContent)
           .focused(self.isFocused)
+
+        Text(self.highlightedAttributedText(from: self.messageText))
+          .font(.caption1SemiBold)
+          .tracking(Metric.smallCaptionTracking) // 자간 -0.3%
+          .lineSpacing(Metric.smallCaptionLineSpacing) // 행간 20pt (12pt 기준 +8)
+          .foregroundStyle(.gray200)
+          .padding(.vertical, Metric.textEditorContentVerticalInset)
+          .allowsHitTesting(false)
       }
-      .frame(height: min(self.measuredContentHeight, Metric.textEditorMaxHeight))
       .frame(
         height: min(
           max(self.measuredContentHeight, Metric.textEditorMinHeight),
@@ -214,15 +221,6 @@ struct ChatBottomView: View {
         alignment: .center
       )
       .animation(.easeInOut(duration: 0.2), value: self.measuredContentHeight)
-      .onChange(of: self.attributedText) { _, newValue in
-        let plainText = String(newValue.characters)
-        self.messageText = plainText
-        self.attributedText = self.highlightedAttributedText(from: plainText)
-      }
-      .onChange(of: self.messageText) { _, newValue in
-        guard newValue != String(self.attributedText.characters) else { return }
-        self.attributedText = self.highlightedAttributedText(from: newValue)
-      }
 
       Button(action: self.onSendTap) {
         Image("direct_icon")
