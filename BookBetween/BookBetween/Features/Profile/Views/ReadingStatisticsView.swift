@@ -70,7 +70,7 @@ struct ReadingStatisticsView: View {
             }
         }
         .toolbar(.hidden, for: .navigationBar)
-        .toolbar(.hidden, for: .tabBar)
+        .hideTabBar()
         .simultaneousGesture(self.backSwipeGesture)
         .task {
             guard viewModel.statistics == nil else {
