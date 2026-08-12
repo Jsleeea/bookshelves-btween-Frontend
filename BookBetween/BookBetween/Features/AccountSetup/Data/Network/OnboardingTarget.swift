@@ -7,7 +7,11 @@ import Foundation
 import Alamofire
 import Moya
 
+// MARK: - 온보딩 API 대상
+
 nonisolated struct OnboardingTarget: TargetType, AuthorizationRequirement {
+    // MARK: - API 엔드포인트
+
     enum Endpoint {
         case complete(OnboardingRequestDTO)
         case terms
@@ -15,6 +19,8 @@ nonisolated struct OnboardingTarget: TargetType, AuthorizationRequirement {
 
     let baseURL: URL
     let endpoint: Endpoint
+
+    // MARK: - 요청 경로
 
     var path: String {
         switch endpoint {
@@ -25,6 +31,8 @@ nonisolated struct OnboardingTarget: TargetType, AuthorizationRequirement {
         }
     }
 
+    // MARK: - HTTP 메서드
+
     var method: Moya.Method {
         switch endpoint {
         case .complete:
@@ -33,6 +41,8 @@ nonisolated struct OnboardingTarget: TargetType, AuthorizationRequirement {
             return .get
         }
     }
+
+    // MARK: - 요청 작업
 
     var task: Moya.Task {
         switch endpoint {
@@ -43,6 +53,8 @@ nonisolated struct OnboardingTarget: TargetType, AuthorizationRequirement {
         }
     }
 
+    // MARK: - 인증 필요 여부
+
     var requiresAuthorization: Bool {
         switch endpoint {
         case .complete:
@@ -51,6 +63,8 @@ nonisolated struct OnboardingTarget: TargetType, AuthorizationRequirement {
             return false
         }
     }
+
+    // MARK: - 요청 헤더
 
     var headers: [String: String]? {
         [

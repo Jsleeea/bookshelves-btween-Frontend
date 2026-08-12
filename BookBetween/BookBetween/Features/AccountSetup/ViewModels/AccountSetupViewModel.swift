@@ -6,6 +6,8 @@
 import Foundation
 import Observation
 
+// MARK: - 계정 설정 화면 상태
+
 enum AccountSetupViewState: Equatable {
     case idle
     case loading
@@ -15,7 +17,11 @@ enum AccountSetupViewState: Equatable {
 
 @MainActor
 @Observable
+// MARK: - 계정 설정 뷰모델
+
 final class AccountSetupViewModel {
+    // MARK: - 의존성 및 상태
+
     private let onboardingService: OnboardingServiceProtocol
 
     private(set) var state: AccountSetupViewState = .idle
@@ -24,6 +30,8 @@ final class AccountSetupViewModel {
     private(set) var hasLoadedTerms = false
     private(set) var isLoadingTerms = false
     private(set) var termsErrorMessage: String?
+
+    // MARK: - 계산 상태
 
     var isLoading: Bool {
         state == .loading
@@ -44,6 +52,8 @@ final class AccountSetupViewModel {
     var privacyTerm: OnboardingTermDTO? {
         terms.first { $0.type == .privacy }
     }
+
+    // MARK: - 약관 동의 상태
 
     func agreedTermsIds(
         isServiceTermAgreed: Bool,
@@ -75,9 +85,13 @@ final class AccountSetupViewModel {
         return Set(requiredTermsIds).isSubset(of: Set(agreedTermsIds))
     }
 
+    // MARK: - 초기화
+
     init(onboardingService: OnboardingServiceProtocol) {
         self.onboardingService = onboardingService
     }
+
+    // MARK: - 약관 조회
 
     func fetchTerms() async {
         guard !hasLoadedTerms,
@@ -100,6 +114,8 @@ final class AccountSetupViewModel {
             termsErrorMessage = error.localizedDescription
         }
     }
+
+    // MARK: - 계정 설정 완료
 
     func completeOnboarding(
         nickname: GeneratedNickname,
@@ -146,6 +162,8 @@ final class AccountSetupViewModel {
         }
     }
 
+    // MARK: - 상태 초기화
+
     func resetState() {
         state = .idle
     }
@@ -154,6 +172,8 @@ final class AccountSetupViewModel {
         termsErrorMessage = nil
     }
 }
+
+// MARK: - 계정 설정 오류
 
 private enum AccountSetupViewModelError: LocalizedError {
     case invalidMemberStatus

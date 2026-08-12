@@ -10,6 +10,8 @@ import SwiftUI
 // MARK: - 서비스 이용약관 상세 화면
 
 struct ServiceTermsDetailView: View {
+  // MARK: - 화면 상태
+
   @Environment(\.dismiss) private var dismiss
 
   @State private var hasReachedBottom = false
@@ -17,6 +19,8 @@ struct ServiceTermsDetailView: View {
   let title: String
   let content: String
   let onAgree: () -> Void
+
+  // MARK: - 초기화
 
   init(
     title: String = "서비스 이용약관",
@@ -27,6 +31,8 @@ struct ServiceTermsDetailView: View {
     self.content = content
     self.onAgree = onAgree
   }
+
+  // MARK: - 화면 구성
 
   var body: some View {
     VStack(spacing: 0) {
@@ -92,6 +98,8 @@ private struct ServiceTermsNavigationBar: View {
   let title: String
   let backButtonAction: () -> Void
 
+  // MARK: - 화면 구성
+
   var body: some View {
     VStack(alignment: .leading, spacing: 16) {
       Button(action: self.backButtonAction) {
@@ -117,6 +125,8 @@ private struct ServiceTermsNavigationBar: View {
 
 private struct ServiceTermsContentLineView: View {
   let line: String
+
+  // MARK: - 본문 형식 판단
 
   private var trimmedLine: String {
     self.line.trimmingCharacters(in: .whitespaces)
@@ -153,6 +163,8 @@ private struct ServiceTermsContentLineView: View {
     self.trimmedLine == "책장사이는 다음 서비스를 제공합니다."
       || self.trimmedLine == "이용자는 다음 행위를 해서는 안 됩니다."
   }
+
+  // MARK: - 화면 구성
 
   @ViewBuilder
   var body: some View {

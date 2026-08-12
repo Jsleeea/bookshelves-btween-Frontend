@@ -10,6 +10,8 @@ import SwiftUI
 // MARK: - 개인정보 수집 및 이용 동의 상세 화면
 
 struct PrivacyConsentDetailView: View {
+  // MARK: - 화면 상태
+
   @Environment(\.dismiss) private var dismiss
 
   @State private var hasReachedBottom = false
@@ -17,6 +19,8 @@ struct PrivacyConsentDetailView: View {
   let title: String
   let content: String
   let onAgree: () -> Void
+
+  // MARK: - 초기화
 
   init(
     title: String = "개인정보 수집 및 이용 동의",
@@ -27,6 +31,8 @@ struct PrivacyConsentDetailView: View {
     self.content = content
     self.onAgree = onAgree
   }
+
+  // MARK: - 화면 구성
 
   var body: some View {
     VStack(spacing: 0) {
@@ -92,6 +98,8 @@ private struct PrivacyConsentNavigationBar: View {
   let title: String
   let backButtonAction: () -> Void
 
+  // MARK: - 화면 구성
+
   var body: some View {
     VStack(alignment: .leading, spacing: 16) {
       Button(action: self.backButtonAction) {
@@ -118,6 +126,8 @@ private struct PrivacyConsentNavigationBar: View {
 private struct PrivacyTermsContentLineView: View {
   let line: String
 
+  // MARK: - 본문 형식 판단
+
   private var trimmedLine: String {
     self.line.trimmingCharacters(in: .whitespaces)
   }
@@ -140,6 +150,8 @@ private struct PrivacyTermsContentLineView: View {
   private var isAdditionalInformationNotice: Bool {
     self.trimmedLine.hasPrefix("서비스 이용 과정에서")
   }
+
+  // MARK: - 화면 구성
 
   @ViewBuilder
   var body: some View {
