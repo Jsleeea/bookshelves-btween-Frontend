@@ -30,6 +30,7 @@ final class ChatViewModel {
   private(set) var myMemberId: Int?
   private(set) var isMeetingEnded = false
   private(set) var endedMeeting: BookMeeting?
+  private(set) var showsEndedMeetingNotice = false
   var isReported = false
   private(set) var isLoading = false
   private(set) var questionUpdateTrigger = 0
@@ -64,6 +65,10 @@ final class ChatViewModel {
 
   func enterChatRoom() async {
     guard !self.isLoading else { return }
+    guard !self.isMeetingEnded else {
+      self.showsEndedMeetingNotice = true
+      return
+    }
     self.isLoading = true
     self.errorMessage = nil
     defer { self.isLoading = false }
