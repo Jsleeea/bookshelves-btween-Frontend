@@ -89,6 +89,8 @@ nonisolated struct MemberProfileResultDTO: Decodable {
     }
 }
 
+// MARK: - 회원 장르 DTO
+
 nonisolated struct MemberCategoryDTO: Decodable {
     let id: Int
     let name: String

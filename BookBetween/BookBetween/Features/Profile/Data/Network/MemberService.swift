@@ -6,6 +6,8 @@
 import Foundation
 import Moya
 
+// MARK: - 회원 서비스 인터페이스
+
 protocol MemberServiceProtocol {
     func fetchMyProfile() async throws -> MemberProfile
     func updateMyProfile(
@@ -14,10 +16,16 @@ protocol MemberServiceProtocol {
     func withdrawMyAccount() async throws -> MemberWithdrawalResultDTO
 }
 
+// MARK: - 회원 네트워크 서비스
+
 final class MemberService: MemberServiceProtocol {
+    // MARK: - 네트워크 설정
+
     private let baseURL: URL
     private let provider: MoyaProvider<MemberTarget>
     private let requestExecutor: AuthenticatedRequestExecutor
+
+    // MARK: - 초기화
 
     init(configuration: NetworkConfiguration) {
         self.baseURL = configuration.baseURL
@@ -32,6 +40,8 @@ final class MemberService: MemberServiceProtocol {
             reissueTokens: configuration.reissueTokens
         )
     }
+
+    // MARK: - 내 회원 정보 조회
 
     func fetchMyProfile() async throws -> MemberProfile {
         try await requestExecutor.execute {
@@ -60,6 +70,8 @@ final class MemberService: MemberServiceProtocol {
             }
         }
     }
+
+    // MARK: - 회원 정보 수정
 
     func updateMyProfile(
         request: MemberProfileUpdateRequestDTO
@@ -90,6 +102,8 @@ final class MemberService: MemberServiceProtocol {
             }
         }
     }
+
+    // MARK: - 회원 탈퇴
 
     func withdrawMyAccount() async throws -> MemberWithdrawalResultDTO {
         try await requestExecutor.execute {
