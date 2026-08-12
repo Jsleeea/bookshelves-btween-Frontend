@@ -23,6 +23,9 @@ struct ChatView: View {
     static let messageListBottomPadding: CGFloat = 16
 
     static let chatBottomBottomPadding: CGFloat = 12
+    // 키보드가 올라오는 곡선과 맞춰, 질문 생성 박스와 메시지 입력 박스가
+    // 한 덩어리로 움직이도록 하는 값
+    static let chatBottomAnimationDuration: TimeInterval = 0.25
     static let backgroundTopColorHex: String = "F0F7FD"
 
     static let downButtonSize: CGFloat = 30
@@ -111,7 +114,7 @@ struct ChatView: View {
   @State private var showsScrollToBottomButton: Bool = false
   @State private var hasScrolledToInitialBottom: Bool = false
   @State private var reportModalState: ReportModalState?
-  @FocusState private var isMessageFieldFocused: Bool
+  @State private var isMessageFieldFocused: Bool = false
   @Environment(\.dismiss) private var dismiss
   @Environment(\.scenePhase) private var scenePhase
   @Environment(\.goToHome) private var goToHome
@@ -258,6 +261,10 @@ struct ChatView: View {
             .padding(.top, Metric.questionViewTopPadding)
         }
       }
+      .contentShape(Rectangle())
+      .onTapGesture {
+        self.isMessageFieldFocused = false
+      }
 
       ChatBottomView(
         messageText: self.$messageText,
@@ -282,10 +289,10 @@ struct ChatView: View {
       .padding(.horizontal, Metric.horizontalPadding)
       .padding(.bottom, self.isMessageFieldFocused ? 0 : Metric.chatBottomBottomPadding)
       .disabled(self.viewModel.isMeetingEnded)
-    }
-    .contentShape(Rectangle())
-    .onTapGesture {
-      self.isMessageFieldFocused = false
+      .animation(
+        .easeOut(duration: Metric.chatBottomAnimationDuration),
+        value: self.isMessageFieldFocused
+      )
     }
     .background(
       LinearGradient(
