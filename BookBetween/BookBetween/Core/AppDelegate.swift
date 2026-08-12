@@ -106,8 +106,9 @@ extension AppDelegate: MessagingDelegate {
             return
         }
 
-        print("🔥 FCM TOKEN:")
-        print(fcmToken)
+        #if DEBUG
+        print("🔥 FCM 토큰 수신")
+        #endif
 
         // 로그인 전에 토큰이 발급될 수 있어 항상 로컬에 먼저 저장한다.
         fcmTokenStore.save(fcmToken)
