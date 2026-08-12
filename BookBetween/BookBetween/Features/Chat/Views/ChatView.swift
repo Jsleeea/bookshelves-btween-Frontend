@@ -324,6 +324,10 @@ struct ChatView: View {
         await self.viewModel.reconnect()
       }
     }
+    .onChange(of: self.viewModel.showsEndedMeetingNotice) { _, showsNotice in
+      guard showsNotice else { return }
+      self.isMessageFieldFocused = false
+    }
     .alert(
       "오류가 발생했습니다.",
       isPresented: Binding(
