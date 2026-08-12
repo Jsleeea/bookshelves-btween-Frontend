@@ -24,6 +24,7 @@ enum BookClubTab: CaseIterable {
 }
 
 @Observable
+@MainActor
 final class BookClubViewModel {
 
 	// MARK: - Properties

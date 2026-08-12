@@ -1,5 +1,6 @@
 import SwiftUI
 
+@MainActor
 struct BookClubView: View {
 	@State private var viewModel: BookClubViewModel
 	@FocusState private var isSearchFocused: Bool
@@ -166,14 +167,10 @@ struct BookClubView: View {
         }
 		.task {
             await viewModel.fetchJoinedYear()
-			await viewModel.fetchMyMeetings()
-		}
-		.onChange(of: viewModel.selectedYear) {
-			Task { await viewModel.fetchMyMeetings() }
-		}
-		.onChange(of: viewModel.selectedMonth) {
-			Task { await viewModel.fetchMyMeetings() }
-		}
+        }
+        .task(id: [viewModel.selectedYear, viewModel.selectedMonth]) {
+            await viewModel.fetchMyMeetings()
+        }
 	}
 
 	// MARK: - Tab Selector

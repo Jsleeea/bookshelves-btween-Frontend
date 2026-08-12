@@ -1,5 +1,6 @@
 import SwiftUI
 
+@MainActor
 struct MyLibraryView: View {
 	@State private var viewModel: MyLibraryViewModel
     @State private var selectedRecord: UserBookRecord?

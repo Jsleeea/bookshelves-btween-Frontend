@@ -254,7 +254,7 @@ struct BookMeetingCreateView: View {
             .padding(.bottom, 8)
 			.padding(.horizontal, 5)
 
-            Text("모임은 현재 시간 기준 7시간 이후부터 생성할 수 있어요.")
+            Text("모임은 현재 시간 기준 7시간 이후부터 생성할 수 있어요")
                 .font(.caption1SemiBold)
                 .foregroundStyle(Color.green700)
                 .padding(.bottom, 20)
@@ -411,6 +411,8 @@ struct BookMeetingCreateView: View {
 				.stroke(Color.gray200, lineWidth: 0.5)
 		}
 	}
+
+	// MARK: - Info Row
 
 	private func infoRow<Icon: View, Picker: View>(
 		@ViewBuilder icon: () -> Icon,

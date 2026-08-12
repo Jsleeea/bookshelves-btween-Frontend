@@ -185,6 +185,8 @@ struct BookMeetingResultView: View {
 		.padding(.horizontal, 20)
 	}
 
+	// MARK: - Compact Info
+
 	private var compactInfoRows: some View {
 		VStack(alignment: .leading, spacing: 4) {
 			compactInfoRow(icon: { Image("icon_calendar").resizable().scaledToFill().frame(width: 12, height: 12).clipped()  },
@@ -349,12 +351,6 @@ struct BookMeetingResultView: View {
 	}
 
 	// MARK: - Helpers
-
-	private static let dateFormatter: DateFormatter = {
-		let f = DateFormatter()
-		f.dateFormat = "MM/dd"
-		return f
-	}()
 
 	private static let dateTimeFormatter: DateFormatter = {
 		let f = DateFormatter()
