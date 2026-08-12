@@ -62,35 +62,37 @@ struct LoginView: View {
 
 private struct LoginBackgroundView: View {
   var body: some View {
-    ZStack {
-      Color(red: 0.98, green: 0.98, blue: 0.98)
+    GeometryReader { geometry in
+      ZStack(alignment: .top) {
+        Color(red: 0.98, green: 0.98, blue: 0.98)
+          .ignoresSafeArea()
+
+        LinearGradient(
+          stops: [
+            Gradient.Stop(
+              color: .white,
+              location: 0.03
+            ),
+            Gradient.Stop(
+              color: Color(red: 0.80, green: 0.88, blue: 0.82).opacity(0.8),
+              location: 0.70
+            )
+          ],
+          startPoint: UnitPoint(x: 0.52, y: 1.03),
+          endPoint: UnitPoint(x: 0.52, y: 0.05)
+        )
         .ignoresSafeArea()
 
-      LinearGradient(
-        stops: [
-          Gradient.Stop(
-            color: .white,
-            location: 0.03
-          ),
-          Gradient.Stop(
-            color: Color(red: 0.80, green: 0.88, blue: 0.82).opacity(0.8),
-            location: 0.70
-          )
-        ],
-        startPoint: UnitPoint(x: 0.52, y: 1.03),
-        endPoint: UnitPoint(x: 0.52, y: 0.05)
-      )
-      .ignoresSafeArea()
-
-      EllipticalGradient(
-        stops: [
-          Gradient.Stop(color: .white, location: 0.30),
-          Gradient.Stop(color: .white.opacity(0), location: 1.00)
-        ],
-        center: UnitPoint(x: 0.5, y: 0.47)
-      )
-      .frame(width: 373, height: 376)
-      .position(x: 197.5, y: 352)
+        EllipticalGradient(
+          stops: [
+            Gradient.Stop(color: .white, location: 0.30),
+            Gradient.Stop(color: .white.opacity(0), location: 1.00)
+          ],
+          center: UnitPoint(x: 0.5, y: 0.47)
+        )
+        .frame(width: min(373, geometry.size.width), height: 376)
+        .padding(.top, geometry.size.height * 0.20)
+      }
     }
   }
 }
@@ -105,30 +107,30 @@ private struct LoginContentView: View {
   let onAppleLogin: () -> Void
 
   var body: some View {
-    VStack(spacing: 0) {
-      
+    GeometryReader { geometry in
+      VStack(spacing: 0) {
+        LoginLogoView()
+          .padding(.top, geometry.size.height * 0.24)
+          .padding(.bottom, 24)
 
-      LoginLogoView()
-        .padding(.top, 209)
-        .padding(.bottom, 24)
+        LoginTitleSectionView()
+          .padding(.bottom, 32)
 
-      LoginTitleSectionView()
-        .padding(.bottom, 32)
+        LoginSocialButtonSectionView(
+          isLoading: isLoading,
+          isKakaoLoading: isKakaoLoading,
+          isGoogleLoading: isGoogleLoading,
+          isAppleLoading: isAppleLoading,
+          onKakaoLogin: onKakaoLogin,
+          onGoogleLogin: onGoogleLogin,
+          onAppleLogin: onAppleLogin
+        )
 
-      LoginSocialButtonSectionView(
-        isLoading: isLoading,
-        isKakaoLoading: isKakaoLoading,
-        isGoogleLoading: isGoogleLoading,
-        isAppleLoading: isAppleLoading,
-        onKakaoLogin: onKakaoLogin,
-        onGoogleLogin: onGoogleLogin,
-        onAppleLogin: onAppleLogin
-      )
-
-      Spacer()
+        Spacer()
+      }
+      .padding(.horizontal, 51)
+      .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-    .padding(.horizontal, 51)
-    .frame(maxWidth: .infinity, maxHeight: .infinity)
   }
 }
 
