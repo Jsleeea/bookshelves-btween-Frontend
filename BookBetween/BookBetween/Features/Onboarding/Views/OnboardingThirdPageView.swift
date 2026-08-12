@@ -15,34 +15,35 @@ struct OnboardingThirdPageView: View {
   // MARK: - 화면 구성
 
   var body: some View {
-    ZStack {
-      self.greenBackgroundGradient
+    GeometryReader { geometry in
+      ZStack {
+        self.greenBackgroundGradient(in: geometry)
 
-      self.leftLeafImage
+        self.leftLeafImage(in: geometry)
 
-      self.rightLeafImage
+        self.rightLeafImage(in: geometry)
 
-      self.contentView
-    }
-    .frame(maxWidth: .infinity, maxHeight: .infinity)
-    .clipped()
-    .background {
-      Color.beige100
-        .ignoresSafeArea()
+        self.contentView(in: geometry)
+      }
+      .clipped()
+      .background {
+        Color.beige100
+          .ignoresSafeArea()
+      }
     }
   }
 
   // MARK: - 콘텐츠
 
-  private var contentView: some View {
+  private func contentView(in geometry: GeometryProxy) -> some View {
     VStack(spacing: 0) {
       Spacer()
-        .frame(height: 150)
+        .frame(height: geometry.size.height * 0.17)
 
       OnboardingTitleSection(page: self.page)
         .padding(.bottom, 28)
 
-      self.previewImage
+      self.previewImage(in: geometry)
 
       Spacer()
     }
@@ -51,38 +52,36 @@ struct OnboardingThirdPageView: View {
 
   // MARK: - 온보딩 이미지
 
-  private var previewImage: some View {
+  private func previewImage(in geometry: GeometryProxy) -> some View {
     Image("onboarding3")
       .resizable()
       .scaledToFit()
-      .frame(width: 380, height: 243)
+      .frame(width: min(380, geometry.size.width - 32), height: 243)
   }
 
   // MARK: - 왼쪽 나뭇잎 이미지
 
-  private var leftLeafImage: some View {
+  private func leftLeafImage(in geometry: GeometryProxy) -> some View {
     Image("onboarding3LeafLeft")
       .resizable()
       .scaledToFit()
       .frame(width: 129, height: 143)
-      .position(x: 64.5, y: 156.5)
+      .position(x: 129 / 2, y: geometry.size.height * 0.18)
   }
 
   // MARK: - 오른쪽 나뭇잎 이미지
 
-  private var rightLeafImage: some View {
-    GeometryReader { geometry in
-      Image("onboarding3LeafRight")
-        .resizable()
-        .scaledToFit()
-        .frame(width: 120, height: 142)
-        .position(x: geometry.size.width - (120 / 2), y: 255)
-    }
+  private func rightLeafImage(in geometry: GeometryProxy) -> some View {
+    Image("onboarding3LeafRight")
+      .resizable()
+      .scaledToFit()
+      .frame(width: 120, height: 142)
+      .position(x: geometry.size.width - (120 / 2), y: geometry.size.height * 0.29)
   }
 
   // MARK: - 초록색 배경 그라데이션
 
-  private var greenBackgroundGradient: some View {
+  private func greenBackgroundGradient(in geometry: GeometryProxy) -> some View {
     Circle()
       .fill(
         EllipticalGradient(
@@ -93,8 +92,8 @@ struct OnboardingThirdPageView: View {
           center: UnitPoint(x: 0.5, y: 0.5)
         )
       )
-      .frame(width: 518, height: 518)
-      .position(x: 201, y: 500)
+      .frame(width: geometry.size.width * 1.29, height: geometry.size.width * 1.29)
+      .position(x: geometry.size.width / 2, y: geometry.size.height * 0.57)
   }
 }
 

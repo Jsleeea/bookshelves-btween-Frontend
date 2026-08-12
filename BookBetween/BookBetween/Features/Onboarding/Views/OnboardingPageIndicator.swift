@@ -7,9 +7,13 @@
 
 import SwiftUI
 
+// MARK: - 페이지 표시기
+
 struct OnboardingPageIndicator: View {
   let currentPage: Int
   let totalPage: Int
+
+  // MARK: - 화면 구성
 
   var body: some View {
     HStack(spacing: 8) {
