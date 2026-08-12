@@ -5,6 +5,8 @@
 
 import Foundation
 
+// MARK: - 온보딩 요청 DTO
+
 nonisolated struct OnboardingRequestDTO: Encodable {
     let nicknameNoun: String
     let nicknameModifier: String
@@ -13,6 +15,8 @@ nonisolated struct OnboardingRequestDTO: Encodable {
     let categoryIds: [Int]
     let agreedTermsIds: [Int]
 }
+
+// MARK: - 온보딩 완료 DTO
 
 nonisolated struct OnboardingResultDTO: Decodable {
     let id: Int
@@ -27,10 +31,14 @@ nonisolated struct OnboardingResultDTO: Decodable {
     let categories: [OnboardingCategoryDTO]
 }
 
+// MARK: - 온보딩 장르 DTO
+
 nonisolated struct OnboardingCategoryDTO: Decodable {
     let id: Int
     let name: String
 }
+
+// MARK: - 온보딩 약관 DTO
 
 nonisolated struct OnboardingTermDTO: Decodable {
     let id: Int
@@ -40,6 +48,8 @@ nonisolated struct OnboardingTermDTO: Decodable {
     let version: String
     let isRequired: Bool
 }
+
+// MARK: - 온보딩 약관 유형
 
 nonisolated enum OnboardingTermType: String, Decodable {
     case service = "SERVICE"

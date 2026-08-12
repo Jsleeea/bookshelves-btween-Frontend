@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+// MARK: - 온보딩 화면
+
 struct OnboardingView: View {
   @StateObject private var viewModel = OnboardingViewModel()
 
@@ -15,6 +17,8 @@ struct OnboardingView: View {
   init(onComplete: @escaping () -> Void = {}) {
     self.onComplete = onComplete
   }
+
+  // MARK: - 화면 구성
 
   var body: some View {
     GeometryReader { geometry in
@@ -68,6 +72,8 @@ struct OnboardingView: View {
     .frame(maxWidth: .infinity, maxHeight: .infinity)
   }
 
+  // MARK: - 현재 페이지
+
   @ViewBuilder
   private var currentPageView: some View {
     switch self.viewModel.currentPageIndex {
@@ -81,7 +87,6 @@ struct OnboardingView: View {
       OnboardingThirdPageView(page: self.viewModel.currentPage)
     }
   }
-
 }
 
 #Preview {

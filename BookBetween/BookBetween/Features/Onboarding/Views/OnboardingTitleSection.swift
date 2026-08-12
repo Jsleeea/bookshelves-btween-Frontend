@@ -7,8 +7,12 @@
 
 import SwiftUI
 
+// MARK: - 온보딩 제목 영역
+
 struct OnboardingTitleSection: View {
   let page: OnboardingPage
+
+  // MARK: - 화면 구성
 
   var body: some View {
     VStack(spacing: 20) {
@@ -20,6 +24,8 @@ struct OnboardingTitleSection: View {
         .multilineTextAlignment(.center)
     }
   }
+
+  // MARK: - 제목 텍스트
 
   @ViewBuilder
   private var titleText: some View {

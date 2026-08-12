@@ -9,7 +9,11 @@ import Combine
 import Foundation
 import SwiftUI
 
+// MARK: - 온보딩 화면 상태
+
 final class OnboardingViewModel: ObservableObject {
+  // MARK: - 페이지 데이터
+
   @Published var currentPageIndex: Int = 0
 
   let pages: [OnboardingPage] = [
@@ -39,6 +43,8 @@ final class OnboardingViewModel: ObservableObject {
     )
   ]
 
+  // MARK: - 화면 상태
+
   var currentPage: OnboardingPage {
     self.pages[self.currentPageIndex]
   }
@@ -50,6 +56,8 @@ final class OnboardingViewModel: ObservableObject {
   var bottomButtonTitle: String {
     self.isLastPage ? "시작하기" : "다음"
   }
+
+  // MARK: - 페이지 이동
 
   func backButtonDidTap() {
     guard self.currentPageIndex > 0 else {
@@ -66,5 +74,4 @@ final class OnboardingViewModel: ObservableObject {
 
     self.currentPageIndex += 1
   }
-
 }

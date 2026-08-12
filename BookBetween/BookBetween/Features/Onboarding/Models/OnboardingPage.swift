@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+// MARK: - 온보딩 페이지 모델
+
 struct OnboardingPage: Identifiable {
   let id: Int
   let titleParts: [OnboardingTitlePart]
@@ -16,6 +18,8 @@ struct OnboardingPage: Identifiable {
     self.titleParts.map(\.text).joined()
   }
 }
+
+// MARK: - 온보딩 제목 스타일 모델
 
 struct OnboardingTitlePart: Identifiable {
   let id = UUID()

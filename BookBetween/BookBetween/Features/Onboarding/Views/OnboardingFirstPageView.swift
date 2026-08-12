@@ -15,34 +15,35 @@ struct OnboardingFirstPageView: View {
   // MARK: - 화면 구성
 
   var body: some View {
-    ZStack {
-      Color.beige100
-        .ignoresSafeArea()
+    GeometryReader { geometry in
+      ZStack {
+        Color.beige100
+          .ignoresSafeArea()
 
-      self.backgroundGradient
+        self.backgroundGradient(in: geometry)
 
-      VStack(spacing: 0) {
-        Spacer()
-          .frame(height: 98)
+        VStack(spacing: 0) {
+          Spacer()
+            .frame(height: geometry.size.height * 0.11)
 
-        OnboardingTitleSection(page: self.page)
-          .padding(.bottom, 43)
+          OnboardingTitleSection(page: self.page)
+            .padding(.bottom, 43)
 
-        Image("onboarding1")
-          .resizable()
-          .scaledToFit()
-          .frame(width: 297, height: 363)
+          Image("onboarding1")
+            .resizable()
+            .scaledToFit()
+            .frame(width: min(297, geometry.size.width - 32), height: 363)
 
-        Spacer()
+          Spacer()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
       }
-      .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
-    .frame(maxWidth: .infinity, maxHeight: .infinity)
   }
 
   // MARK: - 배경 그라데이션
 
-  private var backgroundGradient: some View {
+  private func backgroundGradient(in geometry: GeometryProxy) -> some View {
     Circle()
       .fill(
         EllipticalGradient(
@@ -53,8 +54,8 @@ struct OnboardingFirstPageView: View {
           center: UnitPoint(x: 0.5, y: 0.5)
         )
       )
-      .frame(width: 540, height: 540)
-      .position(x: 0, y: 270)
+      .frame(width: geometry.size.width * 1.34, height: geometry.size.width * 1.34)
+      .position(x: 0, y: geometry.size.height * 0.31)
       .ignoresSafeArea()
   }
 }

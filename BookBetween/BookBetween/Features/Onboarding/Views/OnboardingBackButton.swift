@@ -7,8 +7,12 @@
 
 import SwiftUI
 
+// MARK: - 이전 페이지 버튼
+
 struct OnboardingBackButton: View {
   let action: () -> Void
+
+  // MARK: - 화면 구성
 
   var body: some View {
     Button(action: self.action) {

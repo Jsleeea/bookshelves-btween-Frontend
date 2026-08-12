@@ -19,6 +19,8 @@ struct ProfileView: View {
 
     private let weekdays = ["일", "월", "화", "수", "목", "금", "토"]
 
+    // MARK: - 초기화
+
     init(
         onLogout: @escaping () async throws -> Void = {},
         onWithdraw: @escaping () async throws -> Void = {}
@@ -45,6 +47,8 @@ struct ProfileView: View {
         self.onWithdraw = onWithdraw
     }
 
+    // MARK: - 화면 표시 값
+
     private var displayedMonthTitle: String {
         viewModel.displayedMonth.formatted(
             .dateTime
@@ -63,6 +67,7 @@ struct ProfileView: View {
     }
 
     // MARK: - 화면 구성
+
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 0) {
@@ -166,6 +171,8 @@ struct ProfileView: View {
         }
     }
 
+    // MARK: - 프로필 카드
+
     @ViewBuilder
     private var profileCardContent: some View {
         if let profile = viewModel.profile {
@@ -238,6 +245,8 @@ struct ProfileView: View {
         }
     }
 
+    // MARK: - 프로필 이미지
+
     private func profileImage(profile: MemberProfile) -> some View {
         let animalImageName = NicknameGenerator.animalImageName(
             for: profile.nicknameAnimal
@@ -260,6 +269,8 @@ struct ProfileView: View {
         // 그림자 추후에 값 수정해야함
         .shadow(color: Color.black.opacity(0.1), radius: 2, y: 2)
     }
+
+    // MARK: - 프로필 배경 그라데이션
 
     private func profileBackgroundGradient(
         profile: MemberProfile
@@ -296,6 +307,8 @@ struct ProfileView: View {
         )
     }
 
+    // MARK: - 프로필 수정 버튼
+
     private var editProfileButton: some View {
         Button {
             isProfileEditPresented = true
@@ -318,6 +331,8 @@ struct ProfileView: View {
         }
     }
 
+    // MARK: - 독서 캘린더
+
     private var readingCalendar: some View {
         VStack(spacing: 0) {
             calendarHeader
@@ -331,6 +346,8 @@ struct ProfileView: View {
                 .stroke(Color.gray200, lineWidth: 0.5)
         }
     }
+
+    // MARK: - 캘린더 헤더
 
     private var calendarHeader: some View {
         HStack {
@@ -360,6 +377,8 @@ struct ProfileView: View {
         .frame(height: 76)
     }
 
+    // MARK: - 요일 헤더
+
     private var weekdayHeader: some View {
         HStack(spacing: 0) {
             ForEach(weekdays, id: \.self) { weekday in
@@ -373,6 +392,8 @@ struct ProfileView: View {
         .background(Color.gray100)
     }
 
+    // MARK: - 캘린더 그리드
+
     private var calendarGrid: some View {
         let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
 
@@ -382,6 +403,8 @@ struct ProfileView: View {
             }
         }
     }
+
+    // MARK: - 캘린더 날짜 셀
 
     private func calendarCell(for calendarDay: CalendarDay) -> some View {
         let readingDay = viewModel.readingCalendarDay(

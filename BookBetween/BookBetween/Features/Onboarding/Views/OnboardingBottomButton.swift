@@ -7,9 +7,13 @@
 
 import SwiftUI
 
+// MARK: - 다음 페이지 버튼
+
 struct OnboardingBottomButton: View {
   let title: String
   let action: () -> Void
+
+  // MARK: - 화면 구성
 
   var body: some View {
     Button(action: self.action) {

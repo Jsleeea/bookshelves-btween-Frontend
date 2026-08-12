@@ -6,6 +6,8 @@
 import Foundation
 import Moya
 
+// MARK: - 온보딩 서비스 인터페이스
+
 protocol OnboardingServiceProtocol {
     func fetchTerms() async throws -> [OnboardingTermDTO]
     func completeOnboarding(
@@ -13,10 +15,16 @@ protocol OnboardingServiceProtocol {
     ) async throws -> OnboardingResultDTO
 }
 
+// MARK: - 온보딩 네트워크 서비스
+
 final class OnboardingService: OnboardingServiceProtocol {
+    // MARK: - 네트워크 설정
+
     private let baseURL: URL
     private let provider: MoyaProvider<OnboardingTarget>
     private let requestExecutor: AuthenticatedRequestExecutor
+
+    // MARK: - 초기화
 
     init(configuration: NetworkConfiguration) {
         self.baseURL = configuration.baseURL
@@ -31,6 +39,8 @@ final class OnboardingService: OnboardingServiceProtocol {
             reissueTokens: configuration.reissueTokens
         )
     }
+
+    // MARK: - 온보딩 완료 요청
 
     func completeOnboarding(
         request: OnboardingRequestDTO
@@ -63,6 +73,8 @@ final class OnboardingService: OnboardingServiceProtocol {
         }
     }
 
+    // MARK: - 약관 조회 요청
+
     func fetchTerms() async throws -> [OnboardingTermDTO] {
         do {
             let response = try await provider.requestAsync(
@@ -91,7 +103,11 @@ final class OnboardingService: OnboardingServiceProtocol {
     }
 }
 
+// MARK: - 미리보기용 온보딩 서비스
+
 final class PreviewOnboardingService: OnboardingServiceProtocol {
+    // MARK: - 미리보기 약관 데이터
+
     func fetchTerms() async throws -> [OnboardingTermDTO] {
         [
             OnboardingTermDTO(
@@ -131,6 +147,8 @@ final class PreviewOnboardingService: OnboardingServiceProtocol {
             )
         ]
     }
+
+    // MARK: - 미리보기 완료 요청
 
     func completeOnboarding(
         request: OnboardingRequestDTO

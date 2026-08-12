@@ -7,8 +7,12 @@
 
 import SwiftUI
 
+// MARK: - 건너뛰기 버튼
+
 struct OnboardingSkipButton: View {
   let action: () -> Void
+
+  // MARK: - 화면 구성
 
   var body: some View {
     Button(action: self.action) {

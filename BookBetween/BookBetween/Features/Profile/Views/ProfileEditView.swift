@@ -8,6 +8,8 @@ import SwiftUI
 // MARK: - 프로필 수정 화면
 
 struct ProfileEditView: View {
+    // MARK: - 화면 상태
+
     @Environment(\.dismiss) private var dismiss
     @State private var generatedNickname: GeneratedNickname
     @State private var selectedProfileBackground: ProfileBackgroundColor
@@ -35,6 +37,8 @@ struct ProfileEditView: View {
         "문학": 9,
         "역사": 10
     ]
+
+    // MARK: - 초기화
 
     init(
         profile: MemberProfile? = nil,
@@ -74,6 +78,8 @@ struct ProfileEditView: View {
         self.onLogout = onLogout
         self.onWithdraw = onWithdraw
     }
+
+    // MARK: - 화면 구성
 
     var body: some View {
         ZStack {
@@ -242,6 +248,8 @@ struct ProfileEditView: View {
         }
     }
 
+    // MARK: - 뒤로 가기 제스처
+
     private var backSwipeGesture: some Gesture {
         DragGesture(minimumDistance: 20)
             .onEnded { value in
@@ -255,6 +263,8 @@ struct ProfileEditView: View {
                 self.dismiss()
             }
     }
+
+    // MARK: - 회원 정보 저장
 
     private func saveProfile() async {
         guard !isSaving else {
@@ -281,6 +291,8 @@ struct ProfileEditView: View {
         }
     }
 
+    // MARK: - 로그아웃
+
     private func logout() async {
         guard !isLoggingOut else {
             return
@@ -297,6 +309,8 @@ struct ProfileEditView: View {
             logoutErrorMessage = error.localizedDescription
         }
     }
+
+    // MARK: - 회원 탈퇴
 
     private func withdrawAccount() async {
         guard !isWithdrawing else {
@@ -315,6 +329,8 @@ struct ProfileEditView: View {
         }
     }
 }
+
+// MARK: - 프로필 수정 모달 유형
 
 private enum ProfileEditModal: Equatable {
     case saveCompleted
