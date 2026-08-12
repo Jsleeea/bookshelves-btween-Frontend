@@ -114,6 +114,200 @@ Swift 6.3.3
   </tr>
 </table>
 
+<br>
+
+## ⚙️ 설정 파일
+
+앱 실행을 위해 `GoogleService-Info.plist` 파일이 필요합니다.
+
+해당 파일은 Firebase 및 FCM 설정값을 포함하고 있어 보안상 GitHub Repository에는 포함하지 않습니다.  
+제출용 Notion 페이지에 첨부된 `GoogleService-Info.plist` 파일을 내려받아 아래 위치에 추가해주세요.
+
+```text
+BookBetween/BookBetween/GoogleService-Info.plist
+```
+
+### 적용 방법
+
+1. 제출용 Notion 페이지에서 `GoogleService-Info.plist` 파일을 다운로드합니다.
+2. 다운로드한 파일을 아래 경로로 이동합니다.
+
+```text
+bookshelves-btween-Frontend/
+└── BookBetween/
+    └── BookBetween/
+        └── GoogleService-Info.plist
+```
+
+3. Xcode에서 `BookBetween.xcodeproj`를 엽니다.
+4. Xcode Project Navigator에서 `BookBetween/BookBetween` 폴더에 `GoogleService-Info.plist`가 보이는지 확인합니다.
+5. 파일이 보이지 않는 경우 Xcode로 직접 드래그해 추가합니다.
+6. 파일 선택 후 오른쪽 File Inspector에서 Target Membership의 `BookBetween`이 체크되어 있는지 확인합니다.
+7. 아래 경로에서 `GoogleService-Info.plist`가 포함되어 있는지 확인합니다.
+
+```text
+Target > BookBetween > Build Phases > Copy Bundle Resources
+```
+
+> `GoogleService-Info.plist`가 없으면 `FirebaseApp.configure()` 단계에서 Firebase 초기화가 실패할 수 있습니다.
+
+<br>
+
+## 🗂️ 폴더 구조
+본 프로젝트는 기능 단위로 화면, 상태 관리, API 연동 코드를 분리하는 Feature-based 구조를 사용합니다.
+
+공통 기반 코드는 `Core`, 여러 화면에서 재사용되는 UI와 모델은 `Shared`, 실제 사용자 기능은 `Features` 하위에 배치합니다.
+
+```text
+BookBetween/
+├── BookBetweenApp.swift
+├── GoogleService-Info.plist
+├── Info.plist
+│
+├── AppRoot/
+│   └── AppRootView.swift
+│
+├── Main/
+│   ├── MainTabView.swift
+│   ├── CustomTabBar.swift
+│   └── TabCase.swift
+│
+├── Core/
+│   ├── AppDelegate.swift
+│   ├── Network/
+│   │   ├── APIResponseDTO.swift
+│   │   ├── AuthenticatedRequestExecutor.swift
+│   │   ├── AuthorizationPlugin.swift
+│   │   ├── MoyaProvider+Async.swift
+│   │   ├── NetworkConfiguration.swift
+│   │   ├── NetworkError.swift
+│   │   └── Response+API.swift
+│   ├── Notification/
+│   │   └── FCMTokenStore.swift
+│   └── Security/
+│       ├── AuthSessionStore.swift
+│       ├── AuthTokenStore.swift
+│       └── KeychainStore.swift
+│
+├── Features/
+│   ├── Launch/
+│   ├── Login/
+│   ├── Onboarding/
+│   ├── AccountSetup/
+│   ├── Home/
+│   ├── Search/
+│   ├── MyLibrary/
+│   ├── BookClub/
+│   ├── Chat/
+│   ├── Notification/
+│   └── Profile/
+│
+├── Shared/
+│   ├── Extensions/
+│   ├── Modal/
+│   ├── Models/
+│   ├── Utilities/
+│   └── Views/
+│
+└── Resources/
+    ├── Assets.xcassets/
+    └── Fonts/
+```
+
+<br>
+
+## 🗂️ 주요 폴더 설명
+
+| 폴더 | 설명 |
+|---|---|
+| `AppRoot` | 앱 실행 후 스플래시, 로그인 복구, 온보딩, 메인 화면 진입 흐름을 관리합니다. |
+| `Main` | 로그인 이후의 `TabView`, 탭별 `NavigationStack`, 커스텀 하단 탭바를 구성합니다. |
+| `Core/Network` | Moya 기반 공통 네트워크 처리, 공통 API 응답 디코딩, 인증 헤더 주입, 401 토큰 재발급 후 재시도 로직을 담당합니다. |
+| `Core/Security` | Keychain 기반 Access Token, Refresh Token, Restore Token 저장과 로그인 세션 상태 관리를 담당합니다. |
+| `Core/Notification` | FCM 디바이스 토큰 저장 등 알림 기반 기능에서 공통으로 사용하는 저장 로직을 담당합니다. |
+| `Features/Launch` | 앱 실행 초기에 노출되는 스플래시 및 랜딩 화면을 관리합니다. |
+| `Features/Login` | Kakao, Google, Apple 소셜 로그인, 토큰 재발급, 로그아웃, 계정 복구 흐름을 담당합니다. |
+| `Features/Onboarding` | 서비스 소개용 온보딩 화면과 페이지 상태를 관리합니다. |
+| `Features/AccountSetup` | 신규 회원의 닉네임 생성, 관심 장르 선택, 약관 조회 및 동의, 온보딩 완료 API 연동을 담당합니다. |
+| `Features/Home` | 홈 화면, 오늘의 추천 도서, 최근 읽은 책, 모집 중인 모임 조회를 담당합니다. |
+| `Features/Search` | 외부 도서 검색, 최근 검색어 조회/삭제, 도서 상세 조회, 내 서재 저장 및 독서 기록 수정을 담당합니다. |
+| `Features/MyLibrary` | 내 서재 목록 조회, 상태별 필터링, 저장된 도서 삭제, 도서 상세 진입을 담당합니다. |
+| `Features/BookClub` | 독서 모임 검색, 모임 생성, 모임 참여, 내 모임 목록, 모임 상세, 모임 결과 화면을 담당합니다. |
+| `Features/Chat` | 채팅방 입장, WebSocket 기반 실시간 메시지 처리, AI 질문 투표, 참여자 상태, 신고 기능을 담당합니다. |
+| `Features/Notification` | 알림 목록 조회, 새 알림 조회, 읽음 처리, 삭제, 알림 기반 화면 이동을 담당합니다. |
+| `Features/Profile` | 마이페이지, 프로필 수정, 독서 캘린더, 독서 통계 조회를 담당합니다. |
+| `Shared/Views` | 여러 Feature에서 재사용하는 공통 View를 관리합니다. |
+| `Shared/Modal` | 앱 전역에서 사용하는 공통 모달 UI를 관리합니다. |
+| `Shared/Models` | 도서, 모임, 사용자 등 여러 Feature에서 공유하는 도메인 모델을 관리합니다. |
+| `Shared/Extensions` | `View`, `Color` 등 SwiftUI 및 Foundation 타입 확장을 관리합니다. |
+| `Shared/Utilities` | 닉네임 생성기, 활성 채팅 세션 등 공통 유틸리티를 관리합니다. |
+| `Resources` | 이미지, 색상 Asset, 폰트, 타이포그래피 extension 등 리소스를 관리합니다. |
+
+<br>
+
+## 📁 Feature 내부 구조
+
+API 연동이 있는 Feature는 보통 아래 구조를 따릅니다.
+
+```text
+FeatureName/
+├── ViewModels/
+│   └── FeatureViewModel.swift
+├── Views/
+│   └── FeatureSubView.swift
+├── Models/
+│   └── FeatureDomainModel.swift
+└── Data/
+    ├── DTO/
+    │   └── FeatureResponseDTO.swift
+    └── Network/
+        ├── FeatureService.swift
+        ├── FeatureTarget.swift
+        └── FeatureStubData.swift
+```
+
+| 구성 | 역할 |
+|---|---|
+| `View` | 화면 UI, 사용자 입력, 화면 전환을 담당합니다. |
+| `ViewModel` | 화면 상태, 로딩 상태, 에러 상태, 사용자 액션에 따른 비즈니스 흐름을 관리합니다. |
+| `Models` | 화면과 도메인 로직에서 사용하는 앱 내부 모델을 정의합니다. |
+| `Data/DTO` | 서버 API 요청/응답 데이터 구조를 정의합니다. |
+| `Data/Network` | Moya `TargetType`, Service Protocol, 실제 API 호출 구현체, Stub 데이터를 관리합니다. |
+
+일부 Feature는 역할이 단순하거나 공통 모델을 재사용하기 때문에 `Models`, `Data`, `Views` 중 필요한 폴더만 가지고 있습니다.
+
+<br>
+
+## 🌐 API 연동 구조
+
+본 프로젝트는 Moya 기반의 네트워크 계층을 사용합니다.
+
+```text
+View
+ ↓
+ViewModel
+ ↓
+Service Protocol
+ ↓
+Service
+ ↓
+Moya Target
+ ↓
+API Server
+```
+
+### 공통 네트워크 처리
+
+- `NetworkConfiguration`: API baseURL, accessToken, token reissue closure 관리
+- `AuthorizationPlugin`: 인증이 필요한 요청에 Bearer Token 주입
+- `MoyaProvider+Async`: Moya callback API를 async/await 방식으로 래핑
+- `Response+API`: 공통 API 응답 구조 디코딩 및 HTTP 상태 검증
+- `NetworkError`: 네트워크, 서버, 디코딩, 빈 응답 에러 구분
+- `AuthenticatedRequestExecutor`: 401 발생 시 토큰 재발급 후 1회 재시도
+
+<br>
+
+
 ## 🔖 브랜치 컨벤션
 <!-- 팀원들끼리 협의하여 기록해주세요! -->
 
@@ -466,106 +660,4 @@ README 컨벤션 문서 작성
 프로젝트 폴더 구조 정리
 ```
 
-## 🗂️ 폴더 컨벤션
-본 프로젝트는 기능 단위로 화면과 비즈니스 로직을 분리하는 Feature-based 구조를 사용합니다.  
 
-각 Feature는 `Views`, `ViewModels`, `Models`, `DTOs`, `Mappers`를 기준으로 구성하며, API 연동 여부에 따라 필요한 폴더만 생성합니다
-```
-BookBetween/
-├── BookBetweenApp.swift             # 앱 실행 진입점
-│
-├── AppRoot/                         # 앱 진입점 분기 처리
-│   ├── AppRootView.swift            # Onboarding -> Auth -> MainTab 분기 로직 뷰
-│   └── AppRootViewModel.swift       # 앱 상태(로그인 여부, 온보딩 완료 여부) 관리
-│
-├── Main/                            # 로그인 이후 메인 화면 구성
-│   ├── MainTabView.swift            # 탭별 NavigationStack과 커스텀 탭바 구성
-│   ├── CustomTabBar.swift           # 앱 전용 하단 탭바 UI
-│   └── TabCase.swift                # 탭 종류, 제목, 아이콘 정의
-│
-├── Features/                        # 사용자 기능 단위 모듈
-│   ├── Home/
-│   │   ├── Views/
-│   │   │   └── HomeView.swift
-│   │   ├── ViewModels/
-│   │   │   └── HomeViewModel.swift
-│   │   ├── Models/
-│   │   │   └── Home.swift
-│   │   ├── DTOs/
-│   │   │   └── HomeDTO.swift
-│   │   └── Mappers/
-│   │       └── HomeMapper.swift
-│   ├── Search/
-│   │   ├── Views/
-│   │   │   └── SearchView.swift
-│   │   ├── ViewModels/
-│   │   │   └── SearchViewModel.swift
-│   │   ├── Models/
-│   │   │   └── Search.swift
-│   │   ├── DTOs/
-│   │   │   └── SearchDTO.swift
-│   │   └── Mappers/
-│   │       └── SearchMapper.swift
-│   ├── BookClub/
-│   │   ├── Views/
-│   │   │   └── BookClubView.swift
-│   │   ├── ViewModels/
-│   │   │   └── BookClubViewModel.swift
-│   │   ├── Models/
-│   │   │   └── BookClub.swift
-│   │   ├── DTOs/
-│   │   │   └── BookClubDTO.swift
-│   │   └── Mappers/
-│   │       └── BookClubMapper.swift
-│   ├── MyLibrary/
-│   │   ├── Views/
-│   │   │   └── MyLibraryView.swift
-│   │   ├── ViewModels/
-│   │   │   └── MyLibraryViewModel.swift
-│   │   ├── Models/
-│   │   │   └── MyLibrary.swift
-│   │   ├── DTOs/
-│   │   │   └── MyLibraryDTO.swift
-│   │   └── Mappers/
-│   │       └──MyLibraryMapper.swift
-│   ├── Profile/
-│   │   ├── Views/
-│   │   │   └── ProfileView.swift
-│   │   ├── ViewModels/
-│   │   │   └── ProfileViewModel.swift
-│   │   ├── Models/
-│   │   │   └── Profile.swift
-│   │   ├── DTOs/
-│   │   │   └── ProfileDTO.swift
-│   │   └── Mappers/
-│   │       └── ProfileMapper.swift
-│   └── Auth/
-│       ├── Views/                      # 로그인·회원가입 화면
-│       │   ├── LoginView.swift
-│       │   └── SignupView.swift
-│       ├── ViewModels/                 # 인증 화면 상태와 요청 처리
-│       │   └── AuthViewModel.swift
-│       ├── Models/                     # 앱 내부 사용자 인증 모델
-│       │   └── AuthUser.swift
-│       ├── DTOs/                       # 로그인·회원가입 API 데이터      
-│       └── Mappers/
-│
-├── Core/                       # 여러 Feature가 사용하는 기반 기능
-│   ├── Network/                # APIClient, Endpoint, 네트워크 오류 처리
-│   ├── Persistence/            # SwiftData, Keychain, UserDefaults 등
-│   └── Authentication/         # 인증 토큰과 세션 관리
-│
-│   # 나중 필요시 추가
-├── Shared/                     # 앱 전역에서 재사용하는 컴포넌트
-│   ├── Components/             # 공통 버튼, 로딩 뷰, 빈 화면 등
-│   ├── Extensions/             # View+, Color+ 등 확장 파일
-│   └── Utilities/              # Formatter, Logger 등 범용 도구
-│
-└── Resources/
-    ├── Fonts/
-    │   ├── Fonts.swift               # 폰트 이름과 Font 생성 API
-    │   ├── Text+Extensions.swift     # 프로젝트 타이포그래피 modifier
-    │   ├── Pretendard-Regular.otf
-    │   └── Pretendard-SemiBold.otf
-    └── Assets.xcassets               # 이미지와 색상 Asset
-```
