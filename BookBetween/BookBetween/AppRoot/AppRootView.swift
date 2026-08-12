@@ -142,7 +142,8 @@ struct AppRootView: View {
             Color.black.opacity(0.3)
                 .ignoresSafeArea()
 
-            AccountRecoveryModalView(
+            CommonActionModalView(
+                type: .recovery,
                 onCancel: {
                     guard !loginViewModel.isRecoveringAccount else {
                         return

@@ -5,11 +5,15 @@
 
 import SwiftUI
 
+// MARK: - 액션 모달 유형
+
 enum CommonActionModalType {
   case withdraw
   case recovery
   case logout
   case report
+
+  // MARK: - 유형별 설정
 
   var iconName: String {
     switch self {
@@ -70,18 +74,18 @@ enum CommonActionModalType {
     case .recovery:
       "복구하기"
     case .logout:
-      "계속하기"
+      "로그아웃"
     case .report:
       "신고하기"
     }
   }
 
   var cancelTitle: String {
-    self == .logout ? "나가기" : "취소하기"
+    "취소하기"
   }
 
   var confirmColor: Color {
-    self == .report ? .red700 : .green700
+    self == .report ? .red700 : .green600
   }
 
   var iconGradient: EllipticalGradient {
@@ -109,10 +113,16 @@ enum CommonActionModalType {
   }
 }
 
+// MARK: - 공통 액션 모달
+
 struct CommonActionModalView: View {
+  // MARK: - 속성
+
   let type: CommonActionModalType
   var onCancel: () -> Void = {}
   var onConfirm: () -> Void = {}
+
+  // MARK: - 화면 구성
 
   var body: some View {
     VStack(spacing: 0) {
