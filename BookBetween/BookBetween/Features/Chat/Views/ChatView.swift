@@ -90,7 +90,7 @@ struct ChatView: View {
     static let bottomAnchor = "chat-bottom-anchor"
   }
 
-  private enum ReportModalState {
+  private enum ReportModalState: Equatable {
     case confirm
     case success
     case alreadyReported
@@ -365,6 +365,8 @@ struct ChatView: View {
             self.goToHome()
           })
         }
+        .transition(.scale.combined(with: .opacity))
+        .animation(.easeInOut(duration: 0.2), value: self.viewModel.endedMeeting)
       }
     }
     .overlay {
@@ -376,6 +378,8 @@ struct ChatView: View {
             self.goToHome()
           }
         }
+        .transition(.scale.combined(with: .opacity))
+        .animation(.easeInOut(duration: 0.2), value: self.viewModel.showsEndedMeetingNotice)
       }
     }
     .overlay {
@@ -405,6 +409,8 @@ struct ChatView: View {
             }
           }
         }
+        .transition(.scale.combined(with: .opacity))
+        .animation(.easeInOut(duration: 0.2), value: self.reportModalState)
       }
     }
   }
