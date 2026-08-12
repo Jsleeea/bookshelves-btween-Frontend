@@ -13,6 +13,7 @@ import FirebaseMessaging
 final class AppDelegate: NSObject, UIApplicationDelegate {
 
     var notificationService: NotificationServiceProtocol?
+    let notificationNavigationStore = NotificationNavigationStore()
 
     private let fcmTokenStore: FCMTokenStoreProtocol = FCMTokenStore()
     private let authTokenStore: AuthTokenStoreProtocol = AuthTokenStore()
@@ -89,6 +90,22 @@ extension AppDelegate: UNUserNotificationCenterDelegate {
         // 포그라운드 상태에서는 알림 배너를 표시하지 않는다.
         // (앱이 백그라운드일 때는 이 메서드가 호출되지 않고 시스템이 알림을 그대로 표시한다.)
         completionHandler([])
+    }
+
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
+        guard response.actionIdentifier == UNNotificationDefaultActionIdentifier else {
+            completionHandler()
+            return
+        }
+
+        DispatchQueue.main.async { [notificationNavigationStore] in
+            notificationNavigationStore.requestInbox()
+            completionHandler()
+        }
     }
 }
 
