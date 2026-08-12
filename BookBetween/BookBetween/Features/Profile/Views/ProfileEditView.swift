@@ -187,7 +187,6 @@ struct ProfileEditView: View {
         }
         .animation(.easeInOut(duration: 0.2), value: activeModal)
         .toolbar(.hidden, for: .navigationBar)
-        .toolbar(.hidden, for: .tabBar)
         .hideTabBar()
         .simultaneousGesture(self.backSwipeGesture)
         .alert(
