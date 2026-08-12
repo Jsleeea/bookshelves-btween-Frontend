@@ -304,6 +304,7 @@ struct ChatView: View {
     )
     .toolbar(.hidden, for: .navigationBar)
     .hideTabBar()
+    .enableSwipeBack()
     .onAppear {
       ActiveChatSession.shared.activeMeetingId = self.viewModel.meetingId
     }
