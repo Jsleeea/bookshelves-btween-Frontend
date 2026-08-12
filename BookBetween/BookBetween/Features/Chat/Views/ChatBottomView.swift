@@ -53,6 +53,7 @@ struct ChatBottomView: View {
   // MARK: - Properties
 
   @Binding var messageText: String
+  @State private var attributedText = AttributedString()
   @State private var measuredContentHeight: CGFloat = Metric.textEditorMinHeight
   var isFocused: FocusState<Bool>.Binding
   let currentQuestionCount: Int
@@ -191,11 +192,11 @@ struct ChatBottomView: View {
             }
           }
 
-        TextEditor(text: self.$messageText)
+        TextEditor(text: self.$attributedText)
           .font(.caption1SemiBold)
           .tracking(Metric.smallCaptionTracking) // 자간 -0.3%
           .lineSpacing(Metric.smallCaptionLineSpacing) // 행간 20pt (12pt 기준 +8)
-          .foregroundStyle(.clear)
+          .foregroundStyle(.gray200)
           .scrollContentBackground(.hidden)
           .contentMargins(
             .vertical,
@@ -204,14 +205,6 @@ struct ChatBottomView: View {
           )
           .contentMargins(.horizontal, 0, for: .scrollContent)
           .focused(self.isFocused)
-
-        Text(self.highlightedAttributedText(from: self.messageText))
-          .font(.caption1SemiBold)
-          .tracking(Metric.smallCaptionTracking) // 자간 -0.3%
-          .lineSpacing(Metric.smallCaptionLineSpacing) // 행간 20pt (12pt 기준 +8)
-          .foregroundStyle(.gray200)
-          .padding(.vertical, Metric.textEditorContentVerticalInset)
-          .allowsHitTesting(false)
       }
       .frame(
         height: min(
@@ -221,6 +214,16 @@ struct ChatBottomView: View {
         alignment: .center
       )
       .animation(.easeInOut(duration: 0.2), value: self.measuredContentHeight)
+      .onChange(of: self.attributedText) { _, newValue in
+        self.messageText = String(newValue.characters)
+        let highlighted = self.highlightedAttributedText(from: newValue)
+        guard highlighted != newValue else { return }
+        self.attributedText = highlighted
+      }
+      .onChange(of: self.messageText) { _, newValue in
+        guard newValue != String(self.attributedText.characters) else { return }
+        self.attributedText = self.highlightedAttributedText(from: AttributedString(newValue))
+      }
 
       Button(action: self.onSendTap) {
         Image("direct_icon")
@@ -244,24 +247,28 @@ struct ChatBottomView: View {
 
   // MARK: - Highlight
 
-  private func highlightedAttributedText(from text: String) -> AttributedString {
-    var attributed = AttributedString(text)
-    guard text.utf16.count > ChatViewModel.messageMaxLength else { return attributed }
+  private func highlightedAttributedText(from attributed: AttributedString) -> AttributedString {
+    var result = attributed
+    result.backgroundColor = nil
+    result.foregroundColor = nil
+
+    let text = String(attributed.characters)
+    guard text.utf16.count > ChatViewModel.messageMaxLength else { return result }
 
     guard let utf16OverflowIndex = text.utf16.index(
       text.utf16.startIndex,
       offsetBy: ChatViewModel.messageMaxLength,
       limitedBy: text.utf16.endIndex
-    ) else { return attributed }
+    ) else { return result }
 
     let characterOffset = text.distance(from: text.startIndex, to: utf16OverflowIndex)
-    let overflowStart = attributed.index(
-      attributed.startIndex,
+    let overflowStart = result.index(
+      result.startIndex,
       offsetByCharacters: characterOffset
     )
-    attributed[overflowStart...].backgroundColor = .red50
-    attributed[overflowStart...].foregroundColor = .red700
-    return attributed
+    result[overflowStart...].backgroundColor = .red50
+    result[overflowStart...].foregroundColor = .red700
+    return result
   }
 }
 
