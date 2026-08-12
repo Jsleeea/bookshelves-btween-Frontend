@@ -29,6 +29,7 @@ struct ChatView: View {
     static let downButtonCornerRadius: CGFloat = 20
     static let downButtonTrailingPadding: CGFloat = 28
     static let downButtonBottomPadding: CGFloat = 20
+    static let keyboardBottomSpacing: CGFloat = 26
     static let downButtonShadowRadius: CGFloat = 24
     static let downButtonShadowYOffset: CGFloat = 20
     static let downButtonShadowOpacity: CGFloat = 0.16
@@ -170,7 +171,11 @@ struct ChatView: View {
           }
           .safeAreaInset(edge: .bottom) {
             Color.clear
-              .frame(height: Metric.downButtonSize + Metric.downButtonBottomPadding)
+              .frame(
+                height: self.isMessageFieldFocused
+                  ? Metric.keyboardBottomSpacing - Metric.messageListBottomPadding
+                  : Metric.downButtonSize + Metric.downButtonBottomPadding
+              )
           }
           .onScrollGeometryChange(for: Bool.self) { geometry in
             let distanceFromBottom = geometry.contentSize.height
