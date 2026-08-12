@@ -22,6 +22,7 @@ struct AppRootView: View {
     private let chatService: any ChatServiceProtocol
     private let chatSocketService: (any ChatSocketServiceProtocol)?
     private let fcmTokenStore: FCMTokenStoreProtocol
+    private let notificationNavigationStore: NotificationNavigationStore
 
     init(
         loginViewModel: LoginViewModel,
@@ -34,7 +35,9 @@ struct AppRootView: View {
             NotificationService.stubbed(),
         chatService: any ChatServiceProtocol = ChatService.stubbed(),
         chatSocketService: (any ChatSocketServiceProtocol)? = nil,
-        fcmTokenStore: FCMTokenStoreProtocol = FCMTokenStore()
+        fcmTokenStore: FCMTokenStoreProtocol = FCMTokenStore(),
+        notificationNavigationStore: NotificationNavigationStore =
+            NotificationNavigationStore()
     ) {
         _loginViewModel = State(initialValue: loginViewModel)
         _accountSetupViewModel = State(initialValue: accountSetupViewModel)
@@ -46,6 +49,7 @@ struct AppRootView: View {
         self.chatService = chatService
         self.chatSocketService = chatSocketService
         self.fcmTokenStore = fcmTokenStore
+        self.notificationNavigationStore = notificationNavigationStore
     }
 
     var body: some View {
@@ -191,6 +195,7 @@ struct AppRootView: View {
             notificationService: notificationService,
             chatService: chatService,
             chatSocketService: chatSocketService,
+            notificationNavigationStore: notificationNavigationStore,
             onLogout: {
                 try await loginViewModel.logout()
             },

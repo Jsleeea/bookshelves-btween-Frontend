@@ -26,6 +26,7 @@ struct MainTabView: View {
     private let notificationService: any NotificationServiceProtocol
     private let chatService: any ChatServiceProtocol
     private let chatSocketService: (any ChatSocketServiceProtocol)?
+    private let notificationNavigationStore: NotificationNavigationStore
     private let onLogout: () async throws -> Void
     private let onWithdraw: () async throws -> Void
 
@@ -38,6 +39,8 @@ struct MainTabView: View {
             NotificationService.stubbed(),
         chatService: any ChatServiceProtocol = ChatService.stubbed(),
         chatSocketService: (any ChatSocketServiceProtocol)? = nil,
+        notificationNavigationStore: NotificationNavigationStore =
+            NotificationNavigationStore(),
         onLogout: @escaping () async throws -> Void = {},
         onWithdraw: @escaping () async throws -> Void = {}
     ) {
@@ -48,6 +51,7 @@ struct MainTabView: View {
         self.notificationService = notificationService
         self.chatService = chatService
         self.chatSocketService = chatSocketService
+        self.notificationNavigationStore = notificationNavigationStore
         self.onLogout = onLogout
         self.onWithdraw = onWithdraw
     }
@@ -252,10 +256,32 @@ struct MainTabView: View {
                 pendingBookSearch = ""
             }
         }
+        .onChange(
+            of: notificationNavigationStore.inboxRequestID,
+            initial: true
+        ) { _, requestID in
+            guard let requestID else {
+                return
+            }
+
+            openNotificationInbox()
+            notificationNavigationStore.markInboxRequestHandled(requestID)
+        }
     }
 
     private var shouldShowTabBar: Bool {
         !hideTabBar && (selectedTab != .home || homeNavigationPath.isEmpty)
+    }
+
+    private func openNotificationInbox() {
+        summaryCompletedMeeting = nil
+        meetingStartedMeeting = nil
+        showCancelledModal = false
+        cancelledSubtitle = nil
+        hideTabBar = false
+        selectedTab = .home
+        homeNavigationPath = NavigationPath()
+        homeNavigationPath.append(HomeRoute.notificationInbox)
     }
 
     // MARK: - Meeting Started Notification Polling

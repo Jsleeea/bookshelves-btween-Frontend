@@ -112,7 +112,9 @@ struct BookBetweenApp: App {
                 meetingService: meetingService,
                 notificationService: notificationService,
                 chatService: chatService,
-                chatSocketService: chatSocketService
+                chatSocketService: chatSocketService,
+                notificationNavigationStore:
+                    appDelegate.notificationNavigationStore
             )
                 .onOpenURL { url in
                     if GIDSignIn.sharedInstance.handle(url) {
