@@ -332,9 +332,9 @@ struct ChatView: View {
         ZStack {
           Color.black.opacity(0.4)
             .ignoresSafeArea()
-          MeetingEventModalView(type: .ended, meeting: meeting) {
+          MeetingEventModalView(type: .ended, meeting: meeting, onPrimaryAction: {
             self.goToHome()
-          }
+          })
         }
       }
     }
