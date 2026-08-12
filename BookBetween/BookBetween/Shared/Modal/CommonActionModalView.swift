@@ -5,11 +5,15 @@
 
 import SwiftUI
 
+// MARK: - 액션 모달 유형
+
 enum CommonActionModalType {
   case withdraw
   case recovery
   case logout
   case report
+
+  // MARK: - 유형별 설정
 
   var iconName: String {
     switch self {
@@ -109,10 +113,16 @@ enum CommonActionModalType {
   }
 }
 
+// MARK: - 공통 액션 모달
+
 struct CommonActionModalView: View {
+  // MARK: - 속성
+
   let type: CommonActionModalType
   var onCancel: () -> Void = {}
   var onConfirm: () -> Void = {}
+
+  // MARK: - 화면 구성
 
   var body: some View {
     VStack(spacing: 0) {

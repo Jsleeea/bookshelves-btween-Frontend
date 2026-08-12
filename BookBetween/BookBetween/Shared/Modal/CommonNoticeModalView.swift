@@ -5,10 +5,14 @@
 
 import SwiftUI
 
+// MARK: - 알림 모달 유형
+
 enum CommonNoticeModalType {
   case success
   case error
   case report
+
+  // MARK: - 유형별 설정
 
   var iconName: String {
     switch self {
@@ -66,10 +70,16 @@ enum CommonNoticeModalType {
   }
 }
 
+// MARK: - 공통 알림 모달
+
 struct CommonNoticeModalView: View {
+  // MARK: - 속성
+
   let type: CommonNoticeModalType
   let title: String
   var onConfirm: () -> Void = {}
+
+  // MARK: - 화면 구성
 
   var body: some View {
     VStack(spacing: 0) {
