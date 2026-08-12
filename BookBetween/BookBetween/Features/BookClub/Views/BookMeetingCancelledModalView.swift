@@ -15,10 +15,17 @@ struct BookMeetingCancelledModalView: View {
                     .multilineTextAlignment(.center)
 
                 if let subtitle {
-                    Text(subtitle)
+                    let parts = subtitle.split(separator: "|", maxSplits: 1).map { $0.trimmingCharacters(in: .whitespaces) }
+                    Text(parts.first ?? subtitle)
                         .caption1SemiBoldStyle
                         .foregroundStyle(Color.gray500)
                         .multilineTextAlignment(.center)
+                    if parts.count > 1 {
+                        Text(parts[1])
+                            .caption1SemiBoldStyle
+                            .foregroundStyle(Color.gray500)
+                            .multilineTextAlignment(.center)
+                    }
                 }
             }
             
