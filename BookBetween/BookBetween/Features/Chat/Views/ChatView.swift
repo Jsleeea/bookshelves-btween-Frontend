@@ -331,6 +331,10 @@ struct ChatView: View {
         await self.viewModel.reconnect()
       }
     }
+    .onChange(of: self.viewModel.showsEndedMeetingNotice) { _, showsNotice in
+      guard showsNotice else { return }
+      self.isMessageFieldFocused = false
+    }
     .alert(
       "오류가 발생했습니다.",
       isPresented: Binding(
@@ -349,13 +353,24 @@ struct ChatView: View {
       Text(self.viewModel.errorMessage ?? "")
     }
     .overlay {
-      if let meeting = self.viewModel.endedMeeting {
+      if let meeting = self.viewModel.endedMeeting, !self.viewModel.showsEndedMeetingNotice {
         ZStack {
           Color.black.opacity(0.4)
             .ignoresSafeArea()
           MeetingEventModalView(type: .ended, meeting: meeting, onPrimaryAction: {
             self.goToHome()
           })
+        }
+      }
+    }
+    .overlay {
+      if self.viewModel.showsEndedMeetingNotice {
+        ZStack {
+          Color.black.opacity(0.4)
+            .ignoresSafeArea()
+          CommonNoticeModalView(type: .error, title: "종료된 모임입니다") {
+            self.goToHome()
+          }
         }
       }
     }
