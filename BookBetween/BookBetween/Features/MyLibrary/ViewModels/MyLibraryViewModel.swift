@@ -32,6 +32,7 @@ enum MyLibraryTab: CaseIterable {
 }
 
 @Observable
+@MainActor
 final class MyLibraryViewModel {
 
 	// MARK: - Properties
