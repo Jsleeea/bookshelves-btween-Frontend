@@ -332,7 +332,7 @@ struct ChatView: View {
         ZStack {
           Color.black.opacity(0.4)
             .ignoresSafeArea()
-          MeetingEndedModalView(meeting: meeting) {
+          MeetingEventModalView(type: .ended, meeting: meeting) {
             self.goToHome()
           }
         }
@@ -343,7 +343,7 @@ struct ChatView: View {
         ZStack {
           Color.black.opacity(0.4)
             .ignoresSafeArea()
-          ReportModalView {
+          CommonNoticeModalView(type: .report, title: "신고되었습니다") {
             self.viewModel.isReported = false
           }
         }
