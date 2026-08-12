@@ -153,6 +153,8 @@ final class ChatViewModel {
         for try await event in stream {
           self.handle(event)
         }
+      } catch let ChatSocketServiceError.serverError(code, _) where code.hasPrefix("CHAT410") {
+        self.handleMeetingEnded()
       } catch {
         self.errorMessage = error.localizedDescription
       }

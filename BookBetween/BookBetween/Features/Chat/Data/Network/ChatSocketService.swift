@@ -203,7 +203,11 @@ final class ChatSocketService: ChatSocketServiceProtocol {
       }
 
     case STOMPCommand.error.rawValue:
-      let error = ChatSocketServiceError.serverError(frame.body)
+      let parsedError = Self.parseServerError(from: frame.body)
+      let error = ChatSocketServiceError.serverError(
+        code: parsedError.code,
+        message: parsedError.message
+      )
       self.connectContinuation?.resume(throwing: error)
       self.connectContinuation = nil
       self.eventContinuation?.yield(with: .failure(error))
@@ -233,6 +237,19 @@ final class ChatSocketService: ChatSocketServiceProtocol {
   private func sendRawHeartBeat() async throws {
     guard let webSocketTask = self.webSocketTask else { return }
     try await webSocketTask.send(.string("\n"))
+  }
+
+  // MARK: - Error Parsing
+
+  private static func parseServerError(from body: String) -> (code: String, message: String) {
+    guard
+      let data = body.data(using: .utf8),
+      let metadata = try? JSONDecoder().decode(APIResponseMetadataDTO.self, from: data)
+    else {
+      return (code: "", message: body)
+    }
+
+    return (code: metadata.code, message: metadata.message)
   }
 
   // MARK: - URL
@@ -266,7 +283,7 @@ enum ChatSocketServiceError: LocalizedError {
   case notConnected
   case missingAccessToken
   case invalidPayload
-  case serverError(String)
+  case serverError(code: String, message: String)
 
   var errorDescription: String? {
     switch self {
@@ -278,7 +295,7 @@ enum ChatSocketServiceError: LocalizedError {
       return "로그인 정보가 없어 채팅 서버에 연결할 수 없습니다."
     case .invalidPayload:
       return "메시지를 전송할 수 없습니다."
-    case .serverError(let message):
+    case .serverError(_, let message):
       return message
     }
   }
