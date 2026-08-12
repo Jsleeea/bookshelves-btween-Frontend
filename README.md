@@ -141,16 +141,6 @@ bookshelves-btween-Frontend/
         └── GoogleService-Info.plist
 ```
 
-3. Xcode에서 `BookBetween.xcodeproj`를 엽니다.
-4. Xcode Project Navigator에서 `BookBetween/BookBetween` 폴더에 `GoogleService-Info.plist`가 보이는지 확인합니다.
-5. 파일이 보이지 않는 경우 Xcode로 직접 드래그해 추가합니다.
-6. 파일 선택 후 오른쪽 File Inspector에서 Target Membership의 `BookBetween`이 체크되어 있는지 확인합니다.
-7. 아래 경로에서 `GoogleService-Info.plist`가 포함되어 있는지 확인합니다.
-
-```text
-Target > BookBetween > Build Phases > Copy Bundle Resources
-```
-
 > `GoogleService-Info.plist`가 없으면 `FirebaseApp.configure()` 단계에서 Firebase 초기화가 실패할 수 있습니다.
 
 <br>
