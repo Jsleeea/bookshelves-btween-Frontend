@@ -84,6 +84,8 @@ struct BookMeetingResultView: View {
                     CommonNoticeModalView(type: .error, title: "요약이 완료되지 않았습니다") {
                         showSummaryPendingModal = false
                     }
+                    .transition(.scale.combined(with: .opacity))
+                    .zIndex(1)
                 }
             }
             .animation(.easeInOut(duration: 0.25), value: isLoading)

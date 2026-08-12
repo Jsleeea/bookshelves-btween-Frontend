@@ -7,7 +7,6 @@ struct BookClubView: View {
     @State private var searchSubmitted = false
     @State private var showFetchErrorModal = false
     @State private var showSummaryPendingModal = false
-    @State private var meetingsListHeight: CGFloat = 400
     private let navigationPath: Binding<NavigationPath>
     private let onNavigateToBookSearch: ((String) -> Void)?
 
@@ -67,27 +66,30 @@ struct BookClubView: View {
                 .padding(.bottom, 15)
 
                 ScrollView(showsIndicators: false) {
-                        if meetings.isEmpty && !viewModel.isLoadingMeetings {
-                            SearchIdleView(height: meetingsListHeight, customTitle: "모임이 없습니다")
-                                .padding(.horizontal, 19)
-                                .transition(.opacity)
-                        } else {
-                            VStack(spacing: 12) {
-                                meetingList(meetings)
-                            }
-                            .padding(.top, 1)
-                            .padding(.bottom, 100)
+                    if meetings.isEmpty && !viewModel.isLoadingMeetings {
+                        Color.clear.frame(height: 1)
+                    } else {
+                        VStack(spacing: 12) {
+                            meetingList(meetings)
                         }
+                        .padding(.top, 1)
+                        .padding(.bottom, 100)
                     }
-                    .refreshable {
-                        await viewModel.fetchMyMeetings()
-                    }
-                    .animation(.easeInOut(duration: 0.2), value: meetings.isEmpty && !viewModel.isLoadingMeetings)
-                    .background(
+                }
+                .refreshable {
+                    await viewModel.fetchMyMeetings()
+                }
+                .scrollBounceBehavior(.always)
+                .overlay {
+                    if meetings.isEmpty && !viewModel.isLoadingMeetings {
                         GeometryReader { geo in
-                            Color.clear.onAppear { meetingsListHeight = geo.size.height }
+                            SearchIdleView(height: geo.size.height, customTitle: "모임이 없습니다")
+                                .padding(.horizontal, 19)
                         }
-                    )
+                        .transition(.opacity)
+                    }
+                }
+                .animation(.easeInOut(duration: 0.2), value: meetings.isEmpty && !viewModel.isLoadingMeetings)
 			}
 		}
 		.background(Color.beige100)
@@ -161,6 +163,8 @@ struct BookClubView: View {
                     CommonNoticeModalView(type: .error, title: "요약이 완료되지 않았습니다") {
                         showSummaryPendingModal = false
                     }
+                    .transition(.scale.combined(with: .opacity))
+                    .zIndex(1)
                 }
             }
             .animation(.easeInOut(duration: 0.2), value: showSummaryPendingModal)
