@@ -87,6 +87,12 @@ struct ChatView: View {
     static let bottomAnchor = "chat-bottom-anchor"
   }
 
+  private enum ReportModalState {
+    case confirm
+    case success
+    case alreadyReported
+  }
+
   // MARK: - Formatter
 
   private static let timeFormatter: DateFormatter = {
@@ -104,6 +110,7 @@ struct ChatView: View {
   @State private var isQuestionExpanded: Bool = false
   @State private var showsScrollToBottomButton: Bool = false
   @State private var hasScrolledToInitialBottom: Bool = false
+  @State private var reportModalState: ReportModalState?
   @FocusState private var isMessageFieldFocused: Bool
   @Environment(\.dismiss) private var dismiss
   @Environment(\.scenePhase) private var scenePhase
@@ -346,12 +353,30 @@ struct ChatView: View {
       }
     }
     .overlay {
-      if self.viewModel.isReported {
+      if let reportModalState = self.reportModalState {
         ZStack {
           Color.black.opacity(0.4)
             .ignoresSafeArea()
-          CommonNoticeModalView(type: .report, title: "신고되었습니다") {
-            self.viewModel.isReported = false
+          switch reportModalState {
+          case .confirm:
+            CommonActionModalView(
+              type: .report,
+              onCancel: { self.reportModalState = nil },
+              onConfirm: {
+                Task {
+                  await self.viewModel.reportChatRoom()
+                  self.reportModalState = .success
+                }
+              }
+            )
+          case .success:
+            CommonNoticeModalView(type: .report, title: "신고되었습니다") {
+              self.reportModalState = nil
+            }
+          case .alreadyReported:
+            CommonNoticeModalView(type: .report, title: "이미 신고된 채팅방입니다") {
+              self.reportModalState = nil
+            }
           }
         }
       }
@@ -462,9 +487,7 @@ struct ChatView: View {
           }
 
           Button {
-            Task {
-              await self.viewModel.reportChatRoom()
-            }
+            self.reportModalState = self.viewModel.isReported ? .alreadyReported : .confirm
           } label: {
             Image("siren_icon")
               .resizable()
