@@ -336,7 +336,7 @@ private struct AccountSetupNicknameInputView: View {
         endPoint: UnitPoint(x: 0.13, y: 1)
       )
     )
-    .cornerRadius(12)
+    .clipShape(RoundedRectangle(cornerRadius: 12))
     .overlay {
       RoundedRectangle(cornerRadius: 12)
         .inset(by: 0.25)
@@ -564,7 +564,7 @@ private struct AccountSetupStartButtonView: View {
       .frame(maxWidth: .infinity)
       .frame(height: 53)
       .background(self.isEnabled ? Color.green600 : Color.gray300)
-      .cornerRadius(12)
+      .clipShape(RoundedRectangle(cornerRadius: 12))
     }
     .disabled(!self.isEnabled || self.isLoading)
     .padding(.horizontal, 29)
