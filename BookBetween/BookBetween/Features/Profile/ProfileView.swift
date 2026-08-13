@@ -196,11 +196,13 @@ struct ProfileView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     Text("\(profile.nickname)님")
                         .head3Style
+                        .head3SingleLineHeight
                         .foregroundStyle(Color.gray800)
-                        .padding(.bottom, 5)
+                        .padding(.bottom, 4)
 
                     Text("가입 \(profile.joinedDays)일")
                         .body2RegularStyle
+                        .body2SingleLineHeight
                         .foregroundStyle(Color.gray600)
                         .padding(.bottom, 8)
 
@@ -412,7 +414,7 @@ struct ProfileView: View {
 
         return ZStack(alignment: .topLeading) {
             Text("\(calendarDay.day)")
-                .caption2RegularStyle
+                .caption1SemiBoldStyle
                 .foregroundStyle(
                     calendarDay.isCurrentMonth
                         ? Color.gray800
@@ -427,14 +429,15 @@ struct ProfileView: View {
                     coverImageUrl: readingDay.coverImageUrl,
                     placeholderImageName: "book_cover_mock"
                 )
-                .frame(width: 45, height: 55)
+                .frame(width: 29, height: 35)
                 .clipShape(RoundedRectangle(cornerRadius: 2))
-                .frame(maxWidth: .infinity, alignment: .center)
-                .padding(.top, 21)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.leading, 8)
+                .padding(.top, 19)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .frame(height: 80)
+        .frame(height: 57)
         .clipped()
         .overlay {
             Rectangle()
