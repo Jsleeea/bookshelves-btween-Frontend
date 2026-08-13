@@ -45,9 +45,6 @@ final class SearchViewModel {
             recentKeywords = try await service.fetchRecentSearches().map(\.keyword)
         } catch {
             recentKeywords = []
-            #if DEBUG
-            print("[Recent Search] 최근 검색어 로딩 실패: \(error)")
-            #endif
         }
     }
 
@@ -146,11 +143,6 @@ final class SearchViewModel {
             switch error {
             case .decoding, .emptyResult:
                 hasNext = false
-                #if DEBUG
-                print(
-                    "[Book Search] 마지막 페이지 응답 처리 중단: \(error)"
-                )
-                #endif
             case .transport, .server:
                 errorMessage = error.localizedDescription
             }
@@ -172,9 +164,6 @@ final class SearchViewModel {
                 try await service.deleteRecentSearch(keyword: keyword)
             } catch {
                 recentKeywords = previousKeywords
-                #if DEBUG
-                print("[Recent Search] 최근 검색어 삭제 실패: \(error)")
-                #endif
             }
         }
     }

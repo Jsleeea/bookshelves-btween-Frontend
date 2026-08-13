@@ -56,14 +56,6 @@ final class MemberService: MemberServiceProtocol {
                     MemberProfileResultDTO.self
                 )
 
-                #if DEBUG
-                print("""
-                [MemberProfile]
-                URL: \(response.request?.url?.absoluteString ?? "확인 불가")
-                HTTP: \(response.statusCode)
-                """)
-                #endif
-
                 return result.toDomain()
             } catch let error as MoyaError {
                 throw NetworkError.transport(error)
@@ -88,14 +80,6 @@ final class MemberService: MemberServiceProtocol {
                     MemberProfileResultDTO.self
                 )
 
-                #if DEBUG
-                print("""
-                [MemberProfileUpdate]
-                URL: \(response.request?.url?.absoluteString ?? "확인 불가")
-                HTTP: \(response.statusCode)
-                """)
-                #endif
-
                 return result.toDomain()
             } catch let error as MoyaError {
                 throw NetworkError.transport(error)
@@ -117,15 +101,6 @@ final class MemberService: MemberServiceProtocol {
                 let result = try response.decodePayload(
                     MemberWithdrawalResultDTO.self
                 )
-
-                #if DEBUG
-                print("""
-                [MemberWithdrawal]
-                URL: \(response.request?.url?.absoluteString ?? "확인 불가")
-                HTTP: \(response.statusCode)
-                scheduledDeletionAt: \(result.scheduledDeletionAt)
-                """)
-                #endif
 
                 return result
             } catch let error as MoyaError {

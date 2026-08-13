@@ -64,15 +64,6 @@ final class AuthService: AuthServiceProtocol {
                 SocialLoginResultDTO.self
             )
 
-            #if DEBUG
-            print("""
-            [SocialLogin]
-            URL: \(response.request?.url?.absoluteString ?? "확인 불가")
-            HTTP: \(response.statusCode)
-            memberStatus: \(result.memberStatus.rawValue)
-            """)
-            #endif
-
             return result
         } catch let error as MoyaError {
             throw NetworkError.transport(error)
@@ -91,13 +82,6 @@ final class AuthService: AuthServiceProtocol {
                 APIEmptyResultDTO.self
             )
 
-            #if DEBUG
-            print("""
-            [Logout]
-            URL: \(response.request?.url?.absoluteString ?? "확인 불가")
-            HTTP: \(response.statusCode)
-            """)
-            #endif
         } catch let error as MoyaError {
             throw NetworkError.transport(error)
         }
@@ -120,14 +104,6 @@ final class AuthService: AuthServiceProtocol {
             let result = try response.decodePayload(
                 TokenReissueResultDTO.self
             )
-
-            #if DEBUG
-            print("""
-            [TokenReissue]
-            URL: \(response.request?.url?.absoluteString ?? "확인 불가")
-            HTTP: \(response.statusCode)
-            """)
-            #endif
 
             return result
         } catch let error as MoyaError {
@@ -152,15 +128,6 @@ final class AuthService: AuthServiceProtocol {
             let result = try response.decodePayload(
                 AccountRestoreResultDTO.self
             )
-
-            #if DEBUG
-            print("""
-            [AccountRestore]
-            URL: \(response.request?.url?.absoluteString ?? "확인 불가")
-            HTTP: \(response.statusCode)
-            memberStatus: \(result.memberStatus.rawValue)
-            """)
-            #endif
 
             return result
         } catch let error as MoyaError {

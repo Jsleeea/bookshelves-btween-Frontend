@@ -223,15 +223,6 @@ struct NotificationInboxView: View {
                 destination = .summary(meeting)
                 isDestinationPresented = true
             } catch {
-                #if DEBUG
-                print("""
-                [알림함] AI 요약 진입 실패
-                notificationId: \(notification.id)
-                targetId(meetingId): \(meetingId)
-                error: \(error)
-                """)
-                #endif
-
                 viewModel.errorMessage = error.localizedDescription
             }
 

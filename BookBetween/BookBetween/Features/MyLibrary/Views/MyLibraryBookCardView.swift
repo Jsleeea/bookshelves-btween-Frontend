@@ -42,7 +42,7 @@ struct MyLibraryBookCardView: View {
                 .body1SingleLineHeight
                 .foregroundStyle(Color.gray800)
                 .padding(.top, 0)
-                .lineLimit(2)
+                .lineLimit(1)
                 //.lineSpacing(2.5)
                 .fixedSize(horizontal: false, vertical: true)
 

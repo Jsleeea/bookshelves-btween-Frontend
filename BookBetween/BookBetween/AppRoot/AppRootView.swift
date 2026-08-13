@@ -105,11 +105,7 @@ struct AppRootView: View {
             }
 
             Task {
-                do {
-                    try await notificationService.registerFCMToken(fcmToken)
-                } catch {
-                    print("❌ FCM 토큰 등록 실패:", error)
-                }
+                try? await notificationService.registerFCMToken(fcmToken)
             }
 
         case .idle, .loading, .failure, .success(.accountRecovery):
