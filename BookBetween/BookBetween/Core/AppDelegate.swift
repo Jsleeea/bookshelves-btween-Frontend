@@ -36,14 +36,11 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
     private func requestNotificationPermission() {
         UNUserNotificationCenter.current().requestAuthorization(
             options: [.alert, .badge, .sound]
-        ) { granted, error in
+        ) { _, error in
 
-            if let error {
-                print("❌ 알림 권한 요청 실패:", error)
+            if error != nil {
                 return
             }
-
-            print("🔔 알림 권한:", granted)
 
             DispatchQueue.main.async {
                 UIApplication.shared.registerForRemoteNotifications()
@@ -58,20 +55,8 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
         _ application: UIApplication,
         didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
     ) {
-        print("✅ APNs 등록 성공")
-
         // Firebase Messaging에 APNs Token 전달
         Messaging.messaging().apnsToken = deviceToken
-    }
-
-
-    // MARK: - APNs 등록 실패
-
-    func application(
-        _ application: UIApplication,
-        didFailToRegisterForRemoteNotificationsWithError error: Error
-    ) {
-        print("❌ APNs 등록 실패:", error)
     }
 }
 
@@ -123,10 +108,6 @@ extension AppDelegate: MessagingDelegate {
             return
         }
 
-        #if DEBUG
-        print("🔥 FCM 토큰 수신")
-        #endif
-
         // 로그인 전에 토큰이 발급될 수 있어 항상 로컬에 먼저 저장한다.
         fcmTokenStore.save(fcmToken)
 
@@ -138,12 +119,7 @@ extension AppDelegate: MessagingDelegate {
         }
 
         Task {
-            do {
-                try await notificationService?.registerFCMToken(fcmToken)
-                print("✅ FCM 토큰 등록 성공")
-            } catch {
-                print("❌ FCM 토큰 등록 실패:", error)
-            }
+            try? await notificationService?.registerFCMToken(fcmToken)
         }
     }
 }

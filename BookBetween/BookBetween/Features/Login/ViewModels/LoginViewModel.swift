@@ -269,7 +269,6 @@ final class LoginViewModel {
             authSessionStore.saveMemberStatus(.active)
             authSessionStore.saveScheduledDeletionAt(nil)
             scheduledDeletionAt = nil
-            printSessionTokenStorageStatus()
             state = .success(.main)
         } catch {
             accountRecoveryErrorMessage = error.localizedDescription
@@ -287,13 +286,11 @@ final class LoginViewModel {
         try await authService.logout()
         try authTokenStore.clearSession()
         authSessionStore.clear()
-        printSessionTokenDeletionStatus()
         state = .idle
     }
 
     func completeAccountWithdrawal() {
         clearLocalSession()
-        printSessionTokenDeletionStatus()
     }
 
     // MARK: - 토큰 재발급
@@ -309,10 +306,6 @@ final class LoginViewModel {
                 throw LoginViewModelError.missingRefreshToken
             }
 
-            #if DEBUG
-            let previousAccessToken = try? authTokenStore.accessToken()
-            #endif
-
             let result = try await authService.reissue(
                 refreshToken: refreshToken
             )
@@ -326,21 +319,6 @@ final class LoginViewModel {
                 accessToken: result.accessToken,
                 refreshToken: result.refreshToken
             )
-
-            #if DEBUG
-            do {
-                let storedAccessToken = try authTokenStore.accessToken()
-                let storedRefreshToken = try authTokenStore.refreshToken()
-
-                print("""
-                [TokenRotation]
-                accessToken 교체: \(previousAccessToken != storedAccessToken && storedAccessToken?.isEmpty == false)
-                refreshToken 교체: \(refreshToken != storedRefreshToken && storedRefreshToken?.isEmpty == false)
-                """)
-            } catch {
-                print("[TokenRotation] Keychain 토큰 교체 상태 확인 실패")
-            }
-            #endif
         }
 
         reissueTask = task
@@ -404,7 +382,6 @@ final class LoginViewModel {
             authSessionStore.saveMemberStatus(.pendingOnboarding)
             authSessionStore.saveScheduledDeletionAt(nil)
             scheduledDeletionAt = nil
-            printSessionTokenStorageStatus()
             return .success(.accountSetup)
 
         case .active:
@@ -416,7 +393,6 @@ final class LoginViewModel {
             authSessionStore.saveMemberStatus(.active)
             authSessionStore.saveScheduledDeletionAt(nil)
             scheduledDeletionAt = nil
-            printSessionTokenStorageStatus()
             return .success(.main)
 
         case .withdrawn:
@@ -467,13 +443,6 @@ final class LoginViewModel {
                 clearLocalSession()
             }
 
-            #if DEBUG
-            print("""
-            [SessionRestore]
-            memberStatus: \(memberStatus.rawValue)
-            restored: true
-            """)
-            #endif
         } catch {
             if state != .idle {
                 state = .failure(
@@ -515,38 +484,6 @@ final class LoginViewModel {
         }
 
         return (accessToken, refreshToken)
-    }
-
-    // MARK: - 디버그 로그
-
-    private func printSessionTokenStorageStatus() {
-        #if DEBUG
-        let accessToken = try? authTokenStore.accessToken()
-        let refreshToken = try? authTokenStore.refreshToken()
-
-        print("""
-        [Keychain]
-        accessToken 저장: \(accessToken?.isEmpty == false)
-        refreshToken 저장: \(refreshToken?.isEmpty == false)
-        """)
-        #endif
-    }
-
-    private func printSessionTokenDeletionStatus() {
-        #if DEBUG
-        do {
-            let accessToken = try authTokenStore.accessToken()
-            let refreshToken = try authTokenStore.refreshToken()
-
-            print("""
-            [Keychain]
-            accessToken 삭제: \(accessToken == nil)
-            refreshToken 삭제: \(refreshToken == nil)
-            """)
-        } catch {
-            print("[Keychain] 토큰 삭제 상태 확인 실패")
-        }
-        #endif
     }
 
     // MARK: - 오류 판별

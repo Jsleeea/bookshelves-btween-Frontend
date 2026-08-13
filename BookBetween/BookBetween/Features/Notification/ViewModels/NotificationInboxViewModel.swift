@@ -143,9 +143,6 @@ final class NotificationInboxViewModel {
         } catch {
             // 읽음 처리는 화면 진입에 곁들여지는 부수 효과입니다.
             // 실패해도 사용자가 하려던 동작을 막지 않도록 알리지 않습니다.
-            #if DEBUG
-            print("[Notification] 읽음 처리 실패: \(error)")
-            #endif
         }
     }
 
@@ -195,11 +192,7 @@ final class NotificationInboxViewModel {
 
             newestNotificationId = cursor
             prependUnique(newNotifications)
-        } catch {
-            #if DEBUG
-            print("[Notification] 새 알림 조회 실패: \(error)")
-            #endif
-        }
+        } catch {}
     }
 
     private func appendUnique(_ newNotifications: [NotificationItem]) {

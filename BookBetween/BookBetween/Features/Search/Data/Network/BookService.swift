@@ -243,15 +243,6 @@ final class BookService: BookServiceProtocol {
                     ReadingStatisticsResultDTO.self
                 )
 
-                #if DEBUG
-                print("""
-                [ReadingStatistics]
-                URL: \(response.request?.url?.absoluteString ?? "확인 불가")
-                HTTP: \(response.statusCode)
-                year: \(result.year), month: \(result.month)
-                """)
-                #endif
-
                 return result
             } catch let error as MoyaError {
                 throw NetworkError.transport(error)
@@ -277,16 +268,6 @@ final class BookService: BookServiceProtocol {
                 let result = try response.decodePayload(
                     ReadingCalendarResultDTO.self
                 )
-
-                #if DEBUG
-                print("""
-                [ReadingCalendar]
-                URL: \(response.request?.url?.absoluteString ?? "확인 불가")
-                HTTP: \(response.statusCode)
-                year: \(result.year), month: \(result.month)
-                daysCount: \(result.days.count)
-                """)
-                #endif
 
                 return result
             } catch let error as MoyaError {

@@ -57,15 +57,6 @@ final class OnboardingService: OnboardingServiceProtocol {
                     OnboardingResultDTO.self
                 )
 
-                #if DEBUG
-                print("""
-                [Onboarding]
-                URL: \(response.request?.url?.absoluteString ?? "확인 불가")
-                HTTP: \(response.statusCode)
-                memberStatus: \(result.memberStatus.rawValue)
-                """)
-                #endif
-
                 return result
             } catch let error as MoyaError {
                 throw NetworkError.transport(error)
@@ -86,15 +77,6 @@ final class OnboardingService: OnboardingServiceProtocol {
             let terms = try response.decodePayload(
                 [OnboardingTermDTO].self
             )
-
-            #if DEBUG
-            print("""
-            [OnboardingTerms]
-            URL: \(response.request?.url?.absoluteString ?? "확인 불가")
-            HTTP: \(response.statusCode)
-            termsCount: \(terms.count)
-            """)
-            #endif
 
             return terms
         } catch let error as MoyaError {
