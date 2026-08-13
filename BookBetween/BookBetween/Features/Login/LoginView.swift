@@ -162,7 +162,6 @@ private struct LoginLogoView: View {
 private struct LoginTitleSectionView: View {
   var body: some View {
     VStack(spacing: 10) {
-        // 폰트 추가 후 수정 필요
       Text("책장을 넘어서,\n한 권으로 시작하는 모임")
         .pointText1Style
         .multilineTextAlignment(.center)

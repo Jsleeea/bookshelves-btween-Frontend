@@ -266,7 +266,6 @@ struct ProfileView: View {
             Circle()
                 .stroke(Color.white, lineWidth: 2.5)
         }
-        // 그림자 추후에 값 수정해야함
         .shadow(color: Color.black.opacity(0.1), radius: 2, y: 2)
     }
 
