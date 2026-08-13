@@ -53,6 +53,40 @@ extension Text {
     var pointText5Style: some View { applyAppStyle(.custom("RIDIBatang", size: 16), size: 16, lineHeightPercent: 130, letterSpacingPercent: -0.2) }
 }
 
+// 한 줄 Text에만 Figma의 Line Height를 적용할 때 사용합니다.
+// 기존 Text Style의 lineSpacing 동작에는 영향을 주지 않습니다.
+extension View {
+    func singleLineHeight(
+        fontSize: CGFloat,
+        lineHeightPercent: CGFloat
+    ) -> some View {
+        let targetLineHeight = fontSize * (lineHeightPercent / 100.0)
+
+        return lineHeight(.exact(points: targetLineHeight))
+    }
+
+    // Head 시리즈
+    var head1SingleLineHeight: some View { singleLineHeight(fontSize: 24, lineHeightPercent: 130) }
+    var head2SingleLineHeight: some View { singleLineHeight(fontSize: 22, lineHeightPercent: 130) }
+    var head3SingleLineHeight: some View { singleLineHeight(fontSize: 18, lineHeightPercent: 130) }
+    var head4SingleLineHeight: some View { singleLineHeight(fontSize: 18, lineHeightPercent: 130) }
+
+    // Body 시리즈
+    var body1SingleLineHeight: some View { singleLineHeight(fontSize: 16, lineHeightPercent: 155) }
+    var body2SingleLineHeight: some View { singleLineHeight(fontSize: 14, lineHeightPercent: 150) }
+
+    // Caption 시리즈
+    var caption1SingleLineHeight: some View { singleLineHeight(fontSize: 12, lineHeightPercent: 145) }
+    var caption2SingleLineHeight: some View { singleLineHeight(fontSize: 10, lineHeightPercent: 145) }
+
+    // Point Text 시리즈
+    var pointText1SingleLineHeight: some View { singleLineHeight(fontSize: 24, lineHeightPercent: 130) }
+    var pointText2SingleLineHeight: some View { singleLineHeight(fontSize: 22, lineHeightPercent: 130) }
+    var pointText3SingleLineHeight: some View { singleLineHeight(fontSize: 20, lineHeightPercent: 130) }
+    var pointText4SingleLineHeight: some View { singleLineHeight(fontSize: 18, lineHeightPercent: 130) }
+    var pointText5SingleLineHeight: some View { singleLineHeight(fontSize: 16, lineHeightPercent: 130) }
+}
+
 /* 사용 예시
  
  VStack(alignment: .leading, spacing: 4) {

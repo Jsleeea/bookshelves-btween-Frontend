@@ -36,18 +36,21 @@ struct MyLibraryBookCardView: View {
 	}
 
 	private var bookInfo: some View {
-		VStack(alignment: .leading, spacing: 4) {
+		VStack(alignment: .leading, spacing: 0) {
 			Text(record.book.title)
-                .font(.body1SemiBold)
+                .body1SemiBoldStyle
+                .body1SingleLineHeight
                 .foregroundStyle(Color.gray800)
-                .padding(.top, 6.5)
+                .padding(.top, 0)
                 .lineLimit(2)
-                .lineSpacing(2.5)
+                //.lineSpacing(2.5)
                 .fixedSize(horizontal: false, vertical: true)
 
 			Text(authorPublisherText)
                 .caption1RegularStyle
+                .caption1SingleLineHeight
 				.foregroundStyle(Color.gray500)
+                .padding(.top, 4)
                 .lineLimit(1)
 
 			HStack(spacing: 4) {
@@ -58,15 +61,19 @@ struct MyLibraryBookCardView: View {
                     .clipped()
 				Text(ratingText)
                     .caption1RegularStyle
+                    .caption1SingleLineHeight
 					.foregroundStyle(Color.green600)
+                    .padding(.top, 3)
 			}
 
 			BookProgressView(progress: record.progress, showsKnob: false)
-                .padding(.bottom, 2)
+                .padding(.top, 7)
 
 			if let quote = record.memo, !quote.isEmpty {
 				Text("\u{201C}\(quote)\u{201D}")
-                    .font(.caption2Regular)
+                    .caption2RegularStyle
+                    .caption2SingleLineHeight
+                    .padding(.top, 5)
 					.foregroundStyle(Color.gray500)
                     .lineLimit(2)
 					.lineSpacing(6)
