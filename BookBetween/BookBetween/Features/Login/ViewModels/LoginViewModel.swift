@@ -16,7 +16,30 @@ enum LoginViewState: Equatable {
     case idle
     case loading
     case success(LoginDestination)
-    case failure(String)
+    case failure(LoginFailure)
+}
+
+enum LoginFailure: Equatable {
+    case cancelled
+    case failed(String)
+
+    var title: String {
+        switch self {
+        case .cancelled:
+            return "로그인이 취소되었습니다."
+        case .failed:
+            return "로그인에 실패했습니다."
+        }
+    }
+
+    var message: String {
+        switch self {
+        case .cancelled:
+            return "원하는 로그인 방법을 다시 선택해주세요."
+        case .failed(let message):
+            return message
+        }
+    }
 }
 
 @MainActor
@@ -87,7 +110,7 @@ final class LoginViewModel {
                 providerToken: providerToken
             )
         } catch {
-            state = .failure(error.localizedDescription)
+            state = Self.loginFailure(from: error)
         }
     }
 
@@ -107,7 +130,7 @@ final class LoginViewModel {
                 providerToken: providerToken
             )
         } catch {
-            state = .failure(error.localizedDescription)
+            state = Self.loginFailure(from: error)
         }
     }
 
@@ -127,7 +150,7 @@ final class LoginViewModel {
                 providerToken: providerToken
             )
         } catch {
-            state = .failure(error.localizedDescription)
+            state = Self.loginFailure(from: error)
         }
     }
 
@@ -149,7 +172,7 @@ final class LoginViewModel {
                 providerToken: providerToken
             )
         } catch {
-            state = .failure(error.localizedDescription)
+            state = Self.loginFailure(from: error)
         }
     }
 
@@ -309,11 +332,19 @@ final class LoginViewModel {
     }
 
     var errorMessage: String? {
-        guard case .failure(let message) = state else {
+        guard case .failure(let failure) = state else {
             return nil
         }
 
-        return message
+        return failure.message
+    }
+
+    var errorTitle: String {
+        guard case .failure(let failure) = state else {
+            return "로그인에 실패했습니다."
+        }
+
+        return failure.title
     }
 
     private func requestSocialLogin(
@@ -412,7 +443,7 @@ final class LoginViewModel {
         } catch {
             if state != .idle {
                 state = .failure(
-                    "로그인 상태를 복원하지 못했습니다. 다시 시도해주세요."
+                    .failed("로그인 상태를 복원하지 못했습니다. 다시 시도해주세요.")
                 )
             }
         }
@@ -493,6 +524,24 @@ final class LoginViewModel {
         case .transport, .decoding, .emptyResult:
             return false
         }
+    }
+
+    private static func loginFailure(from error: Error) -> LoginViewState {
+        let error = error as NSError
+
+        let isCancelled = switch (error.domain, error.code) {
+        case ("KakaoSDKCommon.SdkError", 0),
+             ("com.google.GIDSignIn", -5),
+             ("com.apple.AuthenticationServices.AuthorizationError", 1000),
+             ("com.apple.AuthenticationServices.AuthorizationError", 1001):
+            true
+        default:
+            false
+        }
+
+        return .failure(
+            isCancelled ? .cancelled : .failed(error.localizedDescription)
+        )
     }
 
 }

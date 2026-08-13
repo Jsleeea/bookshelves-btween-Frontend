@@ -41,7 +41,7 @@ struct LoginView: View {
       )
     }
     .alert(
-      "로그인에 실패했습니다.",
+      viewModel.errorTitle,
       isPresented: Binding(
         get: { viewModel.errorMessage != nil },
         set: { isPresented in
