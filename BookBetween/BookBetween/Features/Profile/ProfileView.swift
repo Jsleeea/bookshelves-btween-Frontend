@@ -327,7 +327,7 @@ struct ProfileView: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 5)
             .background(Color.green700)
-            .cornerRadius(12)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
         }
     }
 
