@@ -89,6 +89,7 @@ enum NicknameGenerator {
     private static let animals: [NicknameAnimal] = [
         NicknameAnimal(name: "곰", imageName: "animal_bear", backgroundColor: .brown),
         NicknameAnimal(name: "다람쥐", imageName: "animal_squirrel", backgroundColor: .brown),
+        NicknameAnimal(name: "여우", imageName: "animal_fox", backgroundColor: .brown),
         NicknameAnimal(name: "고슴도치", imageName: "animal_hedgehog", backgroundColor: .brown),
         NicknameAnimal(name: "나무늘보", imageName: "animal_sloth", backgroundColor: .brown),
         NicknameAnimal(name: "올빼미", imageName: "animal_owl", backgroundColor: .purple),
