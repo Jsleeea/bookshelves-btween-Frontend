@@ -133,27 +133,32 @@ struct HomeView: View {
                             Image("icon_sparkles")
                             Text("오늘의 추천 도서")
                                 .body2SemiBoldStyle
+                                .body2SingleLineHeight
                                 .foregroundStyle(.green900)
                         }
                         Text(recommendedBook.recommendationMessage)
                             .caption1RegularStyle
+                            .caption1SingleLineHeight
                             .foregroundStyle(.gray600)
                             .lineLimit(1)
-                            .padding(.top, 3)
-                        Spacer()
+                            //.padding(.top, 3)
+                        //Spacer()
                         Text(recommendation.title)
                             .pointText3Style
+                            .pointText3SingleLineHeight
                             .foregroundStyle(.gray800)
+                            .padding(.top, 16)
                         Text(authorAndCategory)
                             .caption2RegularStyle
+                            .caption2SingleLineHeight
                             .foregroundStyle(.gray600)
                             .padding(.top, 4)
 
-                        Spacer()
+                        //Spacer()
                     }
                     .padding(.vertical, 18)
                     .padding(.leading, 19)
-                    .padding(.top, 21)
+                    .padding(.top, 0)
 
                     Spacer()
 
