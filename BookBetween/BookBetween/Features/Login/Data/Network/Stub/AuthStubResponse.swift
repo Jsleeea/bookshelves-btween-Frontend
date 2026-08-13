@@ -5,10 +5,14 @@
 
 import Foundation
 
+// MARK: - 인증 Stub 응답
+
 nonisolated struct AuthStubResponse {
     let statusCode: Int
     let data: Data
 }
+
+// MARK: - 인증 Stub 시나리오
 
 nonisolated enum AuthStubScenario {
     case pendingOnboarding
@@ -51,6 +55,8 @@ nonisolated enum AuthStubScenario {
         }
     }
 
+    // MARK: - 응답 생성
+
     private static func makeData(from json: String) -> Data {
         guard let data = json.data(using: .utf8) else {
             preconditionFailure("Stub JSON을 UTF-8 데이터로 변환하지 못했습니다.")
@@ -58,6 +64,8 @@ nonisolated enum AuthStubScenario {
 
         return data
     }
+
+    // MARK: - 시나리오 데이터
 
     private static let pendingOnboardingJSON = """
     {

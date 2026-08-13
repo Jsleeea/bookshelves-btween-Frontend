@@ -6,28 +6,61 @@
 import Foundation
 import Observation
 
+// MARK: - 로그인 화면 이동
+
 enum LoginDestination: Equatable {
     case accountSetup
     case main
     case accountRecovery
 }
 
+// MARK: - 로그인 화면 상태
+
 enum LoginViewState: Equatable {
     case idle
     case loading
     case success(LoginDestination)
-    case failure(String)
+    case failure(LoginFailure)
+}
+
+// MARK: - 로그인 실패 유형
+
+enum LoginFailure: Equatable {
+    case cancelled
+    case failed(String)
+
+    var title: String {
+        switch self {
+        case .cancelled:
+            return "로그인이 취소되었습니다."
+        case .failed:
+            return "로그인에 실패했습니다."
+        }
+    }
+
+    var message: String {
+        switch self {
+        case .cancelled:
+            return "원하는 로그인 방법을 다시 선택해주세요."
+        case .failed(let message):
+            return message
+        }
+    }
 }
 
 @MainActor
 @Observable
 final class LoginViewModel {
+    // MARK: - 의존성
+
     private let kakaoLoginService: KakaoLoginServiceProtocol
     private let googleLoginService: GoogleLoginServiceProtocol
     private let appleLoginService: AppleLoginServiceProtocol
     private let authService: AuthServiceProtocol
     private let authTokenStore: AuthTokenStoreProtocol
     private let authSessionStore: AuthSessionStoreProtocol
+
+    // MARK: - 상태
 
     @ObservationIgnored
     private var reissueTask: Task<Void, Error>?
@@ -37,6 +70,8 @@ final class LoginViewModel {
     private(set) var isRecoveringAccount = false
     private(set) var scheduledDeletionAt: String?
     var accountRecoveryErrorMessage: String?
+
+    // MARK: - 화면 표시 상태
 
     var isLoading: Bool {
         state == .loading
@@ -53,6 +88,8 @@ final class LoginViewModel {
     var isAppleLoading: Bool {
         isLoading && activeLoginProvider == .apple
     }
+
+    // MARK: - 초기화
 
     init(
         kakaoLoginService: KakaoLoginServiceProtocol,
@@ -71,6 +108,8 @@ final class LoginViewModel {
         self.scheduledDeletionAt = authSessionStore.scheduledDeletionAt()
     }
 
+    // MARK: - 소셜 로그인
+
     func loginWithKakao() async {
         guard !isLoading else {
             return
@@ -87,7 +126,7 @@ final class LoginViewModel {
                 providerToken: providerToken
             )
         } catch {
-            state = .failure(error.localizedDescription)
+            state = Self.loginFailure(from: error)
         }
     }
 
@@ -107,7 +146,7 @@ final class LoginViewModel {
                 providerToken: providerToken
             )
         } catch {
-            state = .failure(error.localizedDescription)
+            state = Self.loginFailure(from: error)
         }
     }
 
@@ -127,7 +166,7 @@ final class LoginViewModel {
                 providerToken: providerToken
             )
         } catch {
-            state = .failure(error.localizedDescription)
+            state = Self.loginFailure(from: error)
         }
     }
 
@@ -149,15 +188,19 @@ final class LoginViewModel {
                 providerToken: providerToken
             )
         } catch {
-            state = .failure(error.localizedDescription)
+            state = Self.loginFailure(from: error)
         }
     }
+
+    // MARK: - 상태 초기화
 
     func resetState() {
         accountRecoveryErrorMessage = nil
         activeLoginProvider = nil
         state = .idle
     }
+
+    // MARK: - 세션 복원
 
     func restoreSession() async {
         guard state == .idle,
@@ -179,6 +222,8 @@ final class LoginViewModel {
         }
     }
 
+    // MARK: - 계정 설정 완료
+
     func completeAccountSetup() {
         guard state == .success(.accountSetup) else {
             return
@@ -187,6 +232,8 @@ final class LoginViewModel {
         authSessionStore.saveMemberStatus(.active)
         state = .success(.main)
     }
+
+    // MARK: - 계정 복구
 
     func restoreAccount() async {
         guard !isRecoveringAccount else {
@@ -234,6 +281,8 @@ final class LoginViewModel {
         clearLocalSession()
     }
 
+    // MARK: - 로그아웃 및 탈퇴
+
     func logout() async throws {
         try await authService.logout()
         try authTokenStore.clearSession()
@@ -246,6 +295,8 @@ final class LoginViewModel {
         clearLocalSession()
         printSessionTokenDeletionStatus()
     }
+
+    // MARK: - 토큰 재발급
 
     func reissueTokens() async throws {
         if let reissueTask {
@@ -308,13 +359,25 @@ final class LoginViewModel {
         }
     }
 
+    // MARK: - 오류 표시 값
+
     var errorMessage: String? {
-        guard case .failure(let message) = state else {
+        guard case .failure(let failure) = state else {
             return nil
         }
 
-        return message
+        return failure.message
     }
+
+    var errorTitle: String {
+        guard case .failure(let failure) = state else {
+            return "로그인에 실패했습니다."
+        }
+
+        return failure.title
+    }
+
+    // MARK: - 로그인 응답 처리
 
     private func requestSocialLogin(
         provider: SocialProvider,
@@ -379,6 +442,8 @@ final class LoginViewModel {
         }
     }
 
+    // MARK: - 저장 세션 복원
+
     private func restoreAuthenticatedSession(
         memberStatus: MemberStatus
     ) async {
@@ -412,7 +477,7 @@ final class LoginViewModel {
         } catch {
             if state != .idle {
                 state = .failure(
-                    "로그인 상태를 복원하지 못했습니다. 다시 시도해주세요."
+                    .failed("로그인 상태를 복원하지 못했습니다. 다시 시도해주세요.")
                 )
             }
         }
@@ -437,6 +502,8 @@ final class LoginViewModel {
         state = .idle
     }
 
+    // MARK: - 토큰 검증
+
     private static func serviceTokens(
         from result: SocialLoginResultDTO
     ) throws -> (accessToken: String, refreshToken: String) {
@@ -449,6 +516,8 @@ final class LoginViewModel {
 
         return (accessToken, refreshToken)
     }
+
+    // MARK: - 디버그 로그
 
     private func printSessionTokenStorageStatus() {
         #if DEBUG
@@ -480,6 +549,8 @@ final class LoginViewModel {
         #endif
     }
 
+    // MARK: - 오류 판별
+
     private static func requiresLoginAfterReissueFailure(
         _ error: Error
     ) -> Bool {
@@ -495,7 +566,27 @@ final class LoginViewModel {
         }
     }
 
+    private static func loginFailure(from error: Error) -> LoginViewState {
+        let error = error as NSError
+
+        let isCancelled = switch (error.domain, error.code) {
+        case ("KakaoSDKCommon.SdkError", 0),
+             ("com.google.GIDSignIn", -5),
+             ("com.apple.AuthenticationServices.AuthorizationError", 1000),
+             ("com.apple.AuthenticationServices.AuthorizationError", 1001):
+            true
+        default:
+            false
+        }
+
+        return .failure(
+            isCancelled ? .cancelled : .failed(error.localizedDescription)
+        )
+    }
+
 }
+
+// MARK: - 로그인 ViewModel 오류
 
 private enum LoginViewModelError: LocalizedError {
     case missingServiceTokens

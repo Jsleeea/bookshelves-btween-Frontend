@@ -79,6 +79,23 @@ struct ReadingStatisticsView: View {
 
             await viewModel.fetchStatistics()
         }
+        .alert(
+            "독서통계를 불러오지 못했습니다.",
+            isPresented: Binding(
+                get: { viewModel.errorMessage != nil },
+                set: { isPresented in
+                    if !isPresented {
+                        viewModel.errorMessage = nil
+                    }
+                }
+            )
+        ) {
+            Button("확인", role: .cancel) {
+                viewModel.errorMessage = nil
+            }
+        } message: {
+            Text(viewModel.errorMessage ?? "다시 시도해주세요.")
+        }
     }
 
     private var backSwipeGesture: some Gesture {

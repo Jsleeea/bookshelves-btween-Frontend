@@ -5,12 +5,20 @@
 
 import SwiftUI
 
+// MARK: - 계정 복구 화면
+
 struct AccountRecoveryView: View {
+    // MARK: - 상태
+
     @State private var viewModel: LoginViewModel
+
+    // MARK: - 초기화
 
     init(viewModel: LoginViewModel) {
         _viewModel = State(initialValue: viewModel)
     }
+
+    // MARK: - 화면 구성
 
     var body: some View {
         ZStack {
@@ -117,6 +125,8 @@ struct AccountRecoveryView: View {
             )
         }
     }
+
+    // MARK: - 삭제 예정일 표시
 
     private var scheduledDeletionText: String {
         guard let scheduledDeletionAt = viewModel.scheduledDeletionAt,

@@ -7,6 +7,8 @@ import Foundation
 import KakaoSDKAuth
 import KakaoSDKUser
 
+// MARK: - 카카오 로그인 서비스 규약
+
 @MainActor
 protocol KakaoLoginServiceProtocol {
     func login() async throws -> String
@@ -14,6 +16,8 @@ protocol KakaoLoginServiceProtocol {
 
 @MainActor
 final class KakaoLoginService: KakaoLoginServiceProtocol {
+    // MARK: - 로그인 요청
+
     func login() async throws -> String {
         try await withCheckedThrowingContinuation { continuation in
             let completion: (OAuthToken?, Error?) -> Void = { token, error in
@@ -41,6 +45,8 @@ final class KakaoLoginService: KakaoLoginServiceProtocol {
         }
     }
 }
+
+// MARK: - 카카오 로그인 오류
 
 nonisolated enum KakaoLoginServiceError: LocalizedError {
     case missingAccessToken

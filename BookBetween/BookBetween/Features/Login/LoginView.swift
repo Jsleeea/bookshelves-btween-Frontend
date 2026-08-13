@@ -7,12 +7,20 @@
 
 import SwiftUI
 
+// MARK: - 로그인 화면
+
 struct LoginView: View {
+  // MARK: - 상태
+
   @State private var viewModel: LoginViewModel
+
+  // MARK: - 초기화
 
   init(viewModel: LoginViewModel) {
     _viewModel = State(initialValue: viewModel)
   }
+
+  // MARK: - 화면 구성
 
   var body: some View {
     ZStack {
@@ -41,7 +49,7 @@ struct LoginView: View {
       )
     }
     .alert(
-      "로그인에 실패했습니다.",
+      viewModel.errorTitle,
       isPresented: Binding(
         get: { viewModel.errorMessage != nil },
         set: { isPresented in
@@ -59,6 +67,8 @@ struct LoginView: View {
     }
   }
 }
+
+// MARK: - 배경 화면
 
 private struct LoginBackgroundView: View {
   var body: some View {
@@ -97,6 +107,8 @@ private struct LoginBackgroundView: View {
   }
 }
 
+// MARK: - 로그인 콘텐츠
+
 private struct LoginContentView: View {
   let isLoading: Bool
   let isKakaoLoading: Bool
@@ -134,6 +146,8 @@ private struct LoginContentView: View {
   }
 }
 
+// MARK: - 로고
+
 private struct LoginLogoView: View {
   var body: some View {
     Image("logo")
@@ -142,6 +156,8 @@ private struct LoginLogoView: View {
       .frame(width: 266, height: 161)
   }
 }
+
+// MARK: - 소개 문구
 
 private struct LoginTitleSectionView: View {
   var body: some View {
@@ -158,6 +174,8 @@ private struct LoginTitleSectionView: View {
     }
   }
 }
+
+// MARK: - 소셜 로그인 버튼 영역
 
 private struct LoginSocialButtonSectionView: View {
   let isLoading: Bool
@@ -191,6 +209,8 @@ private struct LoginSocialButtonSectionView: View {
   }
 }
 
+// MARK: - 카카오 로그인 버튼
+
 private struct KakaoLoginButton: View {
   let isLoading: Bool
   let action: () -> Void
@@ -220,6 +240,8 @@ private struct KakaoLoginButton: View {
     .disabled(isLoading)
   }
 }
+
+// MARK: - Google 로그인 버튼
 
 private struct GoogleLoginButton: View {
   let isLoading: Bool
@@ -253,6 +275,8 @@ private struct GoogleLoginButton: View {
     }
   }
 }
+
+// MARK: - Apple 로그인 버튼
 
 private struct AppleLoginButton: View {
   let isLoading: Bool

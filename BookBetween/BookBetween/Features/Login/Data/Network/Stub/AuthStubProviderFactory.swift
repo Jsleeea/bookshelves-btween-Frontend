@@ -5,6 +5,8 @@
 
 import Moya
 
+// MARK: - 인증 Stub Provider 생성
+
 enum AuthStubProviderFactory {
     static func make(
         scenario: AuthStubScenario
