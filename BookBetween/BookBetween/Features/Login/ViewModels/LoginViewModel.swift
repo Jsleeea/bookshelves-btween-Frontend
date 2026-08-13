@@ -6,11 +6,15 @@
 import Foundation
 import Observation
 
+// MARK: - 로그인 화면 이동
+
 enum LoginDestination: Equatable {
     case accountSetup
     case main
     case accountRecovery
 }
+
+// MARK: - 로그인 화면 상태
 
 enum LoginViewState: Equatable {
     case idle
@@ -18,6 +22,8 @@ enum LoginViewState: Equatable {
     case success(LoginDestination)
     case failure(LoginFailure)
 }
+
+// MARK: - 로그인 실패 유형
 
 enum LoginFailure: Equatable {
     case cancelled
@@ -45,12 +51,16 @@ enum LoginFailure: Equatable {
 @MainActor
 @Observable
 final class LoginViewModel {
+    // MARK: - 의존성
+
     private let kakaoLoginService: KakaoLoginServiceProtocol
     private let googleLoginService: GoogleLoginServiceProtocol
     private let appleLoginService: AppleLoginServiceProtocol
     private let authService: AuthServiceProtocol
     private let authTokenStore: AuthTokenStoreProtocol
     private let authSessionStore: AuthSessionStoreProtocol
+
+    // MARK: - 상태
 
     @ObservationIgnored
     private var reissueTask: Task<Void, Error>?
@@ -60,6 +70,8 @@ final class LoginViewModel {
     private(set) var isRecoveringAccount = false
     private(set) var scheduledDeletionAt: String?
     var accountRecoveryErrorMessage: String?
+
+    // MARK: - 화면 표시 상태
 
     var isLoading: Bool {
         state == .loading
@@ -77,6 +89,8 @@ final class LoginViewModel {
         isLoading && activeLoginProvider == .apple
     }
 
+    // MARK: - 초기화
+
     init(
         kakaoLoginService: KakaoLoginServiceProtocol,
         googleLoginService: GoogleLoginServiceProtocol,
@@ -93,6 +107,8 @@ final class LoginViewModel {
         self.authSessionStore = authSessionStore
         self.scheduledDeletionAt = authSessionStore.scheduledDeletionAt()
     }
+
+    // MARK: - 소셜 로그인
 
     func loginWithKakao() async {
         guard !isLoading else {
@@ -176,11 +192,15 @@ final class LoginViewModel {
         }
     }
 
+    // MARK: - 상태 초기화
+
     func resetState() {
         accountRecoveryErrorMessage = nil
         activeLoginProvider = nil
         state = .idle
     }
+
+    // MARK: - 세션 복원
 
     func restoreSession() async {
         guard state == .idle,
@@ -202,6 +222,8 @@ final class LoginViewModel {
         }
     }
 
+    // MARK: - 계정 설정 완료
+
     func completeAccountSetup() {
         guard state == .success(.accountSetup) else {
             return
@@ -210,6 +232,8 @@ final class LoginViewModel {
         authSessionStore.saveMemberStatus(.active)
         state = .success(.main)
     }
+
+    // MARK: - 계정 복구
 
     func restoreAccount() async {
         guard !isRecoveringAccount else {
@@ -257,6 +281,8 @@ final class LoginViewModel {
         clearLocalSession()
     }
 
+    // MARK: - 로그아웃 및 탈퇴
+
     func logout() async throws {
         try await authService.logout()
         try authTokenStore.clearSession()
@@ -269,6 +295,8 @@ final class LoginViewModel {
         clearLocalSession()
         printSessionTokenDeletionStatus()
     }
+
+    // MARK: - 토큰 재발급
 
     func reissueTokens() async throws {
         if let reissueTask {
@@ -331,6 +359,8 @@ final class LoginViewModel {
         }
     }
 
+    // MARK: - 오류 표시 값
+
     var errorMessage: String? {
         guard case .failure(let failure) = state else {
             return nil
@@ -346,6 +376,8 @@ final class LoginViewModel {
 
         return failure.title
     }
+
+    // MARK: - 로그인 응답 처리
 
     private func requestSocialLogin(
         provider: SocialProvider,
@@ -410,6 +442,8 @@ final class LoginViewModel {
         }
     }
 
+    // MARK: - 저장 세션 복원
+
     private func restoreAuthenticatedSession(
         memberStatus: MemberStatus
     ) async {
@@ -468,6 +502,8 @@ final class LoginViewModel {
         state = .idle
     }
 
+    // MARK: - 토큰 검증
+
     private static func serviceTokens(
         from result: SocialLoginResultDTO
     ) throws -> (accessToken: String, refreshToken: String) {
@@ -480,6 +516,8 @@ final class LoginViewModel {
 
         return (accessToken, refreshToken)
     }
+
+    // MARK: - 디버그 로그
 
     private func printSessionTokenStorageStatus() {
         #if DEBUG
@@ -510,6 +548,8 @@ final class LoginViewModel {
         }
         #endif
     }
+
+    // MARK: - 오류 판별
 
     private static func requiresLoginAfterReissueFailure(
         _ error: Error
@@ -545,6 +585,8 @@ final class LoginViewModel {
     }
 
 }
+
+// MARK: - 로그인 ViewModel 오류
 
 private enum LoginViewModelError: LocalizedError {
     case missingServiceTokens

@@ -5,11 +5,15 @@
 
 import Foundation
 
+// MARK: - 소셜 로그인 유형
+
 nonisolated enum SocialProvider: String, Encodable {
     case kakao = "KAKAO"
     case google = "GOOGLE"
     case apple = "APPLE"
 }
+
+// MARK: - 회원 상태
 
 nonisolated enum MemberStatus: String, Decodable {
     case pendingOnboarding = "PENDING_ONBOARDING"
@@ -18,6 +22,8 @@ nonisolated enum MemberStatus: String, Decodable {
     case withdrawn = "WITHDRAWN"
     case anonymized = "ANONYMIZED"
 }
+
+// MARK: - 소셜 로그인
 
 nonisolated struct SocialLoginRequestDTO: Encodable {
     let provider: SocialProvider

@@ -6,6 +6,8 @@
 import Foundation
 import Moya
 
+// MARK: - 인증 서비스 규약
+
 protocol AuthServiceProtocol {
     func socialLogin(
         provider: SocialProvider,
@@ -19,8 +21,12 @@ protocol AuthServiceProtocol {
 }
 
 final class AuthService: AuthServiceProtocol {
+    // MARK: - 의존성
+
     private let baseURL: URL
     private let provider: MoyaProvider<AuthTarget>
+
+    // MARK: - 초기화
 
     init(configuration: NetworkConfiguration) {
         self.baseURL = configuration.baseURL
@@ -35,6 +41,8 @@ final class AuthService: AuthServiceProtocol {
         self.baseURL = baseURL
         self.provider = provider
     }
+
+    // MARK: - 인증 요청
 
     func socialLogin(
         provider: SocialProvider,

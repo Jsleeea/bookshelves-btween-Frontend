@@ -7,6 +7,8 @@ import AuthenticationServices
 import Foundation
 import UIKit
 
+// MARK: - Apple 로그인 서비스 규약
+
 @MainActor
 protocol AppleLoginServiceProtocol {
     func login() async throws -> String
@@ -14,9 +16,13 @@ protocol AppleLoginServiceProtocol {
 
 @MainActor
 final class AppleLoginService: NSObject, AppleLoginServiceProtocol {
+    // MARK: - 상태
+
     private var continuation: CheckedContinuation<String, Error>?
     private var authorizationController: ASAuthorizationController?
     private var presentationWindow: ASPresentationAnchor?
+
+    // MARK: - 로그인 요청
 
     func login() async throws -> String {
         guard continuation == nil else {
@@ -44,6 +50,8 @@ final class AppleLoginService: NSObject, AppleLoginServiceProtocol {
         }
     }
 
+    // MARK: - 화면 표시 대상
+
     private func activePresentationWindow() -> ASPresentationAnchor? {
         UIApplication.shared.connectedScenes
             .compactMap { $0 as? UIWindowScene }
@@ -51,6 +59,8 @@ final class AppleLoginService: NSObject, AppleLoginServiceProtocol {
             .windows
             .first { $0.isKeyWindow }
     }
+
+    // MARK: - 로그인 완료 처리
 
     private func finish(with result: Result<String, Error>) {
         guard let continuation else {
@@ -70,6 +80,8 @@ final class AppleLoginService: NSObject, AppleLoginServiceProtocol {
         }
     }
 }
+
+// MARK: - Apple 로그인 결과 처리
 
 extension AppleLoginService: ASAuthorizationControllerDelegate {
     func authorizationController(
@@ -103,6 +115,8 @@ extension AppleLoginService: ASAuthorizationControllerDelegate {
     }
 }
 
+// MARK: - Apple 로그인 표시 환경
+
 extension AppleLoginService: ASAuthorizationControllerPresentationContextProviding {
     func presentationAnchor(
         for controller: ASAuthorizationController
@@ -114,6 +128,8 @@ extension AppleLoginService: ASAuthorizationControllerPresentationContextProvidi
         return presentationWindow
     }
 }
+
+// MARK: - Apple 로그인 오류
 
 nonisolated enum AppleLoginServiceError: LocalizedError {
     case loginAlreadyInProgress

@@ -7,7 +7,11 @@ import Foundation
 import Alamofire
 import Moya
 
+// MARK: - 인증 API 대상
+
 nonisolated struct AuthTarget: TargetType, AuthorizationRequirement {
+    // MARK: - 엔드포인트
+
     enum Endpoint {
         case socialLogin(SocialLoginRequestDTO)
         case logout
@@ -15,8 +19,12 @@ nonisolated struct AuthTarget: TargetType, AuthorizationRequirement {
         case restore(AccountRestoreRequestDTO)
     }
 
+    // MARK: - 요청 정보
+
     let baseURL: URL
     let endpoint: Endpoint
+
+    // MARK: - TargetType
 
     var path: String {
         switch endpoint {

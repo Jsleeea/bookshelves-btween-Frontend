@@ -6,6 +6,8 @@
 import GoogleSignIn
 import UIKit
 
+// MARK: - Google 로그인 서비스 규약
+
 @MainActor
 protocol GoogleLoginServiceProtocol {
     func login() async throws -> String
@@ -13,6 +15,8 @@ protocol GoogleLoginServiceProtocol {
 
 @MainActor
 final class GoogleLoginService: GoogleLoginServiceProtocol {
+    // MARK: - 로그인 요청
+
     func login() async throws -> String {
         let presentingViewController = try presentingViewController()
         let result = try await GIDSignIn.sharedInstance.signIn(
@@ -27,6 +31,8 @@ final class GoogleLoginService: GoogleLoginServiceProtocol {
         return idToken
     }
 
+    // MARK: - 화면 표시 대상
+
     private func presentingViewController() throws -> UIViewController {
         guard let windowScene = UIApplication.shared.connectedScenes
             .compactMap({ $0 as? UIWindowScene })
@@ -38,6 +44,8 @@ final class GoogleLoginService: GoogleLoginServiceProtocol {
 
         return topViewController(from: rootViewController)
     }
+
+    // MARK: - 최상위 화면 탐색
 
     private func topViewController(
         from viewController: UIViewController
@@ -59,6 +67,8 @@ final class GoogleLoginService: GoogleLoginServiceProtocol {
         return viewController
     }
 }
+
+// MARK: - Google 로그인 오류
 
 nonisolated enum GoogleLoginServiceError: LocalizedError {
     case missingIDToken
